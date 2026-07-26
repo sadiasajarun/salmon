@@ -1,0 +1,66 @@
+/* ============================================================================
+ * Salmon CRM — Catalogue & Inventory module styles (Part 3)
+ * Additions only. Generic bits (card, kv, profband, timeline, ripple console)
+ * are reused from Part-1 components.css + Part-2 people.css; this file adds the
+ * catalogue-specific surfaces: At-A-Glance grid, unit status, media library.
+ * ========================================================================== */
+
+/* ---- project band unit-summary chips ---- */
+.unitsummary{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ustat{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:999px;
+  font-size:11.5px;font-weight:700;border:.5px solid var(--line)}
+.ustat .n{font-variant-numeric:tabular-nums}
+.ustat.available{color:var(--green);background:var(--green-bg);border-color:transparent}
+.ustat.reserved{color:var(--amber);background:var(--amber-bg);border-color:transparent}
+.ustat.booked{color:var(--blue);background:var(--blue-bg);border-color:transparent}
+.ustat.sold{color:var(--grey);background:var(--grey-bg);border-color:transparent}
+
+/* ---- At-A-Glance grid (E02) ---- */
+.glancegrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.gtile{border:.5px solid var(--line);border-radius:var(--r-card);background:var(--surface);padding:11px 13px}
+.gtile .gl{font-size:11px;color:var(--ink-muted);font-weight:600}
+.gtile .gv{font-size:15px;font-weight:800;margin-top:3px;color:var(--ink)}
+.gtile .gv .u{font-size:11px;font-weight:600;color:var(--ink-muted);margin-left:3px}
+
+/* ---- media library (E04) ---- */
+.medialib{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.mediatile{border:.5px solid var(--line);border-radius:var(--r-card);background:var(--surface);overflow:hidden;position:relative}
+.mediatile .thumb{height:120px;display:grid;place-items:center;font-size:30px;color:var(--ink-faint);
+  background:repeating-linear-gradient(45deg,var(--surface-2),var(--surface-2) 10px,#f1ece5 10px,#f1ece5 20px)}
+.mediatile.photo .thumb{background:linear-gradient(135deg,#e9dfd0,#d2c4b0)}
+.mediatile.video .thumb{background:linear-gradient(135deg,#d8d0e6,#c3b6dd)}
+.mediatile.floorplan .thumb{background:linear-gradient(135deg,#dfe6ea,#c9d6dd)}
+.mediatile.brochure .thumb{background:linear-gradient(135deg,#efe2d6,#e2cdb8)}
+.mediatile.n360 .thumb{background:linear-gradient(135deg,#d6e6df,#bad9c9)}
+.mediatile .meta{padding:9px 11px}
+.mediatile .meta .tl{font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mediatile .meta .ty{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-faint);margin-top:2px}
+.mediatile .acts{display:flex;gap:4px;padding:0 9px 9px}
+.mediatile .acts button{font-size:11px;border:.5px solid var(--line-strong);background:var(--surface);border-radius:6px;
+  padding:2px 7px;cursor:pointer;color:var(--ink-3)}
+.mediatile .acts button:hover{background:var(--surface-2);color:var(--maroon)}
+.herobadge{position:absolute;top:8px;left:8px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;
+  color:#fff;background:var(--maroon);border-radius:999px;padding:2px 8px}
+.mediabar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.mediabar .fl{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint)}
+
+/* ---- construction timeline media chip (E05) ---- */
+.cu-media{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--ink-3);
+  background:var(--surface-2);border:.5px solid var(--line);border-radius:6px;padding:2px 8px}
+.cu-thumb{width:64px;height:44px;border-radius:6px;background:linear-gradient(135deg,#e9dfd0,#d2c4b0);
+  display:grid;place-items:center;font-size:18px;color:#8a8178;flex:0 0 auto}
+.cu-row{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:.5px solid var(--line-2)}
+.cu-row:last-child{border-bottom:none}
+.cu-row .cu-main{flex:1;min-width:0}
+.cu-row .cu-date{font-size:12px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+.cu-row .cu-stage{font-size:11px;font-weight:700;color:var(--maroon);background:var(--maroon-tint);border-radius:999px;padding:1px 8px;margin-left:8px}
+.cu-row .cu-cap{font-size:13px;color:var(--ink-2);margin-top:4px;line-height:1.45}
+
+/* ---- create-project form (E06) ---- */
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+.formgrid .field.full{grid-column:1 / -1}
+
+@media (max-width:1120px){
+  .glancegrid,.medialib{grid-template-columns:repeat(2,1fr)}
+  .formgrid{grid-template-columns:1fr}
+}

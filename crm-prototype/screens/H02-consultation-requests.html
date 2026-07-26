@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Salmon Admin — Consultation requests</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+<link rel="stylesheet" href="../assets/css/people.css"/>
+<link rel="stylesheet" href="../assets/css/pipeline.css"/>
+</head>
+<body>
+  <div id="root"></div>
+  <!-- Part-1 foundation (imported, unchanged) -->
+  <script src="../assets/js/permissions.js"></script>
+  <script src="../assets/js/audit.js"></script>
+  <script src="../assets/js/mock-data.js"></script>
+  <script src="../assets/js/components.js"></script>
+  <script src="../assets/js/dev-toolbar.js"></script>
+  <script src="../assets/js/router.js"></script>
+  <!-- Part-2 ripple console (reused) + Part-4 pipeline -->
+  <script src="../assets/js/ripples.js"></script>
+  <script src="../assets/js/pipeline-data.js"></script>
+  <script src="../assets/js/pipeline.js"></script>
+  <script>Pipeline.boot('H02');</script>
+</body>
+</html>

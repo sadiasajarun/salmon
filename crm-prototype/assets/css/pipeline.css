@@ -1,0 +1,70 @@
+/* ============================================================================
+ * Salmon CRM — Sales Pipeline module styles (Part 4)
+ * Additions only. Reuses components.css + people.css (band, tabs, timeline,
+ * card, kv, ripple console). Adds: partner-projection preview, status flow,
+ * slot grid, meeting/consultation cards, commission-record stub.
+ * ========================================================================== */
+
+/* ---- lead status pills (internal set) ---- */
+.leadchip{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 8px;border-radius:999px;
+  font-size:11px;font-weight:700;line-height:1;white-space:nowrap}
+.leadchip .d{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.9}
+
+/* ---- "what the partner sees" preview toggle + split ---- */
+.wallbar{display:flex;align-items:center;gap:10px;background:var(--surface);border:.5px solid var(--line);
+  border-radius:var(--r-ctl);padding:8px 12px;margin-bottom:12px}
+.wallbar .lbl{font-size:12px;font-weight:700;color:var(--ink-3)}
+.wallbar .toggle{display:inline-flex;border:.5px solid var(--line-strong);border-radius:999px;overflow:hidden;margin-left:auto}
+.wallbar .toggle button{font-size:12px;font-weight:700;padding:5px 12px;border:none;background:var(--surface);color:var(--ink-muted);cursor:pointer}
+.wallbar .toggle button.on{background:var(--maroon);color:#fff}
+.partnerview{border:.5px dashed var(--maroon-tint-2);background:var(--maroon-tint);border-radius:var(--r-card);
+  padding:14px 16px;margin-bottom:14px}
+.partnerview .pvh{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;text-transform:uppercase;
+  letter-spacing:.05em;color:var(--maroon);margin-bottom:10px}
+.partnerview .pvh .badge{font-size:10px;background:#fff;border:.5px solid var(--maroon-tint-2);border-radius:999px;padding:1px 7px}
+.pv-steps{display:flex;flex-wrap:wrap;gap:6px}
+.pv-step{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--ink-muted);
+  background:#fff;border:.5px solid var(--line);border-radius:999px;padding:3px 10px}
+.pv-step.done{color:var(--green);border-color:transparent;background:var(--green-bg)}
+.pv-step.cur{color:#fff;background:var(--maroon);border-color:var(--maroon)}
+.internalonly{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;text-transform:uppercase;
+  letter-spacing:.04em;color:var(--violet);background:var(--violet-bg);border-radius:4px;padding:1px 6px;margin-left:6px}
+
+/* internal note composer */
+.notebox{display:flex;gap:8px;margin:10px 0}
+.notebox textarea{flex:1;border:.5px solid var(--line-strong);border-radius:7px;padding:8px 10px;font-size:13px;
+  font-family:inherit;min-height:38px;resize:vertical}
+.notebox textarea:focus{outline:none;border-color:var(--maroon)}
+
+/* ---- status flow picker (F03) ---- */
+.flowpick{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.flowpick .fstep{font-size:12px;font-weight:700;border:.5px solid var(--line-strong);border-radius:999px;
+  padding:5px 12px;cursor:pointer;background:var(--surface);color:var(--ink-3)}
+.flowpick .fstep:hover{background:var(--surface-2)}
+.flowpick .fstep.sel{background:var(--maroon);color:#fff;border-color:var(--maroon)}
+.flowpick .fstep.past{color:var(--green);border-color:transparent;background:var(--green-bg)}
+
+/* ---- slot grid (H01) ---- */
+.slotgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.slotcard{border:.5px solid var(--line);border-radius:var(--r-card);background:var(--surface);padding:12px 13px}
+.slotcard.booked{background:var(--surface-2);opacity:.85}
+.slotcard .sd{font-size:13px;font-weight:800}
+.slotcard .st{font-size:12px;color:var(--ink-muted);margin-top:2px}
+.slotcard .sf{margin-top:8px;display:flex;align-items:center;gap:8px}
+
+/* ---- meeting / consultation cards ---- */
+.reqcard{border:.5px solid var(--line);border-radius:var(--r-card);background:var(--surface);padding:13px 15px;margin-bottom:10px}
+.reqcard .rh{display:flex;align-items:center;gap:10px}
+.reqcard .rh .who{font-size:14px;font-weight:800}
+.reqcard .rh .st{margin-left:auto}
+.reqcard .rmeta{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--ink-muted);margin-top:8px}
+.reqcard .rmeta b{color:var(--ink-2)}
+.reqcard .racts{display:flex;gap:8px;margin-top:12px}
+.linkchip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--blue);
+  background:var(--blue-bg);border-radius:6px;padding:3px 9px;text-decoration:none}
+
+/* ---- commission-record stub (Part 6 preview) ---- */
+.part6note{display:flex;gap:8px;align-items:flex-start;background:var(--amber-bg);border:.5px solid #e7d3a8;
+  border-radius:8px;padding:10px 12px;font-size:12.5px;color:var(--amber);line-height:1.5;margin-bottom:14px}
+
+@media (max-width:1120px){ .slotgrid{grid-template-columns:repeat(2,1fr)} }

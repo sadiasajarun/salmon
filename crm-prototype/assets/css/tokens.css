@@ -1,0 +1,77 @@
+/* ============================================================================
+ * Salmon CRM — design tokens (DENSER than the mobile app; console territory)
+ * Brand shared with mobile: Light Maroon #800020, Deep Charcoal #222222.
+ * Everything else is a warm-neutral scale. Maroon = action/active/brand only.
+ * ==========================================================================*/
+:root{
+  /* brand */
+  --maroon:#800020; --maroon-600:#6b001b; --maroon-700:#59001a;
+  --maroon-tint:#f6ecef;      /* active-nav / hero-tint fill */
+  --maroon-tint-2:#efd9e0;
+
+  /* ink / neutrals (warm) */
+  --ink:#222222; --ink-2:#3a3733; --ink-3:#5f5851; --ink-muted:#8a8178; --ink-faint:#a9a097;
+  --canvas:#f6f4f1;           /* app background */
+  --surface:#ffffff;          /* cards, tables, panels */
+  --surface-2:#faf8f5;        /* recessed / striped */
+  --line:#e6e0d8;             /* 0.5px structural borders */
+  --line-2:#efeae2;           /* lighter inner rules */
+  --line-strong:#d8d1c7;
+
+  /* status (colour = state, never decoration) */
+  --green:#2f7d54; --green-bg:#e8f2ec;
+  --amber:#96701f; --amber-bg:#f7efdc;
+  --red:#a5342f;   --red-bg:#f7e7e5;
+  --blue:#2b5f9e;  --blue-bg:#e6eef7;
+  --grey:#6a6259;  --grey-bg:#eeeae4;
+  --violet:#6a4a8a;--violet-bg:#efe7f5;
+
+  /* type scale (dense) */
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace;
+  --fs-11:11px; --fs-12:12px; --fs-13:13px; --fs-14:14px; --fs-16:16px; --fs-20:20px; --fs-26:26px;
+
+  /* spacing scale (4/8/12/16/20/24) */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px;
+
+  /* radius (restrained) */
+  --r-ctl:7px; --r-card:10px; --r-pill:999px;
+
+  /* structure */
+  --topbar-h:56px; --sidebar-w:240px; --sidebar-collapsed:64px; --row-h:40px;
+  --shadow-pop:0 8px 28px rgba(34,17,10,.16);
+  --shadow-modal:0 24px 60px rgba(34,17,10,.28);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font);font-size:var(--fs-13);color:var(--ink);background:var(--canvas);
+  -webkit-font-smoothing:antialiased;line-height:1.45}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit}
+::selection{background:var(--maroon-tint)}
+
+/* buttons — one accent (maroon) for the primary action per screen */
+.btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:var(--r-ctl);
+  border:.5px solid var(--line-strong);background:var(--surface);color:var(--ink);font-size:var(--fs-13);
+  font-weight:600;cursor:pointer;white-space:nowrap;transition:background .12s,border-color .12s}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--maroon);border-color:var(--maroon);color:#fff}
+.btn.primary:hover{background:var(--maroon-600)}
+.btn.danger{color:var(--red);border-color:#e6c9c6}
+.btn.danger:hover{background:var(--red-bg)}
+.btn.sm{height:28px;padding:0 9px;font-size:var(--fs-12)}
+.btn.icon{width:32px;padding:0;justify-content:center}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.ghost:hover{background:var(--surface-2)}
+
+/* small utilities */
+.muted{color:var(--ink-muted)}
+.mono{font-family:var(--mono)}
+.num{font-variant-numeric:tabular-nums}
+.hstack{display:flex;align-items:center;gap:var(--s2)}
+.spacer{flex:1}
+.hidden{display:none !important}
+kbd{font-family:var(--mono);font-size:11px;background:var(--surface-2);border:.5px solid var(--line-strong);
+  border-bottom-width:1.5px;border-radius:5px;padding:1px 5px;color:var(--ink-3)}

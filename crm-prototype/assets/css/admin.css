@@ -1,0 +1,100 @@
+/* ============================================================================
+ * Salmon CRM — Hardening / admin styles (Part 8)
+ * Additions only. Reuses components.css + people.css. Adds: the "evidence-grade"
+ * audit log, config panels, gateway×country matrix, serious warning banners,
+ * notification-template preview + sensitive-variable warning.
+ * ========================================================================== */
+
+/* Part-8 sub-nav (Audit · Users · Config · Templates) */
+.admnav{display:flex;align-items:center;gap:2px;margin:-4px 0 14px;border-bottom:.5px solid var(--line)}
+.admnav a{display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px;font-size:var(--fs-13);
+  font-weight:600;color:var(--ink-muted);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer}
+.admnav a:hover{color:var(--ink)}
+.admnav a.on{color:var(--maroon);border-bottom-color:var(--maroon)}
+
+/* serious warning banner (audit view-is-logged, high-consequence config) */
+.gravebanner{display:flex;gap:10px;align-items:flex-start;background:#2b2621;color:#f0e9df;border-radius:var(--r-card);
+  padding:12px 15px;margin-bottom:14px;font-size:12.5px;line-height:1.5}
+.gravebanner .ic{color:#c9a35a;font-size:15px;flex:0 0 auto}
+.gravebanner b{color:#fff}
+.warnbanner{display:flex;gap:10px;align-items:flex-start;background:var(--red-bg);border:.5px solid #e6c9c6;color:var(--red);
+  border-radius:var(--r-card);padding:12px 15px;margin-bottom:14px;font-size:12.5px;line-height:1.5}
+
+/* evidence-grade audit table — restrained, monospace timestamps */
+.auditwrap .tablewrap{border-color:var(--line-strong)}
+.auditwrap .dt tbody td{font-size:12.5px}
+.auditwrap .dt .ts{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);white-space:nowrap}
+.auditwrap .dt .act{font-weight:700;color:var(--ink)}
+.auditwrap .dt tbody tr:hover{background:#fbf9f5}
+.audsearch{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.audsearch input{flex:1;max-width:360px;height:32px;border:.5px solid var(--line-strong);border-radius:7px;padding:0 11px;font-size:13px}
+.audsearch input:focus{outline:none;border-color:var(--maroon)}
+
+/* audit diff (S02) */
+.diffbox{border:.5px solid var(--line);border-radius:var(--r-card);overflow:hidden}
+.diffrow{display:grid;grid-template-columns:140px 1fr 1fr;font-size:12.5px;border-bottom:.5px solid var(--line-2)}
+.diffrow:last-child{border-bottom:none}
+.diffrow > div{padding:9px 12px}
+.diffrow .k{font-weight:700;color:var(--ink-3);background:var(--surface-2)}
+.diffrow .old{color:var(--red);font-family:var(--mono);font-size:11.5px}
+.diffrow .new{color:var(--green);font-family:var(--mono);font-size:11.5px}
+.diffrow .arrowcol{text-align:center;color:var(--maroon)}
+
+/* config home panels */
+.confgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.confcard{border:.5px solid var(--line);border-radius:var(--r-card);background:var(--surface);padding:14px 16px;cursor:pointer;transition:border-color .12s}
+.confcard:hover{border-color:var(--maroon)}
+.confcard .ct{font-size:14px;font-weight:800}
+.confcard .cd{font-size:12px;color:var(--ink-muted);margin-top:4px;line-height:1.45;min-height:34px}
+.confcard .cv{font-size:12px;color:var(--ink-3);margin-top:8px;font-weight:600}
+
+/* gateway × country matrix (U02) */
+.gwmatrix{width:100%;border-collapse:collapse;font-size:13px;background:var(--surface);border:.5px solid var(--line);border-radius:var(--r-card);overflow:hidden}
+.gwmatrix th,.gwmatrix td{padding:10px 12px;border-bottom:.5px solid var(--line-2);text-align:center}
+.gwmatrix thead th{background:var(--surface-2);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-muted)}
+.gwmatrix td.gw{text-align:left;font-weight:700}
+.gwmatrix td.gw .mode{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;border-radius:4px;padding:1px 6px;margin-left:8px}
+.gwmatrix td.gw .mode.test{color:var(--amber);background:var(--amber-bg)}
+.gwmatrix td.gw .mode.live{color:var(--green);background:var(--green-bg)}
+.gwtoggle{width:38px;height:22px;border-radius:999px;border:none;cursor:pointer;position:relative;background:var(--line-strong);transition:background .15s}
+.gwtoggle.on{background:var(--green)}
+.gwtoggle::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .15s}
+.gwtoggle.on::after{left:18px}
+
+/* key-value config editors */
+.cfgrow{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:.5px solid var(--line-2)}
+.cfgrow:last-child{border-bottom:none}
+.cfgrow .cl{width:220px;font-size:13px;font-weight:600;color:var(--ink-3)}
+.cfgrow .cval{font-weight:700;font-variant-numeric:tabular-nums}
+.cfgrow .btn{margin-left:auto}
+
+/* feature flags */
+.flagrow{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:.5px solid var(--line-2)}
+.flagrow:last-child{border-bottom:none}
+.flagrow .fn{font-weight:700;text-transform:capitalize}
+.flagrow .gwtoggle{margin-left:auto}
+
+/* min app version — huge consequence, small screen */
+.versionbox{border:1.5px solid var(--maroon-tint-2);border-radius:var(--r-card);background:var(--maroon-tint);padding:20px 22px;text-align:center;max-width:420px}
+.versionbox .cur{font-family:var(--mono);font-size:40px;font-weight:800;color:var(--maroon)}
+.versionbox .lb{font-size:12px;color:var(--maroon-700);margin-top:2px}
+
+/* notification template editor + preview */
+.tpledit{display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start}
+.langtabs{display:flex;gap:2px;border-bottom:.5px solid var(--line);margin-bottom:10px}
+.langtabs button{height:32px;padding:0 14px;font-size:12.5px;font-weight:700;border:none;background:none;color:var(--ink-muted);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer}
+.langtabs button.on{color:var(--maroon);border-bottom-color:var(--maroon)}
+.varchips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.varchip{font-family:var(--mono);font-size:11px;background:var(--surface-2);border:.5px solid var(--line);border-radius:6px;padding:2px 7px;color:var(--ink-3)}
+.varchip.bad{color:var(--red);background:var(--red-bg);border-color:#e6c9c6}
+.sensitiveblock{background:var(--red-bg);border:.5px solid #e6c9c6;border-radius:8px;padding:10px 12px;font-size:12.5px;color:var(--red);line-height:1.5;margin:8px 0}
+/* phone lock-screen preview */
+.lockprev{border-radius:16px;background:linear-gradient(160deg,#3a332c,#241f1b);padding:18px 14px;color:#fff}
+.lockprev .os{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#c9c0b5;margin-bottom:10px;text-align:center}
+.lockprev .notif{background:rgba(255,255,255,.14);backdrop-filter:blur(6px);border-radius:12px;padding:11px 12px}
+.lockprev .notif .nh{display:flex;align-items:center;gap:7px;font-size:11px;color:#e6ddd0;margin-bottom:5px}
+.lockprev .notif .nh .app{width:16px;height:16px;border-radius:4px;background:var(--maroon);display:grid;place-items:center;font-size:9px;font-weight:800}
+.lockprev .notif .t{font-size:13px;font-weight:800}
+.lockprev .notif .b{font-size:12px;color:#e6ddd0;margin-top:2px;line-height:1.4}
+
+@media (max-width:1120px){ .confgrid{grid-template-columns:1fr 1fr} .tpledit{grid-template-columns:1fr} }
