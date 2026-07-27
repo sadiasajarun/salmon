@@ -23,14 +23,27 @@ function loadSeed() {
   return JSON.parse(fs.readFileSync(SEED_PATH, 'utf8'));
 }
 function loadData() {
-  if (!fs.existsSync(DATA_PATH)) {
-    fs.writeFileSync(DATA_PATH, JSON.stringify(loadSeed(), null, 2));
+  try {
+    if (!fs.existsSync(DATA_PATH)) {
+      fs.writeFileSync(DATA_PATH, JSON.stringify(loadSeed(), null, 2));
+    }
+    return JSON.parse(fs.readFileSync(DATA_PATH, 'utf8'));
+  } catch (e) {
+    // read-only / ephemeral FS (e.g. Render): run fully in-memory from the seed
+    console.error('[loadData] using in-memory seed (no persistence):', e && e.message);
+    return loadSeed();
   }
-  return JSON.parse(fs.readFileSync(DATA_PATH, 'utf8'));
 }
 function save() {
-  fs.writeFileSync(DATA_PATH, JSON.stringify(db, null, 2));
+  // ephemeral hosts (e.g. Render) can have a read-only/transient FS — never let a
+  // failed persist crash the server; the store just falls back to in-memory + seed.
+  try { fs.writeFileSync(DATA_PATH, JSON.stringify(db, null, 2)); }
+  catch (e) { console.error('[save] could not persist data.json:', e && e.message); }
 }
+
+// A background timer or bad request must NEVER take the whole server down.
+process.on('uncaughtException', (e) => console.error('[uncaughtException]', (e && e.stack) || e));
+process.on('unhandledRejection', (e) => console.error('[unhandledRejection]', (e && e.stack) || e));
 
 let db = loadData();
 
@@ -2751,7 +2764,7 @@ app.post('/api/targets', (req, res) => {
 // ---------------------------------------------------------------------------
 // Overdue sweeper — a task past its due date auto-flips to Overdue, no actor.
 // ---------------------------------------------------------------------------
-setInterval(() => {
+setInterval(() => { try {
   const now = Date.now();
   let changed = false;
   (db.tasks || []).forEach((t) => {
@@ -2765,7 +2778,7 @@ setInterval(() => {
     }
   });
   if (changed) save();
-}, 5000);
+} catch (e) { console.error('[task-sweeper]', e && e.message); } }, 5000);
 
 // ---------------------------------------------------------------------------
 // SSE endpoint — the live connection.
@@ -2794,7 +2807,7 @@ app.get('/api/events', (req, res) => {
 // Lock-expiry sweeper — the countdown is REAL. If a locked booking is neither
 // confirmed nor superseded before its window closes, release it honestly.
 // ---------------------------------------------------------------------------
-setInterval(() => {
+setInterval(() => { try {
   const now = Date.now();
   let changed = false;
   db.bookings.forEach((b) => {
@@ -2817,7 +2830,7 @@ setInterval(() => {
     }
   });
   if (changed) save();
-}, 1000);
+} catch (e) { console.error('[lock-sweeper]', e && e.message); } }, 1000);
 
 // ---------------------------------------------------------------------------
 // Static frontends
