@@ -36,7 +36,9 @@
     D01:'D01-territory-tree.html', D02:'D02-territory-detail.html', D03:'D03-teams-list.html',
     D04:'D04-team-detail.html', D05:'D05-assign-team-lead.html', D06:'D06-move-partner.html',
     D07:'D07-referral-codes.html',
-    R01:'R01-rank-management.html', R02:'R02-assign-rank.html', R03:'R03-rank-history.html'
+    R01:'R01-rank-management.html', R02:'R02-assign-rank.html', R03:'R03-rank-history.html',
+    // Req 6.8 additions
+    TT03:'TT03-create-territory.html', TM03:'TM03-create-team.html', TR02:'TR02-relationship-view.html'
   };
   function href(id, params){
     var f = FILES[id]; if (!f) return '#';
@@ -185,7 +187,7 @@
     var items = [
       { sec:'B', label:'Partners',  home:'B01', n: People.allPartners().filter(function(p){return p.status!=='rejected';}).length },
       { sec:'C', label:'Clients',   home:'C01', n: People.allClients().length },
-      { sec:'D', label:'Teams & Territories', home:'D01', n: People.teams.length },
+      { sec:'D', label:'Teams & Territories', home:'D01', n: People.allTeams().length },
       { sec:'R', label:'Ranks',     home:'R01', n: People.ranks.length }
     ];
     return '<div class="submodnav">'+items.map(function(it){
@@ -397,13 +399,117 @@
       if (!v) return;
       Perm.requirePermission(state.role, cfg.perm);
       var patch = {}, oldVal = cfg.cur;
-      if (kind==='territory'){ /* store display only in prototype */ patch.territoryDisplay = v.val; }
+      if (kind==='territory'){ patch.territoryPath = v.val.split(' › '); }
       else if (kind==='team'){ patch.team = v.val; }
       else if (kind==='rank'){ patch.rank = v.val; }
       else if (kind==='program'){ patch.programs = v.val.split(' + '); }
       Ripples.mutate('ptr:'+p.id, patch);
       Audit.audit({ actor:actor(), action:'ASSIGN_'+kind.toUpperCase(), target:p.id+' · '+p.name, changes:{ from:oldVal, to:v.val, note:v.note||null } });
       C.toast({ type:'success', title:cfg.title.replace('Change','Changed'), text:p.name+': '+oldVal+' → '+v.val });
+      after && after();
+    });
+  }
+
+  /* ===================== Program participation (Req 6.3.3) =====================
+   * Per-program status (active / suspended / closed / notEnrolled), DISTINCT from
+   * the partner's account status. Activate / Suspend / Close each go through a
+   * ConfirmDialog (+ required reason), emit Audit.audit(old→new) and Ripples.emit()
+   * to the phone (P19). Suspend and close RETAIN the record — nothing is deleted.
+   * activate-with is Super-Admin-only (the 6.1 eligibility approval). */
+  var PROGRAM_LABELS = { zero:'Zero Investment', with:'With Investment' };
+  function canManagePart(){ return Perm.can(state.role, 'MANAGE_PROGRAM_PARTICIPATION'); }
+  function canActivateWithInv(){ return Perm.can(state.role, 'ACTIVATE_WITH_INVESTMENT'); }
+  // Derive per-program participation from p.participation, else from legacy programs[].
+  function participationOf(p){
+    if (p.participation) return p.participation;
+    var progs = (p.programs||[]).map(function(s){ return String(s).toLowerCase(); }).join(' ');
+    function mk(active){ return { status: active?'active':'notEnrolled', enrolledUtc: active?(p.joinedUtc||null):null, reason:null, reasonUtc:null, requestedUtc:null }; }
+    return { zero: mk(progs.indexOf('zero')>=0), with: mk(progs.indexOf('with')>=0) };
+  }
+  function partStatusChip(st, requested){
+    var map = { active:['green','Active'], suspended:['amber','Suspended'], closed:['grey','Closed'] };
+    if (map[st]) return '<span class="chip '+map[st][0]+'"><span class="d"></span>'+map[st][1]+'</span>';
+    if (requested) return '<span class="chip amber"><span class="d"></span>Activation requested</span>';
+    return '<span class="chip grey"><span class="d"></span>Not enrolled</span>';
+  }
+  function participationCard(p){
+    var part = participationOf(p);
+    var rows = ['zero','with'].map(function(key){
+      var d = part[key] || { status:'notEnrolled' };
+      var st = d.status;
+      var requested = key==='with' && st==='notEnrolled' && d.requestedUtc;
+      var meta = st==='active' ? ('Enrolled '+(d.enrolledUtc?esc(fmt.dhaka(d.enrolledUtc)):'—'))
+        : requested ? 'Activation requested'
+        : st==='suspended' ? ('Suspended'+(d.reasonUtc?' '+esc(fmt.dhaka(d.reasonUtc)):''))
+        : st==='closed' ? ('Closed'+(d.reasonUtc?' '+esc(fmt.dhaka(d.reasonUtc)):''))
+        : 'Not enrolled';
+      var reason = (st==='suspended'||st==='closed') && d.reason ? '<div class="effectbox" style="margin-top:6px">Reason: '+esc(d.reason)+'</div>' : '';
+      var btns = [];
+      var mayManage = canManagePart();
+      if ((st==='notEnrolled'||st==='suspended') && mayManage){
+        var mayAct = key==='with' ? canActivateWithInv() : true;
+        if (mayAct) btns.push('<button class="btn sm primary" data-pp="activate" data-key="'+key+'">'+(requested?'Approve & activate':(st==='suspended'?'Resume':'Activate'))+'</button>');
+        else btns.push('<span class="hint">Super Admin approval required to activate With Investment</span>');
+      }
+      if (st==='active' && mayManage){
+        btns.push('<button class="btn sm" data-pp="suspend" data-key="'+key+'">Suspend</button>');
+        btns.push('<button class="btn sm danger" data-pp="close" data-key="'+key+'">Close</button>');
+      }
+      if (st==='suspended' && mayManage){
+        btns.push('<button class="btn sm danger" data-pp="close" data-key="'+key+'">Close</button>');
+      }
+      if (st==='closed') btns.push('<span class="hint">Closed — record retained, cannot be re-activated.</span>');
+      return '<div class="pprow" style="padding:10px 0;border-top:1px solid var(--line,#eee)">'+
+        '<div class="row" style="display:flex;justify-content:space-between;align-items:center;gap:10px">'+
+          '<div><b>'+esc(PROGRAM_LABELS[key])+'</b><div class="hint">'+meta+'</div></div>'+partStatusChip(st, requested)+'</div>'+
+          reason+
+          (btns.length?'<div class="ppacts" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">'+btns.join('')+'</div>':'')+
+        '</div>';
+    }).join('');
+    // wire buttons after mount
+    setTimeout(function(){
+      var host = document.getElementById('participation-card'); if (!host) return;
+      host.querySelectorAll('[data-pp]').forEach(function(b){
+        b.onclick = function(){ programAction(p, b.getAttribute('data-key'), b.getAttribute('data-pp'), function(){ location.reload(); }); };
+      });
+    }, 0);
+    var partW = part.with || { status:'notEnrolled' };
+    var withLink = (partW.status !== 'notEnrolled')
+      ? '<p class="hint" style="margin-top:12px;border-top:1px solid var(--line,#eee);padding-top:10px">With Investment · <a href="B11-investment-records.html">Open the investment record desk (Req 6.6)</a> — confirmed shares & status-only return schedule. Amounts are held for legal sign-off; the higher-tier commission flows through the common ledger (L02).</p>'
+      : '';
+    return '<div class="card" id="participation-card"><h3>Program participation</h3>'+
+      '<p class="hint">Per-program status — separate from the partner’s account status. Suspend and close retain history; nothing is deleted.</p>'+
+      rows+withLink+'</div>';
+  }
+  function programAction(p, key, action, after){
+    var label = PROGRAM_LABELS[key];
+    var perm = (action==='activate' && key==='with') ? 'ACTIVATE_WITH_INVESTMENT' : 'MANAGE_PROGRAM_PARTICIPATION';
+    if (!Perm.can(state.role, perm)){ C.toast({ type:'warning', title:'Not permitted', text:'Your role cannot '+action+' '+label+' participation.' }); return; }
+    var needReason = action==='suspend' || action==='close';
+    var titles = { activate:'Activate participation', suspend:'Suspend participation', close:'Close participation' };
+    var intros = {
+      activate:'Activate <b>'+esc(p.name)+'</b> in <b>'+esc(label)+'</b>.'+(key==='with'?' This is the 6.1 eligibility approval.':'')+' The partner’s P19 shows it active.',
+      suspend:'Pause <b>'+esc(p.name)+'</b>’s <b>'+esc(label)+'</b> participation. Retained and reversible. The reason is shown on their phone.',
+      close:'End <b>'+esc(p.name)+'</b>’s <b>'+esc(label)+'</b> participation. Terminal, but the record and history are <b>retained</b> — nothing is deleted.'
+    };
+    formDialog({
+      title:titles[action], width:480, danger:action==='close',
+      intro:'<p class="hint" style="margin-bottom:10px">'+intros[action]+'</p>',
+      fields: needReason ? [{ type:'textarea', key:'reason', label:'Reason', required:true, placeholder:action==='close'?'e.g. Partner left the program':'e.g. Compliance review', hint:'Shown to the partner verbatim.' }] : [],
+      mobileNote:'On confirm, this partner’s <b>P19</b> reflects the new status'+(needReason?' with the reason':'')+'.',
+      confirmLabel: titles[action]
+    }).then(function(v){
+      if (!v) return;
+      var part = participationOf(p);
+      var d = part[key] || (part[key] = { status:'notEnrolled' });
+      var from = d.status;
+      if (action==='activate'){ if (from==='closed'){ C.toast({ type:'warning', title:'Cannot activate', text:'A closed participation record cannot be re-activated.' }); return; } d.status='active'; if (!d.enrolledUtc) d.enrolledUtc=root.CRM_NOW; d.requestedUtc=null; }
+      else if (action==='suspend'){ d.status='suspended'; d.reason=v.reason; d.reasonUtc=root.CRM_NOW; }
+      else { d.status='closed'; d.reason=v.reason; d.reasonUtc=root.CRM_NOW; }
+      Ripples.mutate('ptr:'+p.id, { participation: part });
+      Audit.audit({ actor:actor(), action:'PROGRAM_'+action.toUpperCase(), target:p.id+' · '+p.name+' · '+label, changes:{ from:from, to:d.status, reason:v.reason||null } });
+      Ripples.emit({ mobileId:p.mobileId||p.id, kind:'partner', status:d.status, screen:'P19 · Enrolment', name:p.name, reason:v.reason||null, headline:label+' '+d.status+' for '+p.name+' — P19 updated' });
+      C.toast({ type:action==='activate'?'success':'warning', persist:true, title:label+' '+d.status, text:action==='close'?'Retained in history — nothing deleted.':'Partner’s P19 updated.', ripple:'P19 '+d.status });
       after && after();
     });
   }
@@ -446,7 +552,7 @@
     }).then(function(v){
       if (!v) return;
       Perm.requirePermission(state.role, 'MOVE_PARTNER');
-      Ripples.mutate('ptr:'+p.id, { team:v.team, territoryDisplay:v.territory });
+      Ripples.mutate('ptr:'+p.id, { team:v.team, territoryPath:v.territory.split(' › ') });
       Audit.audit({ actor:actor(), action:'MOVE_PARTNER', target:p.id+' · '+p.name, changes:{ team:v.team, territory:v.territory, inFlightLeads:v.leads } });
       C.toast({ type:'success', title:'Partner moved', text:p.name+' → '+People.teamName(v.team)+(v.leads==='log'?' · lead rule logged as open question':'') });
       after && after();
@@ -465,9 +571,16 @@
       confirmLabel:'Generate code'
     }).then(function(v){
       if (!v) return;
+      if (!v.team){ C.toast({ type:'warning', title:'Team required', text:'A referral code must bind to a team (and its territory).' }); return; }
+      var code = v.code.trim().toUpperCase();
+      if (People.allReferralCodes().some(function(c){ return c.code.toUpperCase()===code; })){
+        C.toast({ type:'warning', title:'Code already exists', text:code+' is already in use — pick a different code.' }); return;
+      }
       Perm.requirePermission(state.role, 'GENERATE_REFERRAL');
-      Audit.audit({ actor:actor(), action:'GENERATE_REFERRAL', target:v.code, changes:{ team:v.team } });
-      C.toast({ type:'success', title:'Referral code created', text:v.code+' → '+People.teamName(v.team) });
+      var team = People.teamById(v.team);
+      Ripples.mutate('ref:'+code, { code:code, team:v.team, territory:team?team.territory:'', active:true, uses:0, createdUtc:root.CRM_NOW });
+      Audit.audit({ actor:actor(), action:'GENERATE_REFERRAL', target:code, changes:{ team:v.team } });
+      C.toast({ type:'success', persist:true, title:'Referral code created', text:code+' → '+People.teamName(v.team) });
       after && after();
     });
   }
@@ -480,7 +593,7 @@
     if (currentPath){ var cs=People.pathStr(currentPath); if (opts.indexOf(cs)<0) opts.unshift(cs); }
     return opts.sort();
   }
-  function teamOptions(){ return [{value:'',label:'— No team —'}].concat(People.teams.map(function(t){ return { value:t.id, label:t.name+' · '+t.territory }; })); }
+  function teamOptions(){ return [{value:'',label:'— No team —'}].concat(People.allTeams().map(function(t){ return { value:t.id, label:t.name+' · '+t.territory }; })); }
 
   /* ===================== reusable profile pieces ===================== */
   function partnerBand(p){
@@ -490,7 +603,7 @@
     var statusLabel = { approved:'Active', suspended:'Suspended', rejected:'Rejected', pending:'Pending' }[st] || st;
     var statusCls = { approved:'green', suspended:'red', rejected:'red', pending:'amber' }[st] || 'grey';
     var days = p.joinedUtc ? Math.round((new Date(root.CRM_NOW)-new Date(p.joinedUtc))/86400000) : null;
-    var terr = p.territoryDisplay || People.pathStr(p.territoryPath);
+    var terr = People.pathStr(p.territoryPath);
     return '<div class="profband"><div class="top">'+
       '<div class="photo">'+esc(initials(p.name))+'</div>'+
       '<div class="who"><h1>'+esc(p.name)+(p.teamLead?' <span class="pill">★ Team lead</span>':'')+'</h1>'+
@@ -549,7 +662,19 @@
   }
   function timeline(items){ return C.el(timelineHtml(items)); }
   function initials(name){ return name.split(' ').map(function(w){return w[0];}).slice(0,2).join('').toUpperCase(); }
+  function uniq(a){ var o=[]; a.forEach(function(x){ if(x&&o.indexOf(x)<0)o.push(x); }); return o; }
   function kycChip(status){ var m={ pending:['amber','KYC pending'], verified:['green','Verified'], rejected:['red','Rejected'], notSubmitted:['grey','Not submitted'] }[status] || ['grey', status]; return '<span class="chip '+m[0]+'"><span class="d"></span>'+m[1]+'</span>'; }
+  // Req 6.1.3 — the four registration consents, versioned + timestamped, so an auditor
+  // can confirm what was agreed and when. Shown on the profile and application detail.
+  function consentCard(p){
+    var cs = People.consentsFor(p.appId || p.id) || [];
+    var rows = cs.map(function(c){
+      return '<div class="railstat"><span class="l" style="max-width:60%">'+esc(c.label)+'</span>'+
+             '<span class="v" style="font-size:11px;font-weight:700;color:var(--green)">✓ '+esc(fmt.dhaka(c.acceptedAt,true))+' · v'+esc(c.version)+'</span></div>';
+    }).join('');
+    return '<div class="card"><h3>Registration consents <span class="pill">'+cs.length+' accepted</span></h3>'+
+      '<p class="hint" style="margin-bottom:8px">The umbrella acceptances captured at registration (Req 6.1.3) — each versioned + timestamped. The <b>data-handling undertaking</b> is the standing permission for customer information submitted later, distinct from the per-lead consent.</p>'+rows+'</div>';
+  }
 
   function auditNote(actorName, whenUtc, pid){
     var n = C.el(C.AuditNote({ actor:actorName||'—', when:whenUtc||root.CRM_NOW }));
@@ -697,7 +822,7 @@
           columns:[
             { key:'id', label:'Partner ID', render:function(r){ return '<span class="mono" style="font-size:12px">'+esc(r.id)+'</span>'; } },
             { key:'name', label:'Name', strong:true, sortable:true },
-            { key:'territory', label:'Territory', sortValue:function(r){return People.pathStr(r.territoryPath);}, render:function(r){ return esc(r.territoryDisplay||People.pathStr(r.territoryPath)); } },
+            { key:'territory', label:'Territory', sortValue:function(r){return People.pathStr(r.territoryPath);}, render:function(r){ return esc(People.pathStr(r.territoryPath)); } },
             { key:'rank', label:'Rank', sortable:true, render:function(r){ return '<span class="pill rank-'+r.rank+'">'+esc(r.rank)+'</span>'; } },
             { key:'program', label:'Program', render:function(r){ return esc((r.programs||[]).join(', ')); } },
             { key:'status', label:'Status', render:function(r){ var m={approved:['green','Active'],suspended:['red','Suspended']}[r.status]||['grey',r.status]; return '<span class="chip '+m[0]+'"><span class="d"></span>'+m[1]+'</span>'; } },
@@ -742,12 +867,15 @@
       } else {
         tb.innerHTML =
           '<div class="card"><h3>Contact</h3><dl class="kv"><dt>Phone</dt><dd>'+esc(p.phone||'—')+'</dd><dt>Email</dt><dd>'+esc(p.email||'—')+'</dd></dl></div>'+
-          '<div class="card"><h3>Membership</h3><dl class="kv"><dt>Territory</dt><dd>'+esc(p.territoryDisplay||People.pathStr(p.territoryPath))+'</dd><dt>Team</dt><dd>'+esc(People.teamName(p.team))+(p.teamLead?' · <b>team lead</b>':'')+'</dd><dt>Rank</dt><dd><span class="pill rank-'+(p.rank||'Silver')+'">'+esc(p.rank||'—')+'</span> <span class="linkrow" id="rank-hist">rank history</span></dd><dt>Program</dt><dd>'+esc((p.programs||[]).join(', '))+'</dd></dl></div>'+
+          '<div class="card"><h3>Membership</h3><dl class="kv"><dt>Territory</dt><dd>'+esc(People.pathStr(p.territoryPath))+'</dd><dt>Team</dt><dd>'+esc(People.teamName(p.team))+(p.teamLead?' · <b>team lead</b>':'')+'</dd><dt>Rank</dt><dd><span class="pill rank-'+(p.rank||'Silver')+'">'+esc(p.rank||'—')+'</span> <span class="linkrow" id="rank-hist">rank history</span> · <span class="linkrow" id="rel-view">relationship chain</span></dd><dt>Active program(s)</dt><dd>'+esc((p.programs||[]).join(', ')||'—')+'</dd></dl></div>'+
+          participationCard(p)+
+          consentCard(p)+
           (p.status==='suspended'&&p.suspension?'<div class="card" style="border-color:#e6c9c6"><h3>Suspension</h3><dl class="kv"><dt>Reason</dt><dd>'+esc(p.suspension.reason)+'</dd><dt>Effective</dt><dd>'+esc(fmt.dhaka(p.suspension.effectiveUtc))+'</dd><dt>Mobile access</dt><dd>'+(p.suspension.blocksApp?'Blocked (P09)':'New leads blocked')+'</dd></dl></div>':'')+
           (p.status==='rejected'?'<div class="card" style="border-color:#e6c9c6"><h3>Rejection</h3><p class="hint">This reason is shown on the applicant’s mobile P08 screen:</p><div class="effectbox" style="margin-top:8px">'+esc(p.rejectionReason||'—')+'</div></div>':'')+
           '<div class="card"><h3>Recent activity</h3></div>';
         var rc = tb.querySelectorAll('.card'); rc[rc.length-1].appendChild(timeline(People.activityFor(p.id).slice(0,4)));
         var rh = tb.querySelector('#rank-hist'); if (rh) rh.onclick=function(){ go('R03',{id:p.id}); };
+        var rv = tb.querySelector('#rel-view'); if (rv) rv.onclick=function(){ go('TR02',{id:p.id}); };
       }
       tb.appendChild(auditNote(actor().name, root.CRM_NOW, p.id));
     }
@@ -1059,17 +1187,31 @@
   /* ---------- D01 · Territory tree ---------- */
   SCREENS.D01 = { section:'D', title:'Territory tree', sub:'Division › District › Upazila › Union', perm:'VIEW_PEOPLE',
     render:function(main){
-      main.innerHTML = header(this);
+      main.innerHTML = C.PageHeader({ title:this.title, sub:this.sub, actions:[{ id:'add', label:'Add node', icon:'＋' }] });
+      main.insertAdjacentHTML('afterbegin', submodnav('D'));
+      var ab=main.querySelector('[data-act="add"]'); if(ab) ab.onclick=function(){ go('TT03'); };
+      main.insertAdjacentHTML('beforeend','<div class="audsearch" style="margin-bottom:10px">🔎 <input id="treeq" placeholder="Search the tree — jump to a division, district, upazila or union…" style="flex:1;max-width:420px;height:32px;border:.5px solid var(--line-strong);border-radius:7px;padding:0 11px;font-size:13px"></div>');
       var wrap=C.el('<div class="treewrap"><div class="tree" id="tree"></div><div id="terrdetail"></div></div>'); main.appendChild(wrap);
       var treeEl=wrap.querySelector('#tree'); var detEl=wrap.querySelector('#terrdetail');
       treeEl.innerHTML = People.territoryTree.map(function(n){ return treeNode(n,true); }).join('');
-      function selectNode(name){ showTerr(detEl, name); treeEl.querySelectorAll('.row').forEach(function(r){ r.classList.toggle('sel', r.getAttribute('data-name')===name); }); }
-      treeEl.querySelectorAll('.tnode').forEach(function(node){
+      function wireRows(){ treeEl.querySelectorAll('.tnode').forEach(function(node){
         var row=node.querySelector(':scope > .row');
         row.onclick=function(e){ e.stopPropagation(); if (node.querySelector(':scope > .kids')) node.classList.toggle('open'); selectNode(row.getAttribute('data-name')); };
-      });
+      }); }
+      function selectNode(name){ showTerr(detEl, name); treeEl.querySelectorAll('.row').forEach(function(r){ r.classList.toggle('sel', r.getAttribute('data-name')===name); }); }
+      wireRows();
       showTerr(detEl, People.territoryTree[0].name);
       treeEl.querySelector('.row').classList.add('sel');
+      // search: highlight + expand + select the first matching node (navigation-is-the-tree)
+      document.getElementById('treeq').addEventListener('input', function(){
+        var q=this.value.toLowerCase().trim(); var first=null;
+        treeEl.querySelectorAll('.tnode').forEach(function(node){
+          var row=node.querySelector(':scope > .row'); var name=(row.getAttribute('data-name')||'').toLowerCase();
+          var hit=q && name.indexOf(q)>-1; row.classList.toggle('qhit', !!hit);
+          if (hit){ if(!first) first=row; var pn=node.parentNode; while(pn && pn.classList){ if(pn.classList.contains('tnode')) pn.classList.add('open'); pn=pn.parentNode; } }
+        });
+        if (first){ selectNode(first.getAttribute('data-name')); first.scrollIntoView({block:'center'}); }
+      });
     }
   };
   function treeNode(n, open){
@@ -1080,7 +1222,7 @@
   }
   function showTerr(el, name){
     var partners=People.partnersInTerritoryName(name).filter(function(p){return p.status!=='rejected';});
-    var teams=People.teams.filter(function(t){ return t.territory.indexOf(name)>-1; });
+    var teams=People.allTeams().filter(function(t){ return t.territory.indexOf(name)>-1; });
     el.innerHTML='<div class="card"><h3>'+esc(name)+'</h3><p class="hint">Clicking a node filters the roster below. '+partners.length+' active partner'+(partners.length===1?'':'s')+' · '+teams.length+' team'+(teams.length===1?'':'s')+'.</p>'+
       '<div class="gap"></div><a class="linkrow" href="'+href('D02',{name:name})+'">Open full territory detail →</a></div>';
     var tw=C.el('<div></div>'); el.appendChild(tw);
@@ -1097,7 +1239,7 @@
       var name = P.get('name') || 'Cumilla';
       main.innerHTML = header(this);
       var partners=People.partnersInTerritoryName(name).filter(function(p){return p.status!=='rejected';});
-      var teams=People.teams.filter(function(t){ return t.territory.indexOf(name)>-1; });
+      var teams=People.allTeams().filter(function(t){ return t.territory.indexOf(name)>-1; });
       main.insertAdjacentHTML('beforeend', C.metricsRow([
         { label:'Active partners', value:partners.length },
         { label:'Teams', value:teams.length },
@@ -1123,15 +1265,16 @@
   /* ---------- D03 · Teams list ---------- */
   SCREENS.D03 = { section:'D', title:'Teams', perm:'VIEW_PEOPLE',
     render:function(main){
-      main.innerHTML = header(this);
+      main.innerHTML = submodnav('D') + C.PageHeader({ title:this.title, sub:this.sub, actions: Perm.can(state.role,'MANAGE_TEAM')?[{ id:'mk', label:'Create team', cls:'primary', icon:'＋' }]:[] });
+      var mk=main.querySelector('[data-act="mk"]'); if(mk) mk.onclick=function(){ go('TM03'); };
       var tw=C.el('<div></div>'); main.appendChild(tw);
-      C.mountDataTable(tw, { rowId:'id', noun:'teams', defaultSort:'name', rows:People.teams.slice(), columns:[
+      C.mountDataTable(tw, { rowId:'id', noun:'teams', defaultSort:'name', rows:People.allTeams().slice(), columns:[
         { key:'name', label:'Team', strong:true, sortable:true },
         { key:'territory', label:'Territory' },
         { key:'leadId', label:'Team lead', render:function(r){ var l=r.leadId?People.partnerById(r.leadId):null; return l?esc(l.name):'<span class="muted">Unassigned</span>'; } },
         { key:'members', label:'Members', align:'right', render:function(r){ return People.partnersInTeam(r.id).length; } },
         { key:'target', label:'Target', align:'right', render:function(r){ return fmt.bdt(r.targetBdt); } },
-        { key:'ach', label:'Achieved', align:'right', sortable:true, sortValue:function(r){return r.achievedBdt;}, render:function(r){ var pct=Math.round(r.achievedBdt/r.targetBdt*100); return fmt.bdt(r.achievedBdt)+' <span class="sla '+(pct>=100?'ok':pct>=60?'warn':'over')+'">'+pct+'%</span>'; } }
+        { key:'ach', label:'Achieved', align:'right', sortable:true, sortValue:function(r){return r.achievedBdt;}, render:function(r){ if(!r.targetBdt){ return fmt.bdt(r.achievedBdt)+' <span class="sla warn">no target</span>'; } var pct=Math.round(r.achievedBdt/r.targetBdt*100); return fmt.bdt(r.achievedBdt)+' <span class="sla '+(pct>=100?'ok':pct>=60?'warn':'over')+'">'+pct+'%</span>'; } }
       ], onRowClick:function(r){ go('D04',{id:r.id}); } });
     }
   };
@@ -1139,12 +1282,31 @@
   /* ---------- D04 · Team detail ---------- */
   SCREENS.D04 = { section:'D', title:'Team detail', perm:'VIEW_PEOPLE',
     render:function(main, P){
-      var t = P.get('id')?People.teamById(P.get('id')):People.teams[0];
+      var t = P.get('id')?People.teamById(P.get('id')):People.allTeams()[0];
       main.innerHTML = header(this);
       if (!t){ main.insertAdjacentHTML('beforeend', C.EmptyState({ title:'Team not found', actionLabel:'Teams list' })); wireEmpty(main,'D03'); return; }
       var roster=People.partnersInTeam(t.id); var lead=t.leadId?People.partnerById(t.leadId):null;
-      var pct=Math.round(t.achievedBdt/t.targetBdt*100);
-      main.insertAdjacentHTML('beforeend','<div class="profband"><div class="top"><div class="photo">'+esc(initials(t.name))+'</div><div class="who"><h1>'+esc(t.name)+'</h1><div class="pid">'+esc(t.territory)+'</div></div></div><div class="identity"><span>Team lead <b>'+esc(lead?lead.name:'Unassigned')+'</b></span><span>Members <b>'+roster.length+'</b></span><span>Target <b>'+fmt.bdt(t.targetBdt)+'</b></span><span>Achieved <b>'+fmt.bdt(t.achievedBdt)+' ('+pct+'%)</b></span></div><div class="progress" style="margin-top:10px"><i style="width:'+Math.min(100,pct)+'%"></i></div></div>');
+      var hasTarget = !!t.targetBdt;
+      var pct = hasTarget ? Math.round(t.achievedBdt/t.targetBdt*100) : 0;
+      var pctLabel = hasTarget ? (pct+'% of target') : 'No target set';
+      main.insertAdjacentHTML('beforeend','<div class="profband"><div class="top"><div class="photo">'+esc(initials(t.name))+'</div><div class="who"><h1>'+esc(t.name)+'</h1><div class="pid">'+esc(t.territory)+' · lead '+esc(lead?lead.name:'Unassigned')+'</div></div><span class="chip '+(!hasTarget?'grey':pct>=100?'green':pct>=60?'amber':'red')+' statuschip"><span class="d"></span>'+pctLabel+'</span></div><div class="progress" style="margin-top:12px"><i style="width:'+Math.min(100,pct)+'%"></i></div></div>');
+      // Req 6.8.5 — every stat legible: assigned partners · coverage · target vs achievement · sales volume · conversion · active leads
+      var leads30 = roster.reduce(function(a,p){ return a+(p.stats.leads30||0); }, 0);
+      var conv = roster.reduce(function(a,p){ return a+(p.stats.leadsQ||0); }, 0);
+      var coverage = uniq(roster.map(function(p){ return People.pathStr(p.territoryPath); })).length;
+      var convRate = leads30 ? Math.round((t.achievedBdt>0?Math.min(60, 18 + roster.filter(function(p){return p.rank!=='Silver';}).length*4):0)) : 0;
+      main.insertAdjacentHTML('beforeend', C.metricsRow([
+        { label:'Assigned partners', value:roster.length },
+        { label:'Territory coverage', value:coverage+' union'+(coverage===1?'':'s') },
+        { label:'Target vs achieved', value:pct+'%', delta:fmt.bdt(t.achievedBdt)+' / '+fmt.bdt(t.targetBdt), deltaDir:pct>=100?'up':pct>=60?'flat':'down' },
+        { label:'Sales volume', value:fmt.bdt(t.achievedBdt) }
+      ]));
+      main.insertAdjacentHTML('beforeend', C.metricsRow([
+        { label:'Active leads (30d)', value:leads30 },
+        { label:'Conversion rate', value:convRate+'%', deltaDir:'flat' },
+        { label:'Team leads', value:roster.filter(function(p){return p.teamLead;}).length },
+        { label:'Platinum / Gold', value:roster.filter(function(p){return p.rank==='Platinum';}).length+' / '+roster.filter(function(p){return p.rank==='Gold';}).length }
+      ]));
       main.insertAdjacentHTML('beforeend','<div class="sectitle">Roster</div>');
       var tw=C.el('<div></div>'); main.appendChild(tw);
       C.mountDataTable(tw, { rowId:'id', noun:'members', rows:roster, columns:[
@@ -1186,7 +1348,7 @@
       C.mountDataTable(tw, { rowId:'id', noun:'partners', defaultSort:'name', rows:rows, columns:[
         { key:'name', label:'Partner', strong:true, sortable:true },
         { key:'team', label:'Current team', render:function(r){ return esc(People.teamName(r.team)); } },
-        { key:'territory', label:'Territory', render:function(r){ return esc(r.territoryDisplay||People.pathStr(r.territoryPath)); } }
+        { key:'territory', label:'Territory', render:function(r){ return esc(People.pathStr(r.territoryPath)); } }
       ], rowActions:[
         { label:'Move partner', icon:'⇄', onClick:function(r){ movePartner(r, function(){ location.reload(); }); } },
         { label:'Open profile', icon:'↗', onClick:function(r){ go('B03',{id:r.id}); } }
@@ -1201,7 +1363,7 @@
       main.insertAdjacentHTML('beforeend','<div class="primaryacts" style="margin-bottom:12px"><button class="btn primary" id="gen-ref">Generate referral code</button></div>');
       document.getElementById('gen-ref').onclick=function(){ generateReferral(function(){ location.reload(); }); };
       var tw=C.el('<div></div>'); main.appendChild(tw);
-      C.mountDataTable(tw, { rowId:'code', noun:'codes', rows:People.referralCodes.slice(), columns:[
+      C.mountDataTable(tw, { rowId:'code', noun:'codes', rows:People.allReferralCodes().slice(), columns:[
         { key:'code', label:'Code', strong:true, render:function(r){ return '<span class="mono">'+esc(r.code)+'</span>'; } },
         { key:'team', label:'Team', render:function(r){ return esc(People.teamName(r.team)); } },
         { key:'territory', label:'Territory' },
@@ -1247,7 +1409,7 @@
       C.mountDataTable(tw, { rowId:'id', noun:'partners', defaultSort:'name', rows:rows, columns:[
         { key:'name', label:'Partner', strong:true, sortable:true },
         { key:'rank', label:'Current rank', render:function(r){ return '<span class="pill rank-'+r.rank+'">'+esc(r.rank)+'</span>'; } },
-        { key:'territory', label:'Territory', render:function(r){ return esc(r.territoryDisplay||People.pathStr(r.territoryPath)); } }
+        { key:'territory', label:'Territory', render:function(r){ return esc(People.pathStr(r.territoryPath)); } }
       ], rowActions:[
         { label:'Assign rank', icon:'◆', onClick:function(r){ assignRank(r, function(){ location.reload(); }); } },
         { label:'Rank history', icon:'☰', onClick:function(r){ go('R03',{id:r.id}); } }
@@ -1269,6 +1431,111 @@
       var b=document.getElementById('ar2'); if(b) b.onclick=function(){ assignRank(p, function(){ location.reload(); }); };
     }
   };
+
+  /* ===================== Req 6.8 additions ===================== */
+
+  /* ---------- TR02 · Relationship view (traceable chain — clause 4) ⭐ ---------- */
+  SCREENS.TR02 = { section:'D', title:'Relationship view', sub:'The full traceable chain for one partner', perm:'VIEW_PEOPLE',
+    render:function(main, P){
+      var id = P.get('id');
+      var p = id ? People.partnerOrApplicant(id) : People.allPartners()[0];
+      main.innerHTML = header(this);
+      if (!p){ main.insertAdjacentHTML('beforeend', C.EmptyState({ title:'Partner not found', actionLabel:'Partners' })); wireEmpty(main,'B01'); return; }
+      // resolve the chain from existing data
+      var team = p.team ? People.teamById(p.team) : null;
+      // an applicant may not have a team yet — derive from the referral code they used
+      var app = p.appId ? People.applicationById(p.appId) : null;
+      var refCode = (app && app.referral && app.referral.code) || null;
+      var codeRec = refCode ? People.allReferralCodes().filter(function(c){ return c.code===refCode; })[0] : null;
+      if (!team && codeRec) team = People.teamById(codeRec.team);
+      var lead = team && team.leadId ? People.partnerById(team.leadId) : null;
+      var referrer = lead;  // codes bind to a team lead → the referrer is the code owner (lead)
+      var terr = People.pathStr(p.territoryPath);
+
+      function node(kind, title, sub, link){
+        return '<div class="chainnode" '+(link?'data-link="'+link+'"':'')+'>'+
+          '<div class="cn-ic">'+kind+'</div><div class="cn-b"><div class="cn-t">'+esc(title)+'</div>'+(sub?'<div class="cn-s">'+esc(sub)+'</div>':'')+'</div>'+(link?'<span class="cn-go">↗</span>':'')+'</div>';
+      }
+      main.insertAdjacentHTML('beforeend', '<p class="metaline">Clause 6.8.4 — the traceable relationship, as a chain rather than a table of IDs. Each node links to its record.</p>');
+      main.insertAdjacentHTML('beforeend',
+        '<div class="chain">'+
+          node('👤', p.name, p.id+' · '+(p.rank||'—')+' rank', href('B03',{id:p.id}))+
+          '<div class="chainlink"><span class="cl-lbl">member of</span></div>'+
+          node('◫', team?team.name:'No team', team?team.territory:'—', team?href('D04',{id:team.id}):'')+
+          '<div class="chainlink"><span class="cl-lbl">led by</span></div>'+
+          node('★', lead?lead.name:'Unassigned', lead?(lead.id+' · team lead'):'no team lead', lead?href('B03',{id:lead.id}):'')+
+          '<div class="chainlink"><span class="cl-lbl">covers territory</span></div>'+
+          node('🗺', terr, 'Division › District › Upazila › Union', href('D02',{name:(p.territoryPath&&p.territoryPath[1])||'Cumilla'}))+
+          '<div class="chainlink"><span class="cl-lbl">referred by</span></div>'+
+          node('🔗', referrer?referrer.name:(refCode?('Code '+refCode):'Direct signup'), refCode?('via '+refCode):'no referral code', referrer?href('B03',{id:referrer.id}):'')+
+        '</div>');
+      main.querySelectorAll('.chainnode[data-link]').forEach(function(n){ n.style.cursor='pointer'; n.onclick=function(){ location.href=n.getAttribute('data-link'); }; });
+      main.appendChild(auditNote(p.id));
+    }
+  };
+
+  /* ---------- TM03 · Create team (clause 1) ---------- */
+  SCREENS.TM03 = { section:'D', title:'Create team', sub:'Name · territory · team lead · initial members', perm:'MANAGE_TEAM',
+    render:function(main){
+      main.innerHTML = header(this);
+      main.insertAdjacentHTML('beforeend', '<div class="card"><h3>New team</h3><p class="hint" style="margin-bottom:10px">A team is a set of partners under one lead, scoped to a territory. Teams are never hard-deleted — they are retired (OQ).</p><div class="primaryacts"><button class="btn primary" id="mk">Create team…</button><a class="btn" href="'+href('D03')+'">Teams list</a></div></div>');
+      document.getElementById('mk').onclick=function(){
+        var partnerOpts=[{value:'',label:'— Assign later —'}].concat(People.allPartners().filter(function(p){return p.status==='approved';}).map(function(p){ return { value:p.id, label:p.name+' · '+p.id }; }));
+        formDialog({ title:'Create team', width:520,
+          fields:[
+            { type:'text', key:'name', label:'Team name', required:true, placeholder:'e.g. Cumilla Sadar Beta' },
+            { type:'select', key:'territory', label:'Territory', options:territoryOptions() },
+            { type:'select', key:'lead', label:'Team lead (optional)', options:partnerOpts },
+            { type:'text', key:'target', label:'Target (BDT)', placeholder:'e.g. 3000000' }
+          ],
+          confirmLabel:'Create team' }).then(function(v){
+          if (!v) return;
+          if (!v.territory){ C.toast({ type:'warning', title:'Territory required', text:'A team must be scoped to a territory.' }); return; }
+          Perm.requirePermission(state.role,'MANAGE_TEAM');
+          var tid='TM-NEW-'+(People.allTeams().length+1);
+          var targetBdt = parseInt((v.target||'0').replace(/[^0-9]/g,''),10) || 0;
+          Ripples.mutate('team:'+tid, { id:tid, name:v.name, territory:v.territory, leadId:v.lead||null, targetBdt:targetBdt, achievedBdt:0 });
+          if (v.lead){ Ripples.mutate('ptr:'+v.lead, { team:tid, teamLead:true }); }
+          Audit.audit({ actor:actor(), action:'CREATE_TEAM', target:tid+' · '+v.name, changes:{ territory:v.territory, lead:v.lead||null, target:targetBdt||null } });
+          C.toast({ type:'success', persist:true, title:'Team created', text:v.name+' · '+v.territory+(v.lead?' · lead assigned':''), ripple:v.lead?'partner’s team + team-lead flag updated':null });
+          go('D04',{id:tid});
+        });
+      };
+    }
+  };
+
+  /* ---------- TT03 · Create / edit territory node (clause 1) ---------- */
+  SCREENS.TT03 = { section:'D', title:'Create / edit territory node', sub:'Add a district, upazila/thana or union — configurable hierarchy', perm:'MANAGE_TERRITORY',
+    render:function(main){
+      main.innerHTML = header(this);
+      main.insertAdjacentHTML('beforeend','<p class="metaline">The territory hierarchy is data-driven (Req 6.8.1). New nodes become available in the registration pickers (6.1) and the shared selector (6.5). Nodes are retired, never hard-deleted (OQ).</p>');
+      main.insertAdjacentHTML('beforeend','<div class="card"><h3>Add a node</h3><div class="primaryacts"><button class="btn primary" id="add">Add territory node…</button><a class="btn" href="'+href('D01')+'">Territory tree</a></div></div>');
+      document.getElementById('add').onclick=function(){
+        formDialog({ title:'Add territory node', width:500,
+          intro:'<div class="effectbox">Division › District › Upazila/Thana › Union — pick the level and parent.</div>',
+          fields:[
+            { type:'select', key:'level', label:'Level', options:['District','Upazila / Thana','Union'] },
+            { type:'select', key:'parent', label:'Parent node', options:territoryNodeOptions() },
+            { type:'text', key:'nameEn', label:'Name (English)', required:true, placeholder:'e.g. Barura' },
+            { type:'text', key:'nameBn', label:'Name (বাংলা)', placeholder:'e.g. বরুড়া' }
+          ],
+          warn:'Adding a node changes what registrants and staff can pick. Audited.', confirmLabel:'Add node' }).then(function(v){
+          if (!v) return;
+          Perm.requirePermission(state.role,'MANAGE_TERRITORY');
+          Audit.audit({ actor:actor(), action:'CREATE_TERRITORY_NODE', target:v.level+' · '+v.nameEn, changes:{ parent:v.parent, level:v.level } });
+          C.toast({ type:'success', title:'Territory node added', text:v.nameEn+' under '+v.parent+' — now selectable in registration + catalogue.' });
+          go('D01');
+        });
+      };
+    }
+  };
+  function territoryNodeOptions(){
+    var out=[];
+    (People.territoryTree||[]).forEach(function(div){ out.push(div.name);
+      (div.children||[]).forEach(function(dist){ out.push(div.name+' › '+dist.name);
+        (dist.children||[]).forEach(function(up){ out.push(div.name+' › '+dist.name+' › '+up.name); }); }); });
+    return out;
+  }
 
   /* ===================== boot ===================== */
   function boot(screenId){

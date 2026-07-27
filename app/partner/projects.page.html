@@ -5,6 +5,7 @@
 <link rel="stylesheet" href="../_shared.css"/>
 <script src="../assets/js/mock-data.js"></script>
 <script src="../assets/js/currency.js"></script>
+<script src="../assets/js/salmon-categories.js"></script>
 <script src="../assets/js/network-sim.js"></script>
 <style>
   .wklang{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--surface)}
@@ -16,6 +17,7 @@
   .pcard2 .nm{font-weight:700;font-size:14px} .pcard2 .lc{font-size:11.5px;color:var(--ink-subtle);margin-top:1px}
   .avpill{font-size:11px;font-weight:700;color:var(--success);background:#e7f2ec;border-radius:999px;padding:2px 8px}
   .price2{font-size:13px;font-weight:700;color:var(--primary);margin-top:6px} .price2 .b{display:block;font-size:11px;color:var(--ink);font-weight:600}
+  .fgl{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-subtle);font-weight:700;margin:8px 16px 2px}
 </style>
 </head><body>
 <div class="page-label">P20 · Sales catalogue (partner view) <small>Same catalogue, framed to pitch · filter by type/location/status/availability</small></div>
@@ -30,16 +32,35 @@
   </div>
 </div>
 <script>
-var D=window.SALMON, C=window.Currency, lang='en', fStatus='all';
+var D=window.SALMON, C=window.Currency, SC=window.SalmonCategories, lang='en';
+// Req 6.5.5 — the four seller filters: type / location / construction status / availability.
+var fStatus='all', fType='all', fArea='all', fAvail=false;
 function t(bn,en){ return lang==='bn'?bn:en; }
 function price(p){ if(!p.price) return ''; var m=C.priceModel(p.price,'AED'); return '<div class="price2">'+C.fmtDisplay(m.dispFrom,'AED')+'<span class="b">'+C.fmtBdt(m.bdtFrom)+'</span></div>'; }
+function availOf(p){ return typeof p.availableUnits==='number' ? p.availableUnits : ((p.units||[]).filter(function(u){return u.status==='available';}).length); }
 function render(){
   var lt='<span class="wklang"><button class="'+(lang==='bn'?'on':'')+'" onclick="setLang(\'bn\')">বাং</button><button class="'+(lang==='en'?'on':'')+'" onclick="setLang(\'en\')">EN</button></span>';
   var h='<div class="wkbar"><a class="bk" href="dashboard.page.html">‹</a><h2>'+t('সেলস ক্যাটালগ','Sales catalogue')+'</h2>'+
     '<span class="wklang" style="border-color:#ffffff55;background:transparent"><button class="'+(lang==='bn'?'on':'')+'" style="color:#fdf3f1;background:'+(lang==='bn'?'#ffffff33':'transparent')+'" onclick="setLang(\'bn\')">বাং</button><button class="'+(lang==='en'?'on':'')+'" style="color:#fdf3f1;background:'+(lang==='en'?'#ffffff33':'transparent')+'" onclick="setLang(\'en\')">EN</button></span></div>';
   h+='<p class="phelp" style="margin:10px 16px 4px">'+t('আপনি কিনছেন না — পিচ করার জন্য প্রস্তুত হচ্ছেন। উপলব্ধতা দেখান, প্রকল্প বেছে নিন।','You’re not shopping — you’re arming yourself to pitch. Show availability, pick a project.')+'</p>';
-  h+='<div class="chips">'+['all','ongoing','completed','upcoming'].map(function(s){ var lab={all:t('সব','All'),ongoing:t('চলমান','Ongoing'),completed:t('সম্পন্ন','Completed'),upcoming:t('আসন্ন','Upcoming')}[s]; return '<span class="chip'+(fStatus===s?' active':'')+'" onclick="setF(\''+s+'\')">'+lab+'</span>'; }).join('')+'</div>';
-  var list=D.projects.filter(function(p){ return fStatus==='all'||p.status===fStatus; });
+  // Filter 1 — construction status
+  h+='<div class="fgl">'+t('অবস্থা','Status')+'</div><div class="chips">'+['all','ongoing','completed','upcoming'].map(function(s){ var lab={all:t('সব','All'),ongoing:t('চলমান','Ongoing'),completed:t('সম্পন্ন','Completed'),upcoming:t('আসন্ন','Upcoming')}[s]; return '<span class="chip'+(fStatus===s?' active':'')+'" onclick="setF(\'status\',\''+s+'\')">'+lab+'</span>'; }).join('')+'</div>';
+  // Filter 2 — type (property category, from the configurable schema)
+  var typeChips='<span class="chip'+(fType==='all'?' active':'')+'" onclick="setF(\'type\',\'all\')">'+t('সব ধরন','All types')+'</span>'+SC.all().map(function(c){ return '<span class="chip'+(fType===c.id?' active':'')+'" onclick="setF(\'type\',\''+c.id+'\')">'+(lang==='bn'&&c.labelBn?c.labelBn:c.label)+'</span>'; }).join('');
+  h+='<div class="fgl">'+t('ধরন','Type')+'</div><div class="chips">'+typeChips+'</div>';
+  // Filter 3 — location
+  var areaKeys=Object.keys(D.areas||{});
+  var areaChips='<span class="chip'+(fArea==='all'?' active':'')+'" onclick="setF(\'area\',\'all\')">'+t('সব এলাকা','All areas')+'</span>'+areaKeys.map(function(k){ return '<span class="chip'+(fArea===k?' active':'')+'" onclick="setF(\'area\',\''+k+'\')">'+D.areas[k][lang]+'</span>'; }).join('');
+  h+='<div class="fgl">'+t('এলাকা','Location')+'</div><div class="chips">'+areaChips+'</div>';
+  // Filter 4 — availability
+  h+='<div class="chips" style="margin-top:2px"><span class="chip'+(fAvail?' active':'')+'" onclick="setF(\'avail\',null)">'+t('শুধু খালি আছে','Available only')+'</span></div>';
+  var list=D.projects.filter(function(p){
+    if(!(fStatus==='all'||p.status===fStatus)) return false;
+    if(!(fType==='all'||(p.category||'apartment')===fType)) return false;
+    if(!(fArea==='all'||p.area===fArea)) return false;
+    if(fAvail && availOf(p)<1) return false;
+    return true;
+  });
   h+='<div class="countbar">'+t('মোট ','')+'<b>'+list.length+'</b> '+t('প্রকল্প','projects')+'</div>';
   list.forEach(function(p){
     var img=p.banner?'<img src="'+p.banner+'" onerror="this.style.display=\'none\'">':'';
@@ -49,7 +70,7 @@ function render(){
   h+='<div style="height:16px"></div>';
   document.getElementById('screen').innerHTML=h;
 }
-function setF(s){ fStatus=s; render(); }
+function setF(kind,v){ if(kind==='status')fStatus=v; else if(kind==='type')fType=v; else if(kind==='area')fArea=v; else if(kind==='avail')fAvail=!fAvail; render(); }
 function setLang(l){ lang=l; document.documentElement.lang=l; render(); }
 render();
 </script>

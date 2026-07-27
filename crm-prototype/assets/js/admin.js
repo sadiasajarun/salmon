@@ -24,7 +24,7 @@
   var FILES = {
     S01:'S01-audit-log.html', S02:'S02-audit-entry.html', S03:'S03-audit-export.html',
     T01:'T01-staff-users.html', T02:'T02-edit-user.html', T03:'T03-assign-role.html', T04:'T04-deactivate-user.html', T05:'T05-roles-overview.html', T06:'T06-impersonation-log.html',
-    U01:'U01-config-home.html', U02:'U02-payment-gateways.html', U03:'U03-currency-rates.html', U04:'U04-booking-rules.html', U05:'U05-slot-rules.html', U06:'U06-providers.html', U07:'U07-feature-flags.html', U08:'U08-min-app-version.html', U09:'U09-session-policy.html', U10:'U10-invoice-template.html',
+    U01:'U01-config-home.html', U02:'U02-payment-gateways.html', U03:'U03-currency-rates.html', U04:'U04-booking-rules.html', U05:'U05-slot-rules.html', U06:'U06-providers.html', U07:'U07-feature-flags.html', U08:'U08-min-app-version.html', U09:'U09-session-policy.html', U10:'U10-invoice-template.html', U11:'U11-status-configuration.html',
     V01:'V01-templates-list.html', V02:'V02-template-detail.html', V03:'V03-test-send.html'
   };
   function href(id, params){
@@ -382,7 +382,8 @@
         ['U07','Feature flags','Per-module on/off', Object.keys(cfg.features).filter(function(k){return cfg.features[k];}).length+' of '+Object.keys(cfg.features).length+' on'],
         ['U08','Minimum app version','Drives the force-update screen', cfg.minAppVersion],
         ['U09','Session policy','Timeout, concurrent sessions, MFA', cfg.session.timeoutMins+'min · '+cfg.session.maxConcurrent+' sessions'],
-        ['U10','Invoice template','Numbering, tax, legal wording', cfg.invoice.prefix+'####']
+        ['U10','Invoice template','Numbering, tax, legal wording', cfg.invoice.prefix+'####'],
+        ['U11','Status configuration','The basic status sets every module reads', statusSummary()]
       ];
       var grid=C.el('<div class="confgrid"></div>'); main.appendChild(grid);
       panels.forEach(function(p){ var card=C.el('<div class="confcard"><div class="ct">'+esc(p[1])+'</div><div class="cd">'+esc(p[2])+'</div><div class="cv">'+esc(p[3])+'</div></div>'); card.onclick=function(){ go(p[0]); }; grid.appendChild(card); });
@@ -573,6 +574,64 @@
       main.appendChild(auditNote('invoice'));
     }
   };
+
+  /* ---------- U11 · Status configuration (clause 6.18.2) ---------- */
+  function statusSummary(){ var sets=AD.getStatusSets(); var vals=sets.reduce(function(a,s){ return a+s.values.length; },0); return sets.length+' status sets · '+vals+' values'; }
+  SCREENS.U11 = { title:'Status configuration', sub:'The basic status sets every module reads — relabel or retire a value; history is never rewritten', perm:'MANAGE_CONFIG',
+    render:function(main){
+      main.innerHTML = header(this);
+      main.insertAdjacentHTML('beforeend','<p class="metaline">These are the <b>enums the modules already use</b> (lead, booking, meeting, task, document, commission, return, ticket, settlement). You can rename the <b>label a partner/client sees</b> and <b>retire</b> a value so it is no longer offered on new records — but the canonical <span class="mono">key</span> the backend stores is fixed, and <b>retiring never rewrites history</b> (records already in that state keep it, same discipline as user deactivation). Terminal states cannot be retired.</p>');
+      var host=C.el('<div class="statuscfg"></div>'); main.appendChild(host);
+      function draw(){
+        var sets=AD.getStatusSets();
+        host.innerHTML = sets.map(function(set){
+          return '<div class="scard"><div class="sc-h"><h3>'+esc(set.label)+' <span class="mono" style="font-size:11px;color:var(--ink-2)">'+esc(set.id)+'</span></h3><p class="hint" style="margin:2px 0 0">'+esc(set.note||'')+'</p></div>'+
+            '<div class="sc-vals">'+set.values.map(function(v){
+              var locked=AD.isStatusLocked(set.id, v.key);
+              return '<div class="svrow'+(v.active?'':' retired')+'"><span class="chip '+(v.active?'blue':'grey')+'" style="height:20px"><span class="d"></span>'+esc(v.label)+'</span>'+
+                '<span class="svkey mono">'+esc(v.key)+'</span>'+
+                '<span class="spacer" style="flex:1"></span>'+
+                '<button class="btn sm" data-edit="'+esc(set.id)+':'+esc(v.key)+'">Rename</button>'+
+                (locked ? '<span class="lockpill" title="Terminal state — a record can always land here, so it cannot be retired">🔒 terminal</span>'
+                        : '<button class="btn sm '+(v.active?'':'primary')+'" data-toggle="'+esc(set.id)+':'+esc(v.key)+'" data-on="'+v.active+'">'+(v.active?'Retire':'Restore')+'</button>')+
+              '</div>';
+            }).join('')+'</div></div>';
+        }).join('');
+        host.querySelectorAll('[data-edit]').forEach(function(b){ b.onclick=function(){ var p=b.getAttribute('data-edit').split(':'); renameStatus(p[0],p[1],draw); }; });
+        host.querySelectorAll('[data-toggle]').forEach(function(b){ b.onclick=function(){ var p=b.getAttribute('data-toggle').split(':'); toggleStatus(p[0],p[1],b.getAttribute('data-on')==='true',draw); }; });
+      }
+      draw();
+      main.appendChild(auditNote('statuses'));
+    }
+  };
+  function statusVal(setId, key){ var set=AD.statusSetById(setId); return (set&&set.values.filter(function(v){return v.key===key;})[0])||{key:key,label:key,active:true}; }
+  function renameStatus(setId, key, after){
+    var set=AD.statusSetById(setId), v=statusVal(setId,key);
+    formDialog({ title:'Rename status label', intro:'<div class="effectbox">'+esc(set.label)+' · canonical key <b class="mono">'+esc(key)+'</b> (unchanged) — current label <b>'+esc(v.label)+'</b></div>',
+      fields:[ { type:'text', key:'label', label:'Display label', required:true, value:v.label } ],
+      warn:'Only the label changes — the stored key is fixed, so existing records and reports are unaffected. Audited old→new.', confirmLabel:'Save label' }).then(function(res){
+      if(!res || res.label===v.label) return;
+      Perm.requirePermission(state.role,'MANAGE_CONFIG');
+      setCfg('statusset:'+setId+':'+key+':label', res.label);
+      Audit.audit({ actor:actor(), action:'EDIT_STATUS_LABEL', target:set.label+' · '+key, changes:{ from:v.label, to:res.label } });
+      C.toast({ type:'success', title:'Status label updated', text:key+': '+v.label+' → '+res.label });
+      after && after();
+    });
+  }
+  function toggleStatus(setId, key, currentlyActive, after){
+    if (AD.isStatusLocked(setId, key)){ C.toast({type:'error',title:'Terminal state',text:'This status cannot be retired — a record can always end up here.'}); return; }
+    var set=AD.statusSetById(setId), v=statusVal(setId,key), retiring=currentlyActive;
+    C.confirmDialog({ title:(retiring?'Retire ':'Restore ')+'“'+v.label+'”?', danger:retiring,
+      body:'<p>'+(retiring?'Retiring':'Restoring')+' <b>'+esc(v.label)+'</b> ('+esc(set.label)+') '+(retiring?'removes it from the status picker on <b>new</b> records. Records already in this state <b>keep it</b> — nothing is rewritten or deleted.':'makes it selectable again on new records.')+'</p>',
+      warn:'Audited old→new. Nothing hard-deletes.', confirmLabel:(retiring?'Retire':'Restore')+' status' }).then(function(ok){
+      if(!ok) return;
+      Perm.requirePermission(state.role,'MANAGE_CONFIG');
+      setCfg('statusset:'+setId+':'+key+':active', !currentlyActive);
+      Audit.audit({ actor:actor(), action:'SET_STATUS_ACTIVE', target:set.label+' · '+key, changes:{ from:currentlyActive?'active':'retired', to:currentlyActive?'retired':'active' } });
+      C.toast({ type:retiring?'warning':'success', title:'Status '+(retiring?'retired':'restored'), text:set.label+' · '+v.label });
+      after && after();
+    });
+  }
 
   /* ===================== V — Notification templates ===================== */
 

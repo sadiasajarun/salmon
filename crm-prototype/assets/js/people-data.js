@@ -279,6 +279,24 @@
    * ------------------------------------------------------------------------- */
   function overrides(){ try { return JSON.parse(localStorage.getItem('crm_people_mut')||'{}'); } catch(e){ return {}; } }
 
+  // Generic seed+override merge: patches existing seed rows AND injects brand-new
+  // rows created purely from an override (e.g. a team/referral code created on
+  // the web panel, which has no seed entry). Mirrors invest-data.js's pattern.
+  function mergeList(seed, prefix, idKey){
+    idKey = idKey || 'id';
+    var ov = overrides();
+    var seeded = seed.map(function(x){ return Object.assign({}, x, ov[prefix+x[idKey]]||{}); });
+    var seen = {}; seeded.forEach(function(x){ seen[x[idKey]] = true; });
+    var live = [];
+    Object.keys(ov).forEach(function(k){
+      if (k.indexOf(prefix) === 0){
+        var id = k.slice(prefix.length);
+        if (!seen[id]){ var r = ov[k]; if (r && r[idKey]) live.push(r); }
+      }
+    });
+    return seeded.concat(live);
+  }
+
   function allApplications(){
     var ov = overrides();
     return applications.map(function(a){ return Object.assign({}, a, ov['app:'+a.appId]||{}); })
@@ -306,7 +324,34 @@
       stats:{leadsQ:0,targetPct:0,approvedCommissionBdt:0,pendingSettlementBdt:0,leads30:0,commission30:0}, _fromApp:true };
   }
 
-  function teamById(id){ return teams.filter(function(t){ return t.id===id; })[0]; }
+  // Registration consents (Req 6.1.3) — the FOUR distinct acceptances captured at
+  // registration, each with a version + timestamp, so an auditor can confirm what
+  // was agreed and when. Distinct from the per-lead consent (Part 4). Mocked from
+  // the application/partner's registration time.
+  var CONSENT_DEFS = [
+    { key:'terms',        label:'Terms of Service' },
+    { key:'privacy',      label:'Privacy notice' },
+    { key:'program',      label:'Program conditions' },
+    { key:'dataHandling', label:'Data-handling undertaking — permission for customer info submitted later' }
+  ];
+  function shiftMin(iso, m){ try { var d=new Date(iso); d.setUTCMinutes(d.getUTCMinutes()+m); return d.toISOString(); } catch(e){ return iso; } }
+  function consentsFor(id){
+    var app = applications.filter(function(a){ return a.appId===id; })[0];
+    var p = partners.filter(function(x){ return x.id===id; })[0];
+    var base = app ? app.submittedUtc : (p && p.joinedUtc) || '2026-07-14T05:10:00Z';
+    var programs = app ? app.programs : (p ? p.programs : []);
+    var out = CONSENT_DEFS.map(function(c, i){ return { key:c.key, label:c.label, version:'1.0', acceptedAt: shiftMin(base, i) }; });
+    if ((programs||[]).indexOf('With Investment') > -1) out.push({ key:'invest', label:'With-Investment additional conditions & risks', version:'1.0', acceptedAt: shiftMin(base, 4) });
+    return out;
+  }
+
+  // Teams and referral codes are override-aware: a team/code created on the web
+  // panel (TM03/D07) has no seed entry, so it's injected purely from the
+  // override — otherwise "Create team" would toast success and then vanish on
+  // the next page load (each screen is a fresh page in this prototype).
+  function allTeams(){ return mergeList(teams, 'team:'); }
+  function allReferralCodes(){ return mergeList(referralCodes, 'ref:', 'code'); }
+  function teamById(id){ return allTeams().filter(function(t){ return t.id===id; })[0]; }
   function teamName(id){ var t = teamById(id); return t ? t.name : '—'; }
   function partnersInTeam(id){ return allPartners().filter(function(p){ return p.team===id; }); }
   function partnersInTerritoryName(name){ return allPartners().filter(function(p){ return pathStr(p.territoryPath).indexOf(name) > -1; }); }
@@ -314,19 +359,20 @@
   // node → count of partners/teams whose path contains this node name
   function countsForNode(node){
     var pc = allPartners().filter(function(p){ return p.status!=='rejected' && pathStr(p.territoryPath).indexOf(node.name) > -1; }).length;
-    var tc = teams.filter(function(t){ return t.territory.indexOf(node.name) > -1; }).length;
+    var tc = allTeams().filter(function(t){ return t.territory.indexOf(node.name) > -1; }).length;
     return { partners: pc, teams: tc };
   }
 
   root.CRM.People = {
     // raw sets
-    territoryTree: territoryTree, teams: teams, ranks: ranks, referralCodes: referralCodes, kycAccessSeed: kycAccessSeed,
+    territoryTree: territoryTree, ranks: ranks, kycAccessSeed: kycAccessSeed,
     // read helpers (override-aware)
     allApplications: allApplications, applicationById: function(id){ return allApplications().filter(function(a){return a.appId===id;})[0]; },
     allPartners: allPartners, partnerById: partnerById, partnerOrApplicant: partnerOrApplicant,
     allClients: allClients, clientById: clientById, kycQueue: kycQueue,
-    activityFor: activityFor, rankHistoryFor: rankHistoryFor,
+    activityFor: activityFor, rankHistoryFor: rankHistoryFor, consentsFor: consentsFor,
     clientActivity: clientActivity, clientComms: clientComms,
+    allTeams: allTeams, allReferralCodes: allReferralCodes,
     teamById: teamById, teamName: teamName, partnersInTeam: partnersInTeam, partnersInTerritoryName: partnersInTerritoryName,
     countsForNode: countsForNode, pathStr: pathStr, ago: ago
   };

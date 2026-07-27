@@ -24,6 +24,7 @@
   .blocker p{font-size:11.5px;color:#333;line-height:1.6;margin:0}
   .ack{margin:0 16px 16px;display:flex;gap:10px;align-items:flex-start;font-size:12.5px;color:#333;line-height:1.5}
   .ack input{margin-top:2px;width:18px;height:18px;flex:0 0 auto}
+  .hold{display:inline-block;font-family:var(--mono,monospace);font-size:11.5px;font-weight:800;color:var(--primary);background:#fbf3f3;border:1px dashed var(--primary);border-radius:5px;padding:2px 8px;line-height:1.4}
 </style>
 </head><body>
 <div class="page-label">P56 · Disclaimer ⭐ <small>Mandatory · prominent · [LEGAL COPY REQUIRED] block · governs P53–P55 · copy from Salmon's counsel only</small></div>
@@ -44,6 +45,10 @@ function render(){
       '<p>• '+s('notGuarantor')+'</p>'+
       '<p>• '+s('governedBy')+'</p>'+
       '<p>• '+t('অ্যাপ কোনো রিটার্ন হিসাব, অনুমান বা পরিশোধ করে না — এটি শুধু স্টাফের রেকর্ড দেখায়।','The app does not calculate, project, or disburse anything — it only displays staff records.')+'</p></div>'+
+    // Clause 8 — independent construction/development is the partner's own responsibility, outside the platform.
+    '<div class="card"><h3>'+s('independentTitle')+'</h3>'+
+      '<p>'+s('independentBody')+'</p>'+
+      '<p><span class="hold">'+V.INDEP_MARKER[lang==='bn'?'bn':'en']+'</span></p></div>'+
     '<div class="legalreq"><span class="badge">'+s('legalBlockLabel')+'</span>'+
       '<div class="marker">'+V.DISCLAIMER_PLACEHOLDER+'</div>'+
       '<div class="note">'+s('legalBlockNote')+'</div></div>'+

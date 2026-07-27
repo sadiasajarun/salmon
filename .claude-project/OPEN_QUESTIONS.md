@@ -197,3 +197,96 @@ URLs) was fetched from `salmondevelopersbd.com`. The following were **not on the
 _Generated during `/fullstack-pm salmon-app` (P1-spec). Every item here is an intentional gap from
 CLAUDE.md §12 — guessing any value is a defect. Act 2 added 2026-07-14; Act 5/6 added 2026-07-14;
 Partner Act 9 legal blockers + Acts 10–12 added 2026-07-15._
+
+---
+
+## Req 6.1 — Sales Partner Registration, Approval & Profile (alignment pass, 2026-07-26)
+
+Logged during the reconcile-and-close-gaps pass. See `ALIGNMENT.md` for the clause-by-clause diff.
+
+1. 🔴 **Registration verification method** — phone, email, or both? Drives `REGISTRATION_VERIFY_METHOD`
+   (default `phone`). Mechanism is config-driven; the choice is Salmon's.
+2. 🔴 **Partner ID format** — confirm the `SDP-CUM-00417` shape and the territory-prefix rule.
+3. 🔴 **Business-card QR target** — what should it encode: a referral URL, a vCard, the Partner ID, or an
+   app deep link? *Recommend referral URL* (current: `https://salmon.example/r/<PartnerId>`). Needs Salmon.
+4. 🔴 **With-Investment eligibility criteria** — what gates it? The **gate mechanism** is built
+   (`Partner.eligibleFor('with')`); the **rule** is undefined. Needs Salmon.
+5. 🔴 **Required registration profile fields** — the confirmed full list (currently name · phone/email ·
+   NID · address · occupation · requested territory).
+6. 🔴 **Territory hierarchy** — is Division › District › Upazila/Thana › Union final and complete, and who
+   maintains the seed? Also: unify the two current sources (mobile `territory.js` + admin `territoryTree`)
+   into one when the codebases merge for the Laravel build.
+7. 🔴 **Consent versioning** — when terms/privacy/program change, must partners re-consent, and how is that
+   surfaced? Acceptances are stored with `version` + `acceptedAt`; the re-consent trigger is undefined.
+8. 🔴 **Reapplication after rejection** — same identity allowed, or must the applicant use a new
+   number/email? (Records are retained; reapplication is possible.)
+9. 🔴 **Rank criteria** — even though manual today, will rules eventually be defined, so the data model can
+   anticipate? (No progression indicator is shown until then.)
+10. 🔴 **Business-card branding** — is there an approved Salmon template/asset, or do we design it?
+
+_Questions 3, 4 and 10 need Salmon before Req 6.1 can be called final._
+
+---
+
+## Req 6.8 — Team, Territory, Rank & Referral (alignment pass, 2026-07-26)
+
+Most of this module already shipped (Part-2 D/R screens); this pass added the relationship view, create-team,
+create-territory + stat/search enhancements. See `ALIGNMENT.md`.
+
+1. 🔴 **In-flight leads on transfer** — when a partner moves team/territory, do open leads retain original
+   attribution or reassign to the new team lead? The TR01 (D06) transfer **forces the choice and can log it
+   undecided**; default shown is "leads retain original attribution".
+2. 🔴 **Who gets a referral code** — all approved partners, or only team leads? Config decides (RF01/D07).
+3. 🔴 **Referral code format & lifetime** — the format rule and whether codes expire or are permanent-until-
+   deactivated (currently permanent-until-deactivated).
+4. 🔴 **Territory hierarchy finality** — is Division › District › Upazila/Thana › Union final and complete,
+   and who maintains the seed? TT03 adds nodes; the canonical data owner is undefined.
+5. 🔴 **Rank criteria** — even though manual today (no automation, no progress bar), will rules eventually be
+   defined so the data model can anticipate?
+6. 🔴 **Team-lead demotion** — when the lead flag is removed, what happens to their roster and reports —
+   reassign, orphan, or hold? (Currently the roster is left untouched.)
+7. 🔴 **One team or many** — can a partner belong to more than one team, or exactly one? (Currently exactly one.)
+
+**Also noted (mobile gap):** the prompt assumes a team-lead **Team section (P57–P62)** exists in the partner
+app, but `app/partner` has no such screens (only `tasks.page.html` touches team content). The team-lead
+**boundary** is a scope concept; the CRM has no `TEAM_LEAD` role (roles are Super Admin / Manager / Finance /
+Legal), so scoping maps to the Part-1 team-lead-visibility question. Building the mobile P57–P62 Team section
+is a follow-up.
+
+---
+
+## Global Client App — Req 6.19–6.25 (alignment pass, 2026-07-26)
+
+Verification pass; the client app satisfies the numbered requirements. See `ALIGNMENT-CLIENT.md`. One drift
+fixed (demo checkout fake card fields → hosted handoff). Client-facing open questions:
+
+1. 🔴 **Exchange-rate source + rounding policy** (6.20) — presentation currency uses an approved rate + rounding; source (auto feed vs manual) undefined.
+2. 🔴 **Invoice numbering / tax / legal wording** (6.23) — `[CLIENT-APPROVED COPY REQUIRED]`.
+3. 🔴 **Chat provider** — WhatsApp Business vs in-app (6.24, also 6.16). Blocks the chat surface's final form.
+4. 🔴 **Zoom vs Meet** (6.24) — consultation link provider (seam built, choice pending).
+5. 🔴 **Does any client action require Verified KYC?** (6.19) — e.g. must KYC be Verified before booking, or only before completion?
+6. 🔴 **Map provider** (6.20) — which mapping SDK/tiles for the discovery map.
+7. 🔴 **Wire reconciliation SLA** (6.22) — the number the pending-wire age indicator warns against.
+8. 🔴 **Lock expiry mid-payment** (6.22) — what happens when a unit lock expires while a payment is still pending? Needs a real finance answer, not an engineering guess.
+
+---
+
+## Partner Registration Flow (program-specific) + Logout + Dashboard — fix pass, 2026-07-26
+
+Feeds the branched applicant journey (REG04a/REG04b) and the WI activation gate. See
+`ALIGNMENT-registration-flow-fix.md`.
+
+1. 🔴 **Verification method** — phone, email, or both at registration? Drives REG01. Mechanism is
+   config-driven (`Partner.CONFIG.REGISTRATION_VERIFY_METHOD`); the client-approved choice is undefined.
+2. 🔴 **With Investment eligibility criteria** — what actually gates WI activation (PADM04)? The gate is
+   admin-approval as a mechanism; the *rule* an admin applies is undefined (recurring 6.1/6.3 question).
+3. 🟡 **Independent Zero/WI approval** — can Zero be approved and active while WI is held for separate
+   activation? Assumed **yes** (per-program participation is modelled independently) — confirm.
+4. 🔴 **Partner ID format** — the minted ID (`SDP-<TERR>-NNNNN`) is a placeholder scheme; the canonical
+   format is client-owned.
+5. 🔴 **Business-card QR target** — what the card QR encodes (referral URL assumed). Unchanged from 6.1.
+6. 🔴 **Registration required-field list** — the authoritative set of mandatory fields across REG01–REG02.
+7. 🔴 **Investment-return display on dashboard** — for active WI partners the returns chip shows a
+   `[LEGAL SIGN-OFF REQUIRED]` marker, never a figure; when/what may be shown is blocked on legal.
+8. 🔴 **Logout token revocation** — prototype clears a mock device token + session locally; the real
+   server-side revocation/session-policy (single-device vs all-devices) is undefined.

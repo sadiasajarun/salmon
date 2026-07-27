@@ -97,4 +97,15 @@
 .lockprev .notif .t{font-size:13px;font-weight:800}
 .lockprev .notif .b{font-size:12px;color:#e6ddd0;margin-top:2px;line-height:1.4}
 
-@media (max-width:1120px){ .confgrid{grid-template-columns:1fr 1fr} .tpledit{grid-template-columns:1fr} }
+/* U11 · status configuration */
+.statuscfg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.scard{border:.5px solid var(--line);border-radius:var(--r-card);background:var(--surface);padding:14px 16px}
+.scard .sc-h h3{font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px}
+.scard .sc-vals{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.svrow{display:flex;align-items:center;gap:10px;padding:6px 8px;border:.5px solid var(--line-2);border-radius:8px;background:var(--surface-2)}
+.svrow.retired{opacity:.5}
+.svrow .svkey{font-size:11px;color:var(--ink-3)}
+.svrow .btn.sm{padding:3px 9px;font-size:11.5px}
+.lockpill{font-size:11px;font-weight:700;color:var(--ink-muted);padding:3px 9px;border:.5px dashed var(--line-strong);border-radius:999px;white-space:nowrap}
+
+@media (max-width:1120px){ .confgrid{grid-template-columns:1fr 1fr} .tpledit{grid-template-columns:1fr} .statuscfg{grid-template-columns:1fr} }

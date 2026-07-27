@@ -15,6 +15,7 @@
   .rs-paid{background:#eceeec;color:#3f4a41;border:1px solid #d5dbd6}
   .rs-pending{background:#f7efe0;color:#8a6d2f;border:1px solid #ecdcbf}
   .rs-hold{background:#efeaea;color:#7a5a5a;border:1px solid #e0d1d1}
+  .hold{display:inline-block;font-family:var(--mono,monospace);font-size:11px;font-weight:800;color:var(--primary);background:#fbf3f3;border:1px dashed var(--primary);border-radius:5px;padding:2px 7px;line-height:1.35}
   .fact{margin:0 16px 12px;background:#f6f5f4;border:1px solid #e4e1de;border-left:3px solid var(--ink);border-radius:8px;padding:12px 13px;font-size:12px;color:#3a3a3a;line-height:1.55}
 </style>
 </head><body>
@@ -39,7 +40,7 @@ function render(){
     '<div class="wkbar"><a class="bk" href="return-schedule.page.html">‹</a><h2>'+s('entryTitle')+'</h2>'+lt+'</div>'+
     '<div class="rec">'+
       '<div class="kv"><span class="k">'+t('এন্ট্রি','Entry')+'</span><span class="v">'+t(e.periodLabelBn,e.periodLabelEn)+'</span></div>'+
-      '<div class="kv"><span class="k">'+t('রেকর্ডকৃত পরিমাণ','Recorded amount')+'</span><span class="v">'+bdt(e.amountBdt)+'</span></div>'+
+      '<div class="kv"><span class="k">'+t('রেকর্ডকৃত পরিমাণ','Recorded amount')+'</span><span class="v"><span class="hold">'+V.AMOUNT_MARKER[lang==='bn'?'bn':'en']+'</span></span></div>'+
       '<div class="kv"><span class="k">'+t('অবস্থা','Status')+'</span><span class="v"><span class="rs '+st.cls+'">'+t(st.bn,st.en)+'</span></span></div>'+
       '<div class="kv"><span class="k">'+t('রেকর্ডের তারিখ','Recorded on')+'</span><span class="v">'+dt(e.recordedUtc)+'</span></div>'+
       '<div class="kv"><span class="k">'+s('recordedBy')+'</span><span class="v">'+t('স্যামন স্টাফ','Salmon staff')+'</span></div>'+

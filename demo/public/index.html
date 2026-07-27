@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Salmon — Live Demo</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23800020'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='20' font-weight='800' fill='white' text-anchor='middle'%3ES%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="/shared/tokens.css" />
+<style>
+  html, body { height: 100%; }
+  body { font-family: var(--font); color: var(--ink); background: #1c1a18; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+  /* ---- top bar ---------------------------------------------------------- */
+  .topbar { flex: none; height: 52px; display: flex; align-items: center; gap: 14px; padding: 0 16px; background: #222; color: #fff; border-bottom: 1px solid #000; }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 15px; }
+  .brand .mark { width: 22px; height: 22px; border-radius: 6px; background: var(--maroon); display: grid; place-items: center; font-size: 13px; color: #fff; font-weight: 800; }
+  .topbar .spacer { flex: 1; }
+
+  /* view switcher — the headline control */
+  .viewsw { display: inline-flex; background: #17150f; border: 1px solid #4a4641; border-radius: 9px; padding: 3px; gap: 3px; }
+  .viewsw button { height: 32px; padding: 0 14px; background: transparent; color: #cfc8c0; font-size: 13px; font-weight: 700; border: 0; border-radius: 7px; display: inline-flex; align-items: center; gap: 7px; }
+  .viewsw button .d { width: 8px; height: 8px; border-radius: 50%; background: #6fb0f0; }
+  .viewsw button:nth-child(2) .d { background: #e0b877; }
+  .viewsw button.on { background: var(--maroon); color: #fff; }
+  .viewsw button.on .d { background: #fff; }
+
+  .conn { display: flex; align-items: center; gap: 7px; font-size: 12px; color: #cfc8c0; }
+  .conn .led { width: 9px; height: 9px; border-radius: 50%; background: #d64545; }
+  .conn.live .led { background: #37c871; animation: pulseLed 2s infinite; }
+  @keyframes pulseLed { 0%{box-shadow:0 0 0 0 rgba(55,200,113,.5)} 70%{box-shadow:0 0 0 6px rgba(55,200,113,0)} 100%{box-shadow:0 0 0 0 rgba(55,200,113,0)} }
+
+  .tb-btn { height: 32px; padding: 0 12px; border-radius: 7px; border: 1px solid #444; background: #2f2c29; color: #f0ece7; font-size: 12.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+  .tb-btn:hover { background: #3a3733; }
+  .tb-btn svg { width: 15px; height: 15px; }
+  .seg { display: inline-flex; background: #2f2c29; border: 1px solid #444; border-radius: 7px; overflow: hidden; }
+  .seg button { height: 30px; padding: 0 11px; background: transparent; color: #cfc8c0; font-size: 12px; font-weight: 600; border: 0; }
+  .seg button.on { background: var(--maroon); color: #fff; }
+  .toggle { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; color: #cfc8c0; }
+  .switch { width: 34px; height: 19px; border-radius: 999px; background: #4a4641; position: relative; transition: background .15s; border: 0; }
+  .switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%; background: #fff; transition: transform .15s; }
+  .switch.on { background: var(--maroon); }
+  .switch.on::after { transform: translateX(15px); }
+
+  /* ---- stage ------------------------------------------------------------ */
+  .stage { flex: 1; display: flex; min-height: 0; background: radial-gradient(1200px 500px at 30% -10%, #2b2825, #1c1a18); position: relative; padding: 18px; gap: 18px; }
+  .pane { display: flex; flex-direction: column; min-height: 0; position: relative; }
+  .pane .cap { flex: none; display: flex; align-items: center; gap: 8px; color: #cfc8c0; font-size: 12px; font-weight: 600; letter-spacing: .02em; margin: 0 2px 10px; text-transform: uppercase; }
+  .pane .cap .badge { font-weight: 500; text-transform: none; color: #8f8880; letter-spacing: 0; }
+  .pane .cap .spacer { flex: 1; }
+
+  /* actor switcher (partner pane) */
+  .actorsw { display: none; align-items: center; gap: 6px; text-transform: none; letter-spacing: 0; }
+  .actorsw.show { display: inline-flex; }
+  .actorsw select { height: 26px; background: #2f2c29; color: #f0ece7; border: 1px solid #4a4641; border-radius: 6px; font-size: 11.5px; font-family: inherit; padding: 0 6px; }
+
+  .pane.left { flex: none; width: 412px; align-items: center; }
+  .pane.left .cap { align-self: stretch; }
+  .phone { width: 390px; height: 844px; max-height: calc(100vh - 200px); background: #000; border-radius: 44px; padding: 11px; box-shadow: 0 30px 70px rgba(0,0,0,.5), inset 0 0 0 2px #3a3733; position: relative; }
+  .phone .notch { position: absolute; top: 11px; left: 50%; transform: translateX(-50%); width: 128px; height: 26px; background: #000; border-radius: 0 0 16px 16px; z-index: 5; }
+  .phone iframe { width: 100%; height: 100%; border: 0; border-radius: 34px; background: #fff; }
+  .phone iframe.hidden { display: none; }
+
+  .pane.admin { flex: 1; min-width: 0; }
+  .desktop { flex: 1; min-height: 0; border-radius: 12px; overflow: hidden; box-shadow: 0 30px 70px rgba(0,0,0,.5), inset 0 0 0 1px #3a3733; background: var(--canvas); }
+  .desktop iframe { width: 100%; height: 100%; border: 0; }
+
+  .pane .drop { position: absolute; inset: 34px 0 0 0; border-radius: 20px; pointer-events: none; opacity: 0; box-shadow: inset 0 0 0 3px var(--maroon), 0 0 40px rgba(128,0,32,.35); transition: opacity .2s; }
+  .pane .drop.show { animation: dropPulse 1.1s ease-out; }
+  @keyframes dropPulse { 0%{opacity:0} 15%{opacity:1} 100%{opacity:0} }
+
+  /* ---- event feed ------------------------------------------------------- */
+  .feed { flex: none; height: 132px; background: #191715; border-top: 1px solid #000; display: flex; flex-direction: column; }
+  .feed.hidden-feed { height: 30px; }
+  .feed .fhead { flex: none; height: 30px; display: flex; align-items: center; gap: 10px; padding: 0 16px; color: #b0a8a0; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; border-bottom: 1px solid #2a2724; }
+  .feed .fhead .legend { display: flex; gap: 14px; font-weight: 500; letter-spacing: 0; text-transform: none; font-size: 11px; }
+  .feed .fhead .lg { display: inline-flex; align-items: center; gap: 5px; }
+  .feed .fhead .lg .sw { width: 9px; height: 9px; border-radius: 2px; }
+  .feed .fhead .spacer { flex: 1; }
+  .feed .fhead button { background: transparent; border: 0; color: #8f8880; font-size: 11px; font-weight: 600; }
+  .feed .fhead button:hover { color: #fff; }
+  #feedList { flex: 1; overflow-y: auto; padding: 4px 0; }
+  .feed.hidden-feed #feedList { display: none; }
+
+  .ef-row { display: grid; grid-template-columns: 62px 22px 210px 1fr 66px; align-items: center; gap: 10px; padding: 3px 16px; font-size: 12px; color: #d8d2ca; cursor: pointer; border-left: 2px solid transparent; }
+  .ef-row:hover { background: #221f1d; }
+  .ef-row.sel { background: #2a2622; border-left-color: var(--maroon); }
+  .ef-new { animation: efIn .35s ease-out; }
+  @keyframes efIn { from { opacity: 0; transform: translateY(-6px); background: #34302b; } to { opacity: 1; transform: none; } }
+  .ef-time { color: #8f8880; font-family: var(--mono); font-size: 11px; }
+  .ef-arrow { width: 18px; height: 18px; display: grid; place-items: center; border-radius: 4px; }
+  .ef-arrow svg { width: 14px; height: 14px; }
+  .ef-arrow.out { color: #6fb0f0; }
+  .ef-arrow.in  { color: #64d29a; }
+  .ef-meta { font-family: var(--mono); font-size: 11px; color: #a79f96; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ef-verb { color: #e0b877; font-weight: 700; }
+  .ef-path { color: #9aa7b3; }
+  .ef-evt-name { color: #64d29a; }
+  .ef-text { color: #ece7e0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ef-src { justify-self: end; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 1px 6px; border-radius: 4px; }
+  .ef-src.client { color: #6fb0f0; background: #16283a; }
+  .ef-src.partner{ color: #c79be6; background: #2a1f38; }
+  .ef-src.admin  { color: #e0b877; background: #332a17; }
+  .ef-src.server { color: #64d29a; background: #16321f; }
+
+  @media (max-width: 1180px) { .pane.left { width: 340px; } .phone { width: 320px; height: 693px; } }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand"><img src="/shared/salmon-logo-white.svg" alt="Salmon" style="height:22px;width:auto"/> Live Demo</div>
+
+    <div class="viewsw">
+      <button id="viewClient" class="on"><span class="d"></span>Client ↔ Admin</button>
+      <button id="viewPartner"><span class="d"></span>Partner ↔ Admin</button>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="toggle"><span>Presenter</span><button id="presenterSwitch" class="switch on" title="Highlight the side where the next event will land"></button></div>
+    <div class="seg" title="Fast mode shortens all delays for a 15-minute presentation">
+      <button id="speedNormal" class="on">Normal</button><button id="speedFast">Fast</button>
+    </div>
+    <button id="feedToggleTop" class="tb-btn" title="Show / hide the event feed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg> Feed</button>
+    <button id="resetBtn" class="tb-btn" title="Restore seed data — restart the demo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg> Reset demo</button>
+    <div class="conn" id="conn"><span class="led"></span><span id="connText">connecting…</span></div>
+  </div>
+
+  <div class="stage">
+    <div class="pane left">
+      <div class="cap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>
+        <span id="leftLabel">Client — Global App</span>
+        <span class="badge">390 × 844</span>
+        <span class="spacer"></span>
+        <span class="actorsw" id="actorsw">
+          <span>Partner:</span>
+          <select id="actorSelect">
+            <option value="SDP-CUM-00417">Shahin Alam · Silver</option>
+            <option value="SDP-DHK-00210">Nasrin Ahmed · With Investment</option>
+            <option value="SDP-CUM-00188">Karim Rahman · Team lead</option>
+            <option value="new">New applicant (register live)</option>
+          </select>
+        </span>
+      </div>
+      <div class="phone">
+        <div class="notch"></div>
+        <iframe id="clientFrame" src="/client/index.html" title="Salmon client app"></iframe>
+        <iframe id="partnerFrame" class="hidden" src="/partner/index.html" title="Salmon partner app"></iframe>
+      </div>
+      <div class="drop" id="dropLeft"></div>
+    </div>
+
+    <div class="pane admin">
+      <div class="cap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        Admin Panel — Staff Console
+        <span class="badge">one system · both views</span>
+      </div>
+      <div class="desktop"><iframe id="adminFrame" src="/admin/index.html" title="Salmon admin panel"></iframe></div>
+      <div class="drop" id="dropAdmin"></div>
+    </div>
+  </div>
+
+  <div class="feed" id="feed">
+    <div class="fhead">
+      <span>Live event feed</span>
+      <div class="legend">
+        <span class="lg"><span class="sw" style="background:#6fb0f0"></span> request →</span>
+        <span class="lg"><span class="sw" style="background:#64d29a"></span> event ←</span>
+      </div>
+      <span class="spacer"></span>
+      <span style="color:#6f6860;font-weight:500;letter-spacing:0;text-transform:none">shows client + partner activity · click a row to highlight the side it affected</span>
+      <button id="feedToggle">hide</button>
+    </div>
+    <div id="feedList"></div>
+  </div>
+
+  <script src="/shared/sse-client.js"></script>
+  <script src="/shared/event-feed.js"></script>
+  <script>
+  (function () {
+    'use strict';
+    var conn = document.getElementById('conn'), connText = document.getElementById('connText');
+    var clientFrame = document.getElementById('clientFrame'), partnerFrame = document.getElementById('partnerFrame'), adminFrame = document.getElementById('adminFrame');
+    var dropLeft = document.getElementById('dropLeft'), dropAdmin = document.getElementById('dropAdmin');
+    var presenterOn = true;
+    var view = 'client';                 // 'client' | 'partner'
+    var lastSection = { client: 'clients', partner: 'partners' };
+
+    Salmon.onStatus(function (up) { conn.classList.toggle('live', up); connText.textContent = up ? 'connected' : 'reconnecting…'; });
+
+    // presenter cursor — left pane covers both client & partner
+    Salmon.onAny(function (msg) {
+      if (!presenterOn || !msg.feed) return;
+      msg.feed.filter(function (f) { return f.dir === '←'; }).forEach(function (f) {
+        var el = (f.target === 'client' || f.target === 'partner') ? dropLeft : f.target === 'admin' ? dropAdmin : null;
+        if (!el) return;
+        el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+      });
+    });
+
+    // event feed (shows every event across both views)
+    SalmonFeed.init({
+      container: document.getElementById('feedList'),
+      onEntryClick: function (e) {
+        var frame = e.target === 'client' ? clientFrame : e.target === 'partner' ? partnerFrame : e.target === 'admin' ? adminFrame : null;
+        if (frame) frame.contentWindow.postMessage({ salmonHighlight: e.ref }, '*');
+        var el = (e.target === 'client' || e.target === 'partner') ? dropLeft : e.target === 'admin' ? dropAdmin : null;
+        if (el) { el.classList.remove('show'); void el.offsetWidth; el.classList.add('show'); }
+      }
+    });
+
+    // admin reports its current section so view-switches restore place
+    window.addEventListener('message', function (ev) {
+      var d = ev.data || {};
+      if (d.salmonAdminSection) lastSection[view] = d.salmonAdminSection;
+    });
+
+    // ---- view switcher ----------------------------------------------------
+    var viewClient = document.getElementById('viewClient'), viewPartner = document.getElementById('viewPartner');
+    var leftLabel = document.getElementById('leftLabel'), actorsw = document.getElementById('actorsw');
+    function setView(v) {
+      view = v;
+      viewClient.classList.toggle('on', v === 'client');
+      viewPartner.classList.toggle('on', v === 'partner');
+      clientFrame.classList.toggle('hidden', v !== 'client');
+      partnerFrame.classList.toggle('hidden', v !== 'partner');
+      leftLabel.textContent = v === 'client' ? 'Client — Global App' : 'Partner — Sales App';
+      actorsw.classList.toggle('show', v === 'partner');
+      // shift the admin's focus to this side's landing (restoring last place if any)
+      var target = lastSection[v] || (v === 'client' ? 'clients' : 'partners');
+      adminFrame.contentWindow.postMessage({ salmonGoSection: target }, '*');
+    }
+    viewClient.addEventListener('click', function () { setView('client'); });
+    viewPartner.addEventListener('click', function () { setView('partner'); });
+
+    // ---- actor switcher (partner pane) ------------------------------------
+    document.getElementById('actorSelect').addEventListener('change', function () {
+      Salmon.post('/api/session/partner', { partnerId: this.value });
+    });
+
+    // ---- controls ---------------------------------------------------------
+    document.getElementById('resetBtn').addEventListener('click', function () {
+      Salmon.post('/api/reset').then(function () {
+        clientFrame.contentWindow.location.reload();
+        partnerFrame.contentWindow.location.reload();
+        adminFrame.contentWindow.location.reload();
+        document.getElementById('actorSelect').value = 'SDP-CUM-00417';
+      });
+    });
+    var speedNormal = document.getElementById('speedNormal'), speedFast = document.getElementById('speedFast');
+    function setSpeed(m) { Salmon.post('/api/config/speed', { speed: m }); speedNormal.classList.toggle('on', m === 'normal'); speedFast.classList.toggle('on', m === 'fast'); }
+    speedNormal.addEventListener('click', function () { setSpeed('normal'); });
+    speedFast.addEventListener('click', function () { setSpeed('fast'); });
+    document.getElementById('presenterSwitch').addEventListener('click', function () { presenterOn = !presenterOn; this.classList.toggle('on', presenterOn); });
+
+    var feed = document.getElementById('feed');
+    function toggleFeed() { feed.classList.toggle('hidden-feed'); document.getElementById('feedToggle').textContent = feed.classList.contains('hidden-feed') ? 'show' : 'hide'; }
+    document.getElementById('feedToggle').addEventListener('click', toggleFeed);
+    document.getElementById('feedToggleTop').addEventListener('click', toggleFeed);
+
+    Salmon.connect();
+  })();
+  </script>
+</body>
+</html>

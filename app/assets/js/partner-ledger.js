@@ -10,7 +10,15 @@
   'use strict';
 
   // §7 CommissionStatus: pending, approved, settlementRequested, settled
+  //
+  // NOTE (clause 6): the "With Investment" higher-tier commission is NOT a
+  // separate system. It is an ordinary commission with program:'withInvestment'
+  // — same ledger, same Pending→Approved→Settlement→Settled path, same
+  // hand-entered amount (a staff member typed it on the web panel L02; there is
+  // no rate/tier formula anywhere). The only difference is the program tag and,
+  // typically, a larger typed number. The row below demonstrates that.
   var commissions = [
+    { ref: 'CM-2026-0231', leadId: 'LD-3081', leadName: 'Tahmid Alam',   leadNameBn: 'তাহমিদ আলম',   project: 'Salmon Oasis Park', program: 'withInvestment', amountBdt: 168000, status: 'approved',             approvedDate: '2026-07-11' },
     { ref: 'CM-2026-0217', leadId: 'LD-3019', leadName: 'Kamrul Islam',  leadNameBn: 'কামরুল ইসলাম',  project: 'Salmon Bellissimo', program: 'zeroInvestment', amountBdt: 112000, status: 'approved',             approvedDate: '2026-07-08' },
     { ref: 'CM-2026-0210', leadId: 'LD-2990', leadName: 'Selim Reza',    leadNameBn: 'সেলিম রেজা',     project: 'The ROSSA',        program: 'zeroInvestment', amountBdt: 72000,  status: 'approved',             approvedDate: '2026-07-02' },
     { ref: 'CM-2026-0205', leadId: 'LD-3038', leadName: 'Salma Begum',   leadNameBn: 'সালমা বেগম',    project: 'Salmon Oasis Park',program: 'zeroInvestment', amountBdt: 48000,  status: 'pending',              approvedDate: null },

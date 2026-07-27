@@ -46,6 +46,24 @@
   .hero .histlink{ display:block; text-align:center; margin:12px 0 0; font-size:13px; font-weight:600; color:var(--primary); text-decoration:none; }
   .hero.emptyh .num{ font-size:19px; color:var(--ink); font-family:var(--serif); font-weight:600; }
   .hero.emptyh .subm{ font-size:12.5px; color:var(--ink-subtle); margin-top:6px; line-height:1.5; }
+  /* subordinate earnings chips — the other four facts, never competing with the hero */
+  .chips{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:12px; }
+  .chips .chip{ background:#faf6f2; border:.5px solid var(--line); border-radius:10px; padding:9px 11px; }
+  .chips .chip .k{ font-size:10.5px; color:var(--ink-subtle); letter-spacing:.02em; }
+  .chips .chip .v{ font-size:14px; font-weight:700; color:var(--ink); margin-top:2px; word-break:break-word; }
+  .chips .chip.na .v{ color:var(--ink-subtle); font-weight:600; }
+  .retnote{ font-size:10.5px; color:var(--ink-subtle); margin-top:8px; line-height:1.4; }
+  /* tier-2 status counts row */
+  .counts{ display:flex; flex-wrap:wrap; gap:8px 14px; margin-top:12px; }
+  .counts .c{ font-size:12px; color:var(--ink); } .counts .c b{ font-weight:800; }
+  .counts .c .lg{ color:var(--ink-subtle); font-weight:500; }
+  /* tier-3 ambient updates */
+  .updates .u{ display:flex; align-items:flex-start; gap:10px; padding:9px 0; border-top:.5px solid var(--recess-line); text-decoration:none; color:inherit; }
+  .updates .u:first-of-type{ border-top:none; }
+  .updates .u .dot{ width:7px; height:7px; border-radius:50%; background:var(--primary); margin-top:5px; flex:0 0 auto; }
+  .updates .u .tx{ font-size:12.5px; color:var(--ink); line-height:1.4; }
+  .updates .u .tm{ font-size:10.5px; color:var(--ink-subtle); margin-top:2px; }
+  .updates .hd{ font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-subtle); margin-bottom:2px; }
 
   /* stale banner (offline) */
   .stale{ display:flex; align-items:center; gap:8px; background:#f6ecd9; border:.5px solid #e7d3a8; color:#8a6d2f; font-size:12px; border-radius:10px; padding:9px 12px; }
@@ -153,9 +171,20 @@ function render(){
       '<div class="num">'+s('emptyHero')+'</div><div class="subm">'+s('emptyHeroSub')+'</div></div>';
   } else {
     var ctaCls = offline ? 'cta off' : 'cta';
+    // returns chip: populated for active With Investment partners (amount held for
+    // legal sign-off — a marker, never a number); '—' and layout-stable for Zero-only.
+    var withActive = (P.identity.participation && P.identity.participation.withInvestment || {}).status==='active';
+    var returnsVal = withActive ? '<span style="font-size:11px">[LEGAL SIGN-OFF]</span>' : s('returnsNA');
+    function chip(k,v,na){ return '<div class="chip'+(na?' na':'')+'"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>'; }
     h+='<div class="card hero"><div class="lbl">'+s('approvedReady')+'</div>'+
       '<div class="num">'+bdt(d.approvedCommissionBdt)+'</div>'+
-      '<div class="pend">'+bdt(d.pendingSettlementBdt)+' '+s('pendingSuffix')+'</div>'+
+      '<div class="pend">'+s('verifiedSales')+' '+bdt(d.verifiedSalesVolumeBdt)+' '+t('(প্রসঙ্গ)','(context)')+'</div>'+
+      '<div class="chips">'+
+        chip(s('pendingSettlement'), bdt(d.pendingSettlementBdt))+
+        chip(s('settledWord'), bdt(d.settledBdt))+
+        chip(s('returnsWord'), returnsVal, !withActive)+
+      '</div>'+
+      (withActive?'':'<div class="retnote">'+s('returnsNote')+'</div>')+
       '<a class="'+ctaCls+'" '+(offline?'':'href="request-settlement.page.html"')+'>'+s('requestSettlement')+'</a>'+
       '<a class="histlink" href="settlement-history.page.html">'+t('সেটেলমেন্ট ইতিহাস','Settlement history')+' ›</a>'+
       (offline?'<div class="offreason">'+s('offlineSettle')+'</div>':'')+'</div>';
@@ -166,16 +195,37 @@ function render(){
     : (d.activeLeads+' '+s('active')+' · '+(d.movedToday>0 ? (d.movedToday+' '+s('moved')) : s('nothingMoved')));
   h+='<a class="card pipe" href="leads.page.html"><div><div class="t">'+s('leads')+'</div><div class="s">'+pipeSub+'</div></div><span class="chev">›</span></a>';
 
-  // TIER 3 — recessed Today+Target band
+  // TIER 2 — target band + full status counts (leads/meetings/tasks/tickets/training)
+  var ticketTxt = d.openTickets>0 ? (d.openTickets+' '+t(d.ticketStatusBn,d.ticketStatusEn)) : t('কোনোটি নেই','none');
   h+='<div class="band"><div class="row">'+
-      '<div><div class="k">'+s('todayWord')+'</div><div class="v">'+d.meetingsToday+' '+s('meetingsShort')+' · '+d.openTasks+' '+s('tasksShort')+'</div></div>'+
+      '<div><div class="k">'+s('statusWord')+' · '+s('todayWord')+'</div><div class="v">'+d.meetingsToday+' '+s('meetingsShort')+' · '+d.openTasks+' '+s('tasksShort')+'</div></div>'+
       '<div class="tgt"><div class="k">'+s('targetWord')+' · '+t(d.periodBn,d.periodEn)+'</div><div class="v">'+pct+'%</div></div></div>'+
       '<div class="bar"><i style="width:'+pct+'%"></i></div>'+
       '<div class="fig">'+bdt(d.achievedBdt)+' / '+bdt(d.targetBdt)+'</div>'+
+      '<div class="counts">'+
+        '<span class="c"><b>'+d.submittedLeads+'</b> <span class="lg">'+s('leadsShort')+'</span></span>'+
+        '<span class="c"><b>'+d.meetingsToday+'</b> <span class="lg">'+s('meetingsShort')+'</span></span>'+
+        '<span class="c"><b>'+d.openTasks+'</b> <span class="lg">'+s('tasksShort')+'</span></span>'+
+        '<span class="c"><b>'+d.openTickets+'</b> <span class="lg">'+s('ticketsShort')+' · '+ticketTxt+'</span></span>'+
+        '<span class="c"><b>'+d.trainingItems+'</b> <span class="lg">'+s('trainingShort')+'</span></span>'+
+      '</div>'+
       '<div class="note">'+s('displayNote')+'</div></div>';
 
-  // Quick actions — fixed 2×2, no h-scroll
-  var qa=[['submit-lead.page.html','👤',s('qaSubmit')],['request-meeting.page.html','📅',s('qaMeeting')],['sales-kit.page.html','🧰',s('qaKit')],['raise-ticket.page.html','🎫',s('qaSupport')]];
+  // TIER 3 — ambient: recent notifications / project & inventory updates / status changes
+  var upd = (S.signals||[]).slice(0,3);
+  h+='<div class="band updates"><div class="hd">'+s('updatesTitle')+'</div>'+
+    (upd.length ? upd.map(function(g){ return '<a class="u" href="'+g.link+'"><span class="dot"></span><div><div class="tx">'+t(g.bn,g.en)+'</div><div class="tm">'+when(g.t)+'</div></div></a>'; }).join('')
+      : '<div class="tx" style="font-size:12.5px;color:var(--ink-subtle);padding:6px 0">'+s('noUpdates')+'</div>')+'</div>';
+
+  // Quick actions — the SIX shortcuts of Req 6.2, fixed 2-col grid, no h-scroll
+  var qa=[
+    ['submit-lead.page.html','👤',s('qaSubmit')],
+    ['booking-record.page.html','🧾',s('qaBooking')],
+    ['request-meeting.page.html','📅',s('qaMeeting')],
+    ['sales-kit.page.html','🧰',s('qaKit')],
+    ['raise-ticket.page.html','🎫',s('qaSupport')],
+    ['request-settlement.page.html','💳',s('qaSettlement')]
+  ];
   h+='<div class="qgrid">'+qa.map(function(q){ return '<a href="'+q[0]+'"><span class="qi">'+q[1]+'</span>'+q[2]+'</a>'; }).join('')+'</div>';
 
   w.innerHTML=h;

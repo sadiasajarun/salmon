@@ -64,3 +64,27 @@
   .glancegrid,.medialib{grid-template-columns:repeat(2,1fr)}
   .formgrid{grid-template-columns:1fr}
 }
+
+/* ---- Req 6.5.2 project detail block ---- */
+.detailblock{border:1px solid var(--line,#e6e6ea);border-radius:12px;overflow:hidden;margin:6px 0 18px}
+.detailblock .drow{display:grid;grid-template-columns:160px 1fr;gap:14px;padding:12px 16px;border-bottom:1px solid var(--line,#eee)}
+.detailblock .drow:last-child{border-bottom:0}
+.detailblock .dl{color:var(--ink-3,#8a8a93);font-size:12.5px;font-weight:600}
+.detailblock .dv{font-size:13.5px;line-height:1.5}
+
+/* ---- Req 6.5.3 category config (E09) ---- */
+.catgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.catcard{padding:16px}
+.catcard h3{font-size:15px}
+.fieldchips{display:flex;flex-wrap:wrap;gap:7px}
+.fchip{border:1px solid var(--line,#dcdce2);background:#fafafb;color:var(--ink-2,#55555c);border-radius:999px;
+  padding:6px 11px;font-size:12.5px;cursor:pointer;transition:all .12s;display:inline-flex;align-items:center;gap:5px}
+.fchip:hover{border-color:var(--maroon,#7a1f2b)}
+.fchip.on{background:var(--maroon,#7a1f2b);border-color:var(--maroon,#7a1f2b);color:#fff}
+.fchip.on.sensitive{background:#8a5a00;border-color:#8a5a00}
+.fchip .ff{font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;opacity:.7;border:1px solid currentColor;border-radius:4px;padding:0 3px}
+.fchip .ff.sens{color:#c98a00}
+.fchip.on .ff{opacity:.85}
+.fchip[disabled]{cursor:default;opacity:.7}
+.link.danger{color:var(--red,#b4232f)}
+@media (max-width:1120px){ .catgrid{grid-template-columns:1fr} }

@@ -35,8 +35,14 @@ function render(){
   h+='<div class="qa" style="padding:12px 16px 6px"><a href="request-meeting.page.html">📅 '+t('মিটিং অনুরোধ','Request meeting')+'</a><a href="request-visit.page.html">📍 '+t('সাইট ভিজিট','Site visit')+'</a></div>';
   // recurring head-office highlighted
   var rec=O.meetings.filter(function(m){return m.status==='recurring';})[0];
-  if(rec){ h+='<div class="recur"><div class="ttl">↻ '+t(rec.titleBn,rec.title)+'</div><div class="sub" style="margin-top:4px">'+t(rec.cadenceBn,rec.cadenceEn)+' · '+when(rec.whenUtc)+' · '+t('উপস্থিতি: ','Attendance: ')+'<b>'+t('নিশ্চিত','confirmed')+'</b></div>'+
-    '<a class="join" href="'+(rec.link||'#')+'" target="_blank" style="display:inline-block;color:var(--primary);font-weight:600;font-size:12.5px;margin-top:6px">'+t('লিঙ্কে যোগ দিন ›','Join link ›')+'</a></div>'; }
+  if(rec){
+    var ATT={ attended:{bn:'উপস্থিত',en:'Attended'}, absent:{bn:'অনুপস্থিত',en:'Absent'}, excused:{bn:'ছুটি',en:'Excused'}, pending:{bn:'অপেক্ষমাণ',en:'Not marked'} };
+    var la=ATT[rec.attendance]||ATT.pending;
+    var hist=(rec.attendanceHistory||[]).map(function(x){ return when(x.dateUtc).replace(/,.*$/,'')+': '+t((ATT[x.status]||ATT.pending).bn,(ATT[x.status]||ATT.pending).en); }).join(' · ');
+    h+='<div class="recur"><div class="ttl">↻ '+t(rec.titleBn,rec.title)+'</div><div class="sub" style="margin-top:4px">'+t(rec.cadenceBn,rec.cadenceEn)+' · '+t('পরবর্তী ','next ')+when(rec.whenUtc)+'</div>'+
+      '<div class="sub" style="margin-top:3px">'+t('সর্বশেষ উপস্থিতি: ','Last attendance: ')+'<b>'+t(la.bn,la.en)+'</b></div>'+
+      (hist?'<div class="sub2" style="margin-top:2px;font-size:11px;color:var(--ink-subtle)">'+hist+'</div>':'')+
+      '<a class="join" href="'+(rec.link||'#')+'" target="_blank" style="display:inline-block;color:var(--primary);font-weight:600;font-size:12.5px;margin-top:6px">'+t('লিঙ্কে যোগ দিন ›','Join link ›')+'</a></div>'; }
   h+='<div class="sectitle" style="margin-left:16px">'+t('মিটিং ও ভিজিট','Meetings & visits')+'</div>';
   O.meetings.filter(function(m){return m.status!=='recurring';}).forEach(function(m){
     var link=m.status==='confirmed'?'meeting-confirmed.page.html?id='+m.id:(m.status==='requested'?'awaiting-slot.page.html':'#');

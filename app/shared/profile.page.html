@@ -2,6 +2,7 @@
 <html lang="en"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Salmon · Profile &amp; Preferences</title><link rel="stylesheet" href="../_shared.css"/>
+<script src="../assets/js/session.js"></script>
 </head><body>
 <div class="page-label">Shared · Profile &amp; Preferences <small>Language · Currency · Timezone · Biometrics</small></div>
 <div class="device">
@@ -29,7 +30,7 @@
       <a class="row" href="../client/contact-hub.page.html" style="text-decoration:none;color:inherit"><span class="u">Contact &amp; support</span><span class="sub">RM · chat · consult ›</span></a>
       <a class="row" href="../client/consultation-slots.page.html" style="text-decoration:none;color:inherit"><span class="u">Book a consultation</span><span class="sub">›</span></a>
     </div>
-    <a class="btn ghost block" href="../shared/g02-welcome.page.html" style="margin:6px var(--gutter) 16px">Log out</a>
+    <a class="btn ghost block" href="../shared/g02-welcome.page.html" onclick="Session.logout(event)" style="margin:6px var(--gutter) 16px">Log out</a>
   </div>
   <div class="bottomnav">
     <a class="nav" href="../client/explore-list.page.html"><svg viewBox="0 0 24 24"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Discover</a>

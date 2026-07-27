@@ -26,6 +26,7 @@
     F01:'F01-leads-list.html', F02:'F02-lead-detail.html', F03:'F03-update-status.html',
     F04:'F04-verify-conversion.html', F05:'F05-reject-lead.html',
     G01:'G01-meetings-queue.html', G02:'G02-confirm-meeting.html', G03:'G03-site-visit-queue.html',
+    G04:'G04-coordination.html',
     H01:'H01-slot-management.html', H02:'H02-consultation-requests.html', H03:'H03-consultation-detail.html',
     X01:'X01-commissions-stub.html'
   };
@@ -325,16 +326,17 @@
       intro:'<div class="effectbox">'+esc(v0.buyer)+' · '+esc(v0.project)+'<br><b>'+esc(v0.location)+'</b></div>',
       fields:[
         { type:'select', key:'staff', label:'Assign staff', options:[CRM.staff.MANAGER.name, CRM.staff.SUPER_ADMIN.name], value:CRM.staff.MANAGER.name },
-        { type:'datetime', key:'when', label:'Visit time (Dhaka)', value:'2026-07-16T10:00' }
+        { type:'datetime', key:'when', label:'Visit time (Dhaka)', value:'2026-07-16T10:00' },
+        { type:'text', key:'location', label:'Physical visit location', required:true, value:v0.location||'', placeholder:'e.g. Salmon Bellissimo site office, Bashundhara Block K' }
       ],
-      mobileNote:'<b>'+esc(v0.requester)+'</b> sees the confirmed site visit with location + time.',
+      mobileNote:'<b>'+esc(v0.requester)+'</b> sees the confirmed site visit with a map pin, location + time.',
       confirmLabel:'Confirm visit'
     }).then(function(v){
       if (!v) return;
       Perm.requirePermission(state.role,'MANAGE_MEETING');
-      Ripples.mutate('visit:'+v0.id, { status:'confirmed', staff:v.staff, proposedUtc:v.when });
-      Audit.audit({ actor:actor(), action:'CONFIRM_SITE_VISIT', target:v0.id+' · '+v0.requester, changes:{ staff:v.staff } });
-      Ripples.emit({ kind:'partner', screen:'Site visit confirmed', headline:'Site visit confirmed for '+v0.requester+' at '+v0.location });
+      Ripples.mutate('visit:'+v0.id, { status:'confirmed', staff:v.staff, proposedUtc:v.when, location:v.location });
+      Audit.audit({ actor:actor(), action:'CONFIRM_SITE_VISIT', target:v0.id+' · '+v0.requester, changes:{ staff:v.staff, location:v.location } });
+      Ripples.emit({ kind:'partner', screen:'Site visit confirmed', headline:'Site visit confirmed for '+v0.requester+' at '+v.location });
       C.toast({ type:'success', title:'Site visit confirmed', text:v0.requester+' · '+v0.project });
       after && after();
     });
@@ -396,6 +398,53 @@
       Audit.audit({ actor:actor(), action:'ADD_CONSULTATION_SLOT', target:row.id });
       C.toast({ type:'success', title:'Slot added', text:fmt.dhaka(v.when,true) });
       after && after();
+    });
+  }
+
+  // 6.9.3 — reschedule / cancel for partner meetings & visits. Both keep history
+  // (status transition, never deleted) and ripple a simplified status to the partner.
+  function rescheduleMeeting(m, after){
+    formDialog({ title:'Reschedule meeting', intro:'<p class="hint">Propose a new time for <b>'+esc(m.requester)+'</b>. The partner is notified and re-confirms.</p>',
+      fields:[ { type:'datetime', key:'when', label:'New proposed time (Dhaka)', value:'2026-07-17T15:00' }, { type:'text', key:'note', label:'Note to partner (optional)', placeholder:'e.g. Manager unavailable at the earlier time.' } ],
+      mobileNote:'The partner sees the meeting move back to <b>Awaiting confirmation</b> at the new time.', confirmLabel:'Reschedule' }).then(function(v){
+      if(!v) return; Perm.requirePermission(state.role,'MANAGE_MEETING');
+      Ripples.mutate('meet:'+m.id, { status:'pending', proposedUtc:v.when });
+      Audit.audit({ actor:actor(), action:'RESCHEDULE_MEETING', target:m.id+' · '+m.requester, changes:{ to:v.when, note:v.note||'' } });
+      Ripples.emit({ kind:'partner', screen:'P35 · Awaiting slot', headline:'Meeting for '+m.requester+' rescheduled — new time proposed on their app' });
+      C.toast({ type:'info', title:'Meeting rescheduled', text:m.requester }); after&&after();
+    });
+  }
+  function cancelMeeting(m, after){
+    formDialog({ title:'Cancel meeting', danger:true, intro:'<p class="hint">Cancelling <b>'+esc(m.requester)+'</b>’s meeting request. The reason is shown to the partner.</p>',
+      fields:[ { type:'textarea', key:'reason', label:'Cancellation reason', required:true, placeholder:'e.g. Duplicate request — already covered by an existing meeting.' } ],
+      mobileNote:'The partner sees the meeting as <b>Cancelled</b> with this reason.', warn:'The request is retained as cancelled — never deleted.', confirmLabel:'Cancel meeting' }).then(function(v){
+      if(!v) return; Perm.requirePermission(state.role,'MANAGE_MEETING');
+      Ripples.mutate('meet:'+m.id, { status:'cancelled', reason:v.reason });
+      Audit.audit({ actor:actor(), action:'CANCEL_MEETING', target:m.id+' · '+m.requester, changes:{ from:m.status, to:'cancelled', reason:v.reason } });
+      Ripples.emit({ kind:'partner', screen:'Meeting cancelled', reason:v.reason, headline:'Meeting for '+m.requester+' cancelled — partner sees the reason' });
+      C.toast({ type:'warning', title:'Meeting cancelled', text:m.requester }); after&&after();
+    });
+  }
+  function rescheduleVisit(v0, after){
+    formDialog({ title:'Reschedule site visit', intro:'<p class="hint">Propose a new time for <b>'+esc(v0.requester)+'</b>’s visit to '+esc(v0.project)+'.</p>',
+      fields:[ { type:'datetime', key:'when', label:'New visit time (Dhaka)', value:'2026-07-18T10:00' } ],
+      mobileNote:'The partner sees the visit move back to <b>Awaiting confirmation</b>.', confirmLabel:'Reschedule' }).then(function(v){
+      if(!v) return; Perm.requirePermission(state.role,'MANAGE_MEETING');
+      Ripples.mutate('visit:'+v0.id, { status:'pending', proposedUtc:v.when });
+      Audit.audit({ actor:actor(), action:'RESCHEDULE_SITE_VISIT', target:v0.id+' · '+v0.requester, changes:{ to:v.when } });
+      Ripples.emit({ kind:'partner', screen:'Site visit', headline:'Site visit for '+v0.requester+' rescheduled — new time on their app' });
+      C.toast({ type:'info', title:'Visit rescheduled', text:v0.requester }); after&&after();
+    });
+  }
+  function cancelVisit(v0, after){
+    formDialog({ title:'Cancel site visit', danger:true, intro:'<p class="hint">Cancelling <b>'+esc(v0.requester)+'</b>’s visit request. The reason is shown to the partner.</p>',
+      fields:[ { type:'textarea', key:'reason', label:'Cancellation reason', required:true, placeholder:'e.g. Site closed for handover that week.' } ],
+      mobileNote:'The partner sees the visit as <b>Cancelled</b> with this reason.', warn:'The request is retained as cancelled — never deleted.', confirmLabel:'Cancel visit' }).then(function(v){
+      if(!v) return; Perm.requirePermission(state.role,'MANAGE_MEETING');
+      Ripples.mutate('visit:'+v0.id, { status:'cancelled', reason:v.reason });
+      Audit.audit({ actor:actor(), action:'CANCEL_SITE_VISIT', target:v0.id+' · '+v0.requester, changes:{ from:v0.status, to:'cancelled', reason:v.reason } });
+      Ripples.emit({ kind:'partner', screen:'Site visit cancelled', reason:v.reason, headline:'Site visit for '+v0.requester+' cancelled — partner sees the reason' });
+      C.toast({ type:'warning', title:'Visit cancelled', text:v0.requester }); after&&after();
     });
   }
 
@@ -547,11 +596,12 @@
     render:function(main){
       var pending = PL.allMeetings().filter(function(m){return m.status==='pending';});
       main.innerHTML = header(this);
+      main.insertAdjacentHTML('beforeend','<p class="metaline" style="margin-bottom:10px">Ad-hoc partner meeting requests below. For the standing twice-monthly fixture, see <a class="linkrow" href="'+href('G04')+'">Head-office coordination →</a></p>');
       if (!pending.length){ main.insertAdjacentHTML('beforeend', this.emptyState()); return; }
       pending.forEach(function(m){ main.appendChild(reqCard({
         who:m.requester, sub:'partner', st:C.StatusChip('pending'),
         meta:[['Buyer',m.buyer],['Project',m.project],['Proposed',fmt.dhaka(m.proposedUtc,true)]],
-        acts: Perm.can(state.role,'MANAGE_MEETING') ? [{ label:'Confirm meeting', cls:'primary', fn:function(){ confirmMeeting(m, function(){ location.reload(); }); } },{ label:'Open lead', cls:'', fn:function(){ go('F02',{id:m.leadId}); } }] : [{ label:'Open lead', cls:'', fn:function(){ go('F02',{id:m.leadId}); } }]
+        acts: Perm.can(state.role,'MANAGE_MEETING') ? [{ label:'Confirm meeting', cls:'primary', fn:function(){ confirmMeeting(m, function(){ location.reload(); }); } },{ label:'Reschedule', cls:'', fn:function(){ rescheduleMeeting(m, function(){ location.reload(); }); } },{ label:'Cancel', cls:'danger', fn:function(){ cancelMeeting(m, function(){ location.reload(); }); } },{ label:'Open lead', cls:'', fn:function(){ go('F02',{id:m.leadId}); } }] : [{ label:'Open lead', cls:'', fn:function(){ go('F02',{id:m.leadId}); } }]
       })); });
     }
   };
@@ -576,8 +626,57 @@
       pending.forEach(function(v){ main.appendChild(reqCard({
         who:v.requester, sub:'site visit', st:C.StatusChip('pending'),
         meta:[['Buyer',v.buyer],['Project',v.project],['Location',v.location],['Proposed',fmt.dhaka(v.proposedUtc,true)]],
-        acts: Perm.can(state.role,'MANAGE_MEETING') ? [{ label:'Confirm visit', cls:'primary', fn:function(){ confirmVisit(v, function(){ location.reload(); }); } },{ label:'Open lead', cls:'', fn:function(){ go('F02',{id:v.leadId}); } }] : [{ label:'Open lead', cls:'', fn:function(){ go('F02',{id:v.leadId}); } }]
+        acts: Perm.can(state.role,'MANAGE_MEETING') ? [{ label:'Confirm visit', cls:'primary', fn:function(){ confirmVisit(v, function(){ location.reload(); }); } },{ label:'Reschedule', cls:'', fn:function(){ rescheduleVisit(v, function(){ location.reload(); }); } },{ label:'Cancel', cls:'danger', fn:function(){ cancelVisit(v, function(){ location.reload(); }); } },{ label:'Open lead', cls:'', fn:function(){ go('F02',{id:v.leadId}); } }] : [{ label:'Open lead', cls:'', fn:function(){ go('F02',{id:v.leadId}); } }]
       })); });
+    }
+  };
+
+  /* ---------- G04 · Recurring coordination (head-office) + attendance ---------- */
+  function attChip(st){ var m={ attended:['green','Attended'], absent:['red','Absent'], excused:['amber','Excused'], pending:['grey','Not marked'] }; var x=m[st]||['grey',st]; return '<span class="chip '+x[0]+'"><span class="d"></span>'+x[1]+'</span>'; }
+  function markAttendance(occId, idx, status){
+    Perm.requirePermission(state.role,'MANAGE_MEETING');
+    var occ = PL.coordinationById(occId); if(!occ) return;
+    var att = occ.attendance.map(function(a){ return Object.assign({}, a); });
+    att[idx].status = status;
+    var full = readOv(); full['coord:'+occId] = { status:'held', attendance:att };
+    try { localStorage.setItem('crm_people_mut', JSON.stringify(full)); } catch(e){}
+    Audit.audit({ actor:actor(), action:'MARK_ATTENDANCE', target:occId+' · '+att[idx].partner, changes:{ to:status } });
+    C.toast({ type:'success', title:'Attendance recorded', text:att[idx].partner+' → '+status });
+  }
+  SCREENS.G04 = { title:'Head-office coordination', sub:'Recurring twice-monthly fixture · attendance tracked (6.9.5)', perm:'VIEW_PIPELINE',
+    render:function(main){
+      var s = PL.coordinationSeries; var can = Perm.can(state.role,'MANAGE_MEETING');
+      main.innerHTML = header(this);
+      main.insertAdjacentHTML('beforeend',
+        '<div class="card"><h3>'+esc(s.title)+' <span class="chip blue" style="margin-left:6px"><span class="d"></span>Recurring</span></h3>'+
+        '<dl class="kv"><dt>Cadence</dt><dd>'+esc(s.cadenceEn)+'</dd>'+
+        '<dt>Location</dt><dd>'+esc(s.location)+'</dd>'+
+        '<dt>Join link</dt><dd><a class="linkchip" href="'+esc(s.link)+'" target="_blank">🔗 Zoom link</a> <span class="muted">— external; the app hosts no video</span></dd>'+
+        '<dt>Roster</dt><dd>'+s.roster.length+' partners</dd></dl>'+
+        '<p class="metaline">This standing fixture recurs automatically and appears on every roster partner’s calendar. Attendance is tracked per occurrence — <b>attended / absent / excused</b>. Cadence &amp; absence consequences are business rules (OPEN_QUESTIONS #3).</p></div>');
+      PL.allCoordination().slice().sort(function(a,b){ return a.whenUtc<b.whenUtc?1:-1; }).forEach(function(occ){
+        var wrap = C.el('<div class="card"></div>');
+        var counts = { attended:0, absent:0, excused:0, pending:0 }; occ.attendance.forEach(function(a){ counts[a.status]=(counts[a.status]||0)+1; });
+        wrap.innerHTML = '<h3>'+esc(fmt.dhaka(occ.whenUtc,true))+' '+(occ.status==='held'?'<span class="chip grey"><span class="d"></span>Held</span>':'<span class="chip green"><span class="d"></span>Upcoming</span>')+'</h3>'+
+          '<div class="metaline" style="margin:2px 0 10px">'+counts.attended+' attended · '+counts.absent+' absent · '+counts.excused+' excused · '+counts.pending+' not marked</div>';
+        var tbl = C.el('<div></div>');
+        occ.attendance.forEach(function(a, idx){
+          var row = C.el('<div class="attendrow" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:.5px solid var(--line)"></div>');
+          row.innerHTML = '<div><b>'+esc(a.partner)+'</b> <span class="mono" style="font-size:11px;color:var(--ink-muted)">'+esc(a.partnerId)+'</span></div>'+
+            '<div class="attctl" style="display:flex;align-items:center;gap:8px">'+attChip(a.status)+'</div>';
+          if (can){
+            var ctl = row.querySelector('.attctl');
+            ['attended','excused','absent'].forEach(function(st){
+              var b = C.el('<button class="btn sm'+(a.status===st?' primary':'')+'" style="padding:3px 8px;font-size:11px">'+({attended:'Present',excused:'Excused',absent:'Absent'}[st])+'</button>');
+              b.onclick = function(){ markAttendance(occ.id, idx, st); location.reload(); };
+              ctl.appendChild(b);
+            });
+          }
+          tbl.appendChild(row);
+        });
+        wrap.appendChild(tbl); main.appendChild(wrap);
+      });
+      main.appendChild(auditNote(s.id));
     }
   };
 

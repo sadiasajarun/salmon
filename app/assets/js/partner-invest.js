@@ -16,26 +16,61 @@
  *     panel, exactly like every other commission).
  *   - No presenting Salmon as a guarantor or investment adviser.
  *
- * Everything below is a DISPLAY of records a staff member typed in. Amounts are
- * facts on the record, never a forecast. A "pending" entry is a record of
- * intent, NOT a guarantee — copy must never let it read as one.
+ * Everything below is a DISPLAY of records a staff member typed in. A "pending"
+ * entry is a record of intent, NOT a guarantee — copy must never let it read as
+ * one.
  *
- * The disclaimer copy (P56) is a LEGAL DELIVERABLE from Salmon's counsel. It is
- * intentionally left as a marked placeholder — do NOT fabricate legalese.
+ * ⭐ AMOUNTS ARE HELD, NOT SHOWN. Every legally-consequential value — the
+ * recorded investment amount AND every return-entry amount — is displayed as
+ * the marker  [AMOUNT — LEGAL SIGN-OFF REQUIRED]  until Salmon's counsel
+ * approves the return-schedule STRUCTURE and VALUES. `LEGAL_SIGNOFF_RECEIVED`
+ * is the single gate: while it is false (it is, and stays false until counsel
+ * delivers), NO amount renders — even if a figure were present in the data.
+ * The seed amounts are therefore null: nothing real exists to leak.
+ *
+ * The disclaimer copy (P56), the commercial terms, the effective date, and the
+ * return frequency are all LEGAL / CLIENT deliverables. They are intentionally
+ * left as marked placeholders — do NOT fabricate legalese, terms, or figures.
  * ==========================================================================*/
 (function (root) {
   'use strict';
 
+  // The one gate. Until Salmon's counsel delivers the commercial rules, the
+  // return-schedule structure/values and the disclaimer copy, this is false —
+  // and NO amount is ever rendered. Flipping it is a legal decision, not a code
+  // decision (see OPEN_QUESTIONS 6.6 items 1–4, ship-blocking).
+  var LEGAL_SIGNOFF_RECEIVED = false;
+
+  // The markers. These are what the partner sees in place of any money figure,
+  // effective date, commercial terms, or frequency — none of which are signed
+  // off. English + Bengali so the discipline holds in both languages.
+  var AMOUNT_MARKER   = { en: '[AMOUNT — LEGAL SIGN-OFF REQUIRED]',    bn: '[পরিমাণ — আইনি অনুমোদন প্রয়োজন]' };
+  var TERMS_MARKER    = { en: '[CLIENT-APPROVED TERMS REQUIRED]',      bn: '[ক্লায়েন্ট-অনুমোদিত শর্ত প্রয়োজন]' };
+  var FREQUENCY_MARKER= { en: '[FREQUENCY — CLIENT-APPROVED]',         bn: '[ফ্রিকোয়েন্সি — ক্লায়েন্ট-অনুমোদিত]' };
+  var EFFDATE_MARKER  = { en: '[EFFECTIVE DATE — CLIENT-APPROVED]',    bn: '[কার্যকর তারিখ — ক্লায়েন্ট-অনুমোদিত]' };
+  var INDEP_MARKER    = { en: '[CLIENT-APPROVED COPY REQUIRED]',       bn: '[ক্লায়েন্ট-অনুমোদিত কপি প্রয়োজন]' };
+
+  // The display gate. Returns the amount marker unless legal sign-off is in AND
+  // a real figure exists. Today it always returns the marker — by design.
+  function showAmount(amountBdt, lang) {
+    if (!LEGAL_SIGNOFF_RECEIVED || amountBdt == null) { return AMOUNT_MARKER[lang === 'bn' ? 'bn' : 'en']; }
+    return null; // caller may format the number only once sign-off is real
+  }
+
   // --- The confirmed investment record (Nasrin's share) ---------------------
   // Recorded by staff AFTER offline documentation + payment verification.
-  // She did NOT pay through the app. The app only displays this.
+  // She did NOT pay through the app. The app only displays this record.
+  // amountBdt is null and the terms/effective date are markers — the shape is
+  // recorded; the legally-consequential values are held for counsel.
   var record = {
     ref: 'INV-2026-0142',
     project: 'Salmon Oasis Park',
     projectBn: 'স্যামন ওয়েসিস পার্ক',
     shareRef: 'SHARE-OP-07',
-    amountBdt: 2500000,            // amount recorded by staff (a fact, not a projection)
-    recordedUtc: '2026-06-30T09:00:00Z',
+    amountBdt: null,              // HELD — rendered as [AMOUNT — LEGAL SIGN-OFF REQUIRED]
+    effectiveDate: null,          // HELD — client-approved effective date not supplied
+    termsSignedOff: false,        // commercial terms are [CLIENT-APPROVED TERMS REQUIRED]
+    recordedUtc: '2026-06-30T09:00:00Z',  // when staff wrote the record down (a log stamp, not a promise)
     recordedBy: 'Salmon staff (web panel)',
     recordedByBn: 'স্যামন স্টাফ (ওয়েব প্যানেল)',
     status: 'recorded',           // record state only — no "active/earning" language
@@ -44,7 +79,7 @@
 
   // --- Return schedule: STATUS-ONLY record table ----------------------------
   // Manually recorded entries. The app does NOT calculate, project, or promise
-  // any of these. Status is the point; the amount is the recorded figure.
+  // any of these. Status is the point; every amount is HELD as a marker.
   var RETURN_STATUS = {
     paid:   { en: 'Paid',    bn: 'পরিশোধিত',  cls: 'rs-paid'   },
     pending:{ en: 'Pending', bn: 'অপেক্ষমাণ',  cls: 'rs-pending'},
@@ -53,12 +88,13 @@
 
   // Each entry = one row a human typed. `recordedUtc` = when the entry was
   // written down (NOT a "due date" countdown, which would imply certainty).
+  // amountBdt is null on every row — held as the marker until legal sign-off.
   var returnSchedule = [
-    { id: 'RE-01', periodLabelEn: 'Entry 1', periodLabelBn: 'এন্ট্রি ১', amountBdt: 31250, status: 'paid',    recordedUtc: '2026-04-05T09:00:00Z', recordedBy: 'Salmon staff', note: '' },
-    { id: 'RE-02', periodLabelEn: 'Entry 2', periodLabelBn: 'এন্ট্রি ২', amountBdt: 31250, status: 'paid',    recordedUtc: '2026-05-05T09:00:00Z', recordedBy: 'Salmon staff', note: '' },
-    { id: 'RE-03', periodLabelEn: 'Entry 3', periodLabelBn: 'এন্ট্রি ৩', amountBdt: 31250, status: 'paid',    recordedUtc: '2026-06-05T09:00:00Z', recordedBy: 'Salmon staff', note: '' },
-    { id: 'RE-04', periodLabelEn: 'Entry 4', periodLabelBn: 'এন্ট্রি ৪', amountBdt: 31250, status: 'pending', recordedUtc: '2026-07-01T09:00:00Z', recordedBy: 'Salmon staff', note: 'Recorded as intended — not confirmed.' },
-    { id: 'RE-05', periodLabelEn: 'Entry 5', periodLabelBn: 'এন্ট্রি ৫', amountBdt: 31250, status: 'onHold', recordedUtc: '2026-07-01T09:00:00Z', recordedBy: 'Salmon staff', note: 'Held pending Salmon review.' }
+    { id: 'RE-01', periodLabelEn: 'Entry 1', periodLabelBn: 'এন্ট্রি ১', amountBdt: null, status: 'paid',    recordedUtc: '2026-04-05T09:00:00Z', recordedBy: 'Salmon staff', note: '' },
+    { id: 'RE-02', periodLabelEn: 'Entry 2', periodLabelBn: 'এন্ট্রি ২', amountBdt: null, status: 'paid',    recordedUtc: '2026-05-05T09:00:00Z', recordedBy: 'Salmon staff', note: '' },
+    { id: 'RE-03', periodLabelEn: 'Entry 3', periodLabelBn: 'এন্ট্রি ৩', amountBdt: null, status: 'paid',    recordedUtc: '2026-06-05T09:00:00Z', recordedBy: 'Salmon staff', note: '' },
+    { id: 'RE-04', periodLabelEn: 'Entry 4', periodLabelBn: 'এন্ট্রি ৪', amountBdt: null, status: 'pending', recordedUtc: '2026-07-01T09:00:00Z', recordedBy: 'Salmon staff', note: 'Recorded as intended — not confirmed.' },
+    { id: 'RE-05', periodLabelEn: 'Entry 5', periodLabelBn: 'এন্ট্রি ৫', amountBdt: null, status: 'onHold',  recordedUtc: '2026-07-01T09:00:00Z', recordedBy: 'Salmon staff', note: 'Held pending Salmon review.' }
   ];
 
   function entry(id) { return returnSchedule.filter(function (e) { return e.id === id; })[0] || null; }
@@ -68,6 +104,13 @@
     '[LEGAL COPY REQUIRED — supplied by Salmon’s legal counsel]';
 
   root.PartnerInvest = {
+    LEGAL_SIGNOFF_RECEIVED: LEGAL_SIGNOFF_RECEIVED,
+    AMOUNT_MARKER: AMOUNT_MARKER,
+    TERMS_MARKER: TERMS_MARKER,
+    FREQUENCY_MARKER: FREQUENCY_MARKER,
+    EFFDATE_MARKER: EFFDATE_MARKER,
+    INDEP_MARKER: INDEP_MARKER,
+    showAmount: showAmount,
     record: record,
     RETURN_STATUS: RETURN_STATUS,
     returnSchedule: returnSchedule,
@@ -99,6 +142,11 @@
         holds: 'What is recorded',
         recordedOn: 'Recorded on', recordedBy: 'Recorded by', reference: 'Reference',
         amountRecorded: 'Amount recorded', project: 'Project', share: 'Share',
+        clientTerms: 'Client-approved terms', effectiveDate: 'Effective date',
+        termsHeld: 'The commercial terms are recorded offline under Salmon’s client-approved agreement. They are not reproduced or interpreted in the app.',
+        frequency: 'Return frequency', frequencyNote: 'The schedule frequency is set by Salmon’s client-approved terms — the app does not decide or compute it.',
+        independentTitle: 'Independent development activity',
+        independentBody: 'Any construction or property-development a partner undertakes with their investment is their own responsibility, outside the platform. Salmon and the app do not manage, execute, or take responsibility for it. The exact client-approved wording will appear here.',
         scheduleTitle: 'Return schedule',
         scheduleSub: 'A record of return entries typed in by staff. Status only — the app does not calculate, project, or promise any entry.',
         entryTitle: 'Return entry',
@@ -135,6 +183,11 @@
         holds: 'যা রেকর্ড করা আছে',
         recordedOn: 'রেকর্ডের তারিখ', recordedBy: 'রেকর্ড করেছেন', reference: 'রেফারেন্স',
         amountRecorded: 'রেকর্ডকৃত পরিমাণ', project: 'প্রকল্প', share: 'শেয়ার',
+        clientTerms: 'ক্লায়েন্ট-অনুমোদিত শর্ত', effectiveDate: 'কার্যকর তারিখ',
+        termsHeld: 'বাণিজ্যিক শর্তগুলো স্যামনের ক্লায়েন্ট-অনুমোদিত চুক্তির অধীনে অফলাইনে রেকর্ডকৃত। এগুলো অ্যাপে পুনরুৎপাদন বা ব্যাখ্যা করা হয় না।',
+        frequency: 'রিটার্ন ফ্রিকোয়েন্সি', frequencyNote: 'সূচির ফ্রিকোয়েন্সি স্যামনের ক্লায়েন্ট-অনুমোদিত শর্ত দ্বারা নির্ধারিত — অ্যাপ এটি ঠিক করে না বা হিসাব করে না।',
+        independentTitle: 'স্বাধীন উন্নয়ন কার্যক্রম',
+        independentBody: 'একজন পার্টনার তার বিনিয়োগ দিয়ে যে নির্মাণ বা সম্পত্তি-উন্নয়ন করেন তা তার নিজের দায়িত্ব, প্ল্যাটফর্মের বাইরে। স্যামন ও অ্যাপ এটি পরিচালনা, সম্পাদন বা এর দায় নেয় না। সঠিক ক্লায়েন্ট-অনুমোদিত ভাষা এখানে আসবে।',
         scheduleTitle: 'রিটার্ন সূচি',
         scheduleSub: 'স্টাফ কর্তৃক লেখা রিটার্ন এন্ট্রির রেকর্ড। শুধুমাত্র অবস্থা — অ্যাপ কোনো এন্ট্রি হিসাব, অনুমান বা প্রতিশ্রুতি করে না।',
         entryTitle: 'রিটার্ন এন্ট্রি',

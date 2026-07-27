@@ -372,21 +372,110 @@
     });
   }
 
-  /* ---------- J03 · Offline payments ---------- */
-  SCREENS.J03 = { title:'Offline payment records', sub:'Booking payments submitted from the partner app', perm:'VIEW_PAYMENTS',
-    emptyState:function(){ return C.EmptyState({ icon:'✓', title:'No offline payments pending' }); },
+  /* ---------- J03 / BR04 · Offline booking payment-history desk ----------
+   * The integrity screen (Req 6.10.4). Finance can VERIFY a partner-recorded
+   * claim, or CORRECT / REJECT / REVERSE it — the last three each demand a
+   * MANDATORY REASON and write an audit entry. Nothing is ever hard-deleted:
+   * every action is a status transition + a reason kept on the record's history.
+   * A partner-recorded row is an *unverified claim* until finance confirms it. */
+  function offPill(st){
+    var m={ pending:['amber','Recorded · unverified'], verified:['green','Verified'], corrected:['blue','Corrected'], rejected:['red','Rejected'], reversed:['grey','Reversed'] };
+    var x=m[st]||['grey',st]; return '<span class="pill '+x[0]+'"><span class="dot"></span>'+esc(x[1])+'</span>';
+  }
+  function offHistory(r){ return (r.history||[]).concat([{ action:'RECORDED', by:r.partner+' (partner)', at:r.submittedUtc, reason:'Offline '+(r.kind||'payment')+' recorded — '+r.method+', ref '+(r.reference||'—') }]); }
+  function pushOffHistory(r, entry){
+    var ov=readOv(); var patch=ov['off:'+r.id]||{}; patch.history=[entry].concat(patch.history||r.history||[]);
+    return patch;
+  }
+  function verifyOffline(r, after){
+    C.confirmDialog({ title:'Verify payment '+r.id+'?', body:'<p>Confirm this <b>offline</b> '+(r.kind||'payment')+' of <b>'+fmt.bdt(r.amountBdt)+'</b> from <b>'+esc(r.buyer)+'</b> (recorded by '+esc(r.partner)+') against the evidence in the repository. This records that finance <b>verified a fact</b> — it moves no money.', warn:'Only verify after checking the attached evidence ('+esc(r.evidence||'—')+').', confirmLabel:'Verify payment' }).then(function(ok){
+      if(!ok) return;
+      Perm.requirePermission(state.role,'VERIFY_PAYMENT');
+      var patch=pushOffHistory(r,{ action:'VERIFIED', by:actor().name, at:root.CRM_NOW, reason:'' }); patch.status='verified'; patch.verifiedUtc=root.CRM_NOW;
+      Ripples.mutate('off:'+r.id, patch);
+      Audit.audit({ actor:actor(), action:'VERIFY_OFFLINE_PAYMENT', target:r.id+' · '+r.buyer, changes:{ from:'pending', to:'verified', amount:fmt.bdt(r.amountBdt) } });
+      Ripples.emit({ mobileId:r.partnerId, kind:'partner', screen:'P42 · Record status', headline:'Payment '+r.id+' ('+r.buyer+') verified — the partner’s record flips Unverified → Verified' });
+      C.toast({ type:'success', title:'Payment verified', text:r.buyer+' · '+fmt.bdt(r.amountBdt), ripple:'partner sees “Verified”' });
+      after&&after();
+    });
+  }
+  function correctOffline(r, after){
+    formDialog({ title:'Correct payment '+r.id, width:520,
+      intro:'<p class="hint">A correction fixes a mis-recorded value without deleting the entry. The old value is kept in the audit trail. The partner keeps seeing a simplified status only.</p>',
+      fields:[
+        { type:'text', key:'amount', label:'Corrected amount (BDT)', value:String(r.amountBdt), placeholder:'e.g. 450000' },
+        { type:'select', key:'method', label:'Method (category)', value:r.method, options:['Cash','Bank transfer','Cheque','MFS (bKash)','MFS (Nagad)','Other'] },
+        { type:'text', key:'reference', label:'Non-sensitive reference', value:r.reference||'', placeholder:'office receipt / slip no.' },
+        { type:'textarea', key:'reason', label:'Reason for correction', required:true, placeholder:'e.g. Partner recorded 500,000 but the deposit slip shows 450,000.' }
+      ],
+      warn:'This overwrites the recorded value. The original is preserved in the audit log — never deleted.',
+      confirmLabel:'Save correction' }).then(function(v){
+      if(!v) return;
+      Perm.requirePermission(state.role,'CORRECT_PAYMENT');
+      var newAmt=parseInt(String(v.amount).replace(/[^\d]/g,''),10)||r.amountBdt;
+      var patch=pushOffHistory(r,{ action:'CORRECTED', by:actor().name, at:root.CRM_NOW, reason:v.reason, from:fmt.bdt(r.amountBdt)+' · '+r.method, to:fmt.bdt(newAmt)+' · '+v.method });
+      patch.status='corrected'; patch.amountBdt=newAmt; patch.method=v.method; patch.reference=v.reference;
+      Ripples.mutate('off:'+r.id, patch);
+      Audit.audit({ actor:actor(), action:'CORRECT_OFFLINE_PAYMENT', target:r.id+' · '+r.buyer, changes:{ from:fmt.bdt(r.amountBdt)+' · '+r.method, to:fmt.bdt(newAmt)+' · '+v.method, reason:v.reason } });
+      Ripples.emit({ mobileId:r.partnerId, kind:'partner', screen:'P42 · Record status', headline:'Payment '+r.id+' ('+r.buyer+') corrected by finance — partner still sees a simplified status' });
+      C.toast({ type:'success', title:'Correction saved', text:r.buyer+' · '+fmt.bdt(newAmt), ripple:'audited — original kept' });
+      after&&after();
+    });
+  }
+  function rejectOffline(r, after){
+    formDialog({ title:'Reject payment '+r.id, danger:true,
+      intro:'<p class="hint">Rejecting a recorded claim that finance could not confirm. The reason is shown to the partner on their record-status screen.</p>',
+      fields:[ { type:'textarea', key:'reason', label:'Rejection reason', required:true, placeholder:'e.g. No matching deposit found on the bank statement for this reference.' } ],
+      mobileNote:'The partner sees the record move to <b>Rejected</b> with this reason.',
+      warn:'The record is retained as rejected — never deleted.',
+      confirmLabel:'Reject payment' }).then(function(v){
+      if(!v) return;
+      Perm.requirePermission(state.role,'REJECT_PAYMENT');
+      var patch=pushOffHistory(r,{ action:'REJECTED', by:actor().name, at:root.CRM_NOW, reason:v.reason }); patch.status='rejected'; patch.reason=v.reason;
+      Ripples.mutate('off:'+r.id, patch);
+      Audit.audit({ actor:actor(), action:'REJECT_OFFLINE_PAYMENT', target:r.id+' · '+r.buyer, changes:{ from:r.status, to:'rejected', reason:v.reason } });
+      Ripples.emit({ mobileId:r.partnerId, kind:'partner', screen:'P42 · Record status', reason:v.reason, headline:'Payment '+r.id+' ('+r.buyer+') rejected — partner sees Rejected with the reason' });
+      C.toast({ type:'warning', title:'Payment rejected', text:r.buyer+' notified.', ripple:'partner sees “Rejected” + reason' });
+      after&&after();
+    });
+  }
+  function reverseOffline(r, after){
+    formDialog({ title:'Reverse verified payment '+r.id, danger:true,
+      intro:'<p class="hint">Reversing a <b>previously verified</b> payment (e.g. a cheque later bounced). This records that the money is no longer counted — it moves no money and does not delete the entry.</p>',
+      fields:[ { type:'textarea', key:'reason', label:'Reason for reversal', required:true, placeholder:'e.g. Cheque 220145 returned unpaid by the bank on 24 Jul.' } ],
+      mobileNote:'The partner sees the record move to <b>Reversed</b>; the verified amount stops counting.',
+      warn:'The verified entry is retained with a reversal reason — never deleted. Finance handles any money movement outside the panel.',
+      confirmLabel:'Reverse payment' }).then(function(v){
+      if(!v) return;
+      Perm.requirePermission(state.role,'REVERSE_PAYMENT');
+      var patch=pushOffHistory(r,{ action:'REVERSED', by:actor().name, at:root.CRM_NOW, reason:v.reason }); patch.status='reversed'; patch.reason=v.reason;
+      Ripples.mutate('off:'+r.id, patch);
+      Audit.audit({ actor:actor(), action:'REVERSE_OFFLINE_PAYMENT', target:r.id+' · '+r.buyer, changes:{ from:'verified', to:'reversed', amount:fmt.bdt(r.amountBdt), reason:v.reason } });
+      Ripples.emit({ mobileId:r.partnerId, kind:'partner', screen:'P42 · Record status', reason:v.reason, headline:'Verified payment '+r.id+' ('+r.buyer+') reversed — no longer counted as paid' });
+      C.toast({ type:'warning', title:'Payment reversed', text:r.buyer+' · '+fmt.bdt(r.amountBdt)+' no longer counted.', ripple:'partner sees “Reversed”' });
+      after&&after();
+    });
+  }
+  SCREENS.J03 = { title:'Offline booking payment-history', sub:'Partner-recorded offline payments — finance verifies claim → fact (Req 6.10.4)', perm:'VIEW_PAYMENTS',
+    emptyState:function(){ return C.EmptyState({ icon:'✓', title:'No offline payment records yet' }); },
     render:function(main){
-      var q = FIN.allOffline().filter(function(o){return o.status==='pending';});
+      var all = FIN.allOffline();
       main.innerHTML = header(this);
-      if (!q.length){ main.insertAdjacentHTML('beforeend', this.emptyState()); return; }
+      main.insertAdjacentHTML('beforeend','<div class="metaline">Every partner row is an <b>unverified claim</b> about an offline payment until finance confirms it. Correct / Reject / Reverse each require a reason and are audited — nothing is deleted. No account or card numbers exist here; “method” is a category only.</div>');
+      if (!all.length){ main.insertAdjacentHTML('beforeend', this.emptyState()); return; }
       var tw=C.el('<div></div>'); main.appendChild(tw);
-      var draw=function(){ C.mountDataTable(tw, { rowId:'id', noun:'records', rows:FIN.allOffline().filter(function(o){return o.status==='pending';}), columns:[
-        { key:'partner', label:'Submitted by', strong:true }, { key:'buyer', label:'Buyer' }, { key:'project', label:'Project' },
+      var draw=function(){ C.mountDataTable(tw, { rowId:'id', noun:'records', rows:FIN.allOffline(), columns:[
+        { key:'id', label:'Ref', render:function(r){ return '<span class="mono" style="font-size:11px">'+esc(r.id)+'</span>'; } },
+        { key:'partner', label:'Recorded by', strong:true }, { key:'buyer', label:'Buyer' }, { key:'project', label:'Project · unit', render:function(r){ return esc(r.project)+(r.unit?' · '+esc(r.unit):''); } },
         { key:'method', label:'Method' }, { key:'amountBdt', label:'Amount', align:'right', render:function(r){ return fmt.bdt(r.amountBdt); } },
-        { key:'submittedUtc', label:'Submitted', render:function(r){ return fmt.dhaka(r.submittedUtc); } }
+        { key:'bookingDate', label:'Booking date', render:function(r){ return r.bookingDate?fmt.dhaka(r.bookingDate):'—'; } },
+        { key:'status', label:'Status', render:function(r){ return offPill(r.status); } }
       ], rowActions:[
-        { label:'Verify', icon:'✓', onClick:function(r){ Perm.requirePermission(state.role,'VERIFY_WIRE'); Ripples.mutate('off:'+r.id,{status:'verified'}); Audit.audit({actor:actor(),action:'VERIFY_OFFLINE_PAYMENT',target:r.id+' · '+r.buyer,changes:{from:'pending',to:'verified'}}); Ripples.emit({kind:'client',screen:'Payment · success',headline:'Offline payment '+r.id+' ('+r.buyer+') verified — recorded against the booking'}); C.toast({type:'success',title:'Payment verified',text:r.buyer+' · '+fmt.bdt(r.amountBdt),ripple:'booking payment recorded'}); draw(); } },
-        { label:'Reject', icon:'✕', danger:true, onClick:function(r){ Perm.requirePermission(state.role,'REJECT_PAYMENT'); Ripples.mutate('off:'+r.id,{status:'rejected'}); Audit.audit({actor:actor(),action:'REJECT_PAYMENT',target:r.id}); C.toast({type:'warning',title:'Payment rejected',text:r.buyer}); draw(); } }
+        { label:'Verify', icon:'✓', disabled:function(r){ return r.status!=='pending' || !Perm.can(state.role,'VERIFY_PAYMENT'); }, onClick:function(r){ verifyOffline(r, draw); } },
+        { label:'Correct', icon:'✎', disabled:function(r){ return (r.status!=='pending'&&r.status!=='verified'&&r.status!=='corrected') || !Perm.can(state.role,'CORRECT_PAYMENT'); }, onClick:function(r){ correctOffline(r, draw); } },
+        { label:'Reject', icon:'✕', danger:true, disabled:function(r){ return r.status!=='pending' || !Perm.can(state.role,'REJECT_PAYMENT'); }, onClick:function(r){ rejectOffline(r, draw); } },
+        { label:'Reverse', icon:'⇄', danger:true, disabled:function(r){ return (r.status!=='verified'&&r.status!=='corrected') || !Perm.can(state.role,'REVERSE_PAYMENT'); }, onClick:function(r){ reverseOffline(r, draw); } },
+        { label:'History', icon:'↗', onClick:function(r){ var h=offHistory(r).map(function(e){ return '• '+e.action+' — '+esc(e.by)+' · '+fmt.dhaka(e.at)+(e.reason?' — “'+esc(e.reason)+'”':'')+(e.from?' ['+esc(e.from)+' → '+esc(e.to)+']':''); }).join('<br>'); C.confirmDialog({ title:'Payment history — '+r.id, body:'<div style="font-size:12.5px;line-height:1.9">'+h+'</div>', confirmLabel:'Close' }); } }
       ] }); };
       draw();
     }

@@ -3,6 +3,10 @@
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Salmon Partner · Request meeting</title>
 <link rel="stylesheet" href="../_shared.css"/>
+<script src="../assets/js/mock-data.js"></script>
+<script src="../assets/js/currency.js"></script>
+<script src="../assets/js/salmon-categories.js"></script>
+<script src="../assets/js/project-selector.js"></script>
 <script src="../assets/js/partner-ops.js"></script>
 <script src="../assets/js/network-sim.js"></script>
 </head><body>
@@ -17,6 +21,11 @@
 var O=window.PartnerOps, lang='en'; var K='salmon_meeting_draft';
 function t(bn,en){ return lang==='bn'?bn:en; }
 function draft(){ try{ return JSON.parse(localStorage.getItem(K))||{kind:'virtual'}; }catch(e){ return {kind:'virtual'}; } }
+// WI10 (Req 6.6) — a consultation/visit can be requested FROM an investment
+// record. The investment context just TAGS this request; we do not build a
+// parallel meeting flow. Context-only — never a transaction.
+var Q=new URLSearchParams(location.search); var INV=(Q.get('ctx')==='investment')?(Q.get('ref')||'—'):null;
+if(INV){ var _d=draft(); _d.ctx='investment'; _d.investRef=INV; try{localStorage.setItem(K,JSON.stringify(_d));}catch(e){} }
 function set(k,v){ var d=draft(); d[k]=v; d.kind='virtual'; try{localStorage.setItem(K,JSON.stringify(d));}catch(e){} }
 function bar(){ document.getElementById('top').innerHTML=
   '<div class="wkbar"><a class="bk" href="calendar.page.html">‹</a><h2>'+t('মিটিং অনুরোধ','Request a meeting')+'</h2>'+
@@ -24,13 +33,22 @@ function bar(){ document.getElementById('top').innerHTML=
 function render(){
   bar(); var d=draft();
   document.getElementById('form').innerHTML=
+    (INV?'<div style="margin:12px 16px;background:#f6f5f4;border:1px solid #e4e1de;border-left:3px solid var(--ink);border-radius:8px;padding:10px 12px;font-size:12px;color:#3a3a3a;line-height:1.5">'+t('এই অনুরোধটি আপনার বিনিয়োগ রেকর্ডের সাথে যুক্ত — শুধু প্রসঙ্গ, কোনো লেনদেন নয়।','Tied to your investment record — context only, not a transaction.')+' <b style="font-family:var(--mono,monospace)">'+INV+'</b></div>':'')+
     '<label class="pf">'+t('কার সাথে','Who with')+'</label><select class="pinp psel" onchange="set(\'with\',this.value)">'+O.meetingWith.map(function(w){return '<option value="'+w.key+'"'+(d.with===w.key?' selected':'')+'>'+t(w.bn,w.en)+'</option>';}).join('')+'</select>'+
+    '<label class="pf">'+t('সম্পর্কিত প্রকল্প','Related project')+' <span class="opt" style="color:var(--ink-subtle);font-weight:400">'+t('(ঐচ্ছিক)','(optional)')+'</span></label><div id="proj-sel"></div>'+
     '<label class="pf">'+t('কারণ','Reason')+'</label><div class="chips" style="padding:0 16px 4px">'+O.meetingReasons.map(function(r){return '<span class="chip'+(d.reason===r.key?' active':'')+'" onclick="pickReason(\''+r.key+'\')">'+t(r.bn,r.en)+'</span>';}).join('')+'</div>'+
     '<label class="pf">'+t('পছন্দের সময় ১','Preferred time 1')+'</label><input class="pinp" type="datetime-local" value="'+(d.pref1||'')+'" oninput="set(\'pref1\',this.value)">'+
     '<label class="pf">'+t('পছন্দের সময় ২','Preferred time 2')+'</label><input class="pinp" type="datetime-local" value="'+(d.pref2||'')+'" oninput="set(\'pref2\',this.value)">'+
     '<label class="pf">'+t('নোট','Notes')+' <span class="opt" style="color:var(--ink-subtle);font-weight:400">'+t('(ঐচ্ছিক)','(optional)')+'</span></label><textarea class="pinp" style="height:56px;resize:none" oninput="set(\'note\',this.value)">'+(d.note||'')+'</textarea>'+
     '<p class="phelp">'+t('আপনি একটি স্লট অনুরোধ করছেন — শিডিউলার ওয়েব প্যানেলে নিশ্চিত করবেন। আপনি সরাসরি কারও ক্যালেন্ডারে বুক করছেন না। খসড়া স্থানীয়ভাবে সংরক্ষিত।','You’re requesting a slot — the scheduler confirms it on the web panel. You’re not booking into anyone’s calendar directly. Draft saved locally.')+'</p>';
   document.getElementById('submit').textContent=t('অনুরোধ পাঠান','Send request');
+  // Req 6.5.7 — a meeting can now be tied to a project via the shared selector
+  // (previously this flow had no project field at all).
+  window.ProjectSelector.field(document.getElementById('proj-sel'), {
+    mode:'project', testid:'meeting-project-selector', placeholder:t('প্রকল্প নির্বাচন','Select a project'),
+    value: d.projectSlug ? { projectId:d.projectSlug, projectName:d.projectName||d.projectSlug } : null,
+    onChange: function(ref){ set('projectSlug', ref.projectId); set('projectName', ref.projectName); }
+  });
 }
 function pickReason(r){ set('reason',r); render(); }
 function submitReq(e){ e.preventDefault();

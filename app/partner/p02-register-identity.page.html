@@ -4,9 +4,10 @@
 <title>Salmon Partner · Registration</title>
 <link rel="stylesheet" href="../_shared.css"/>
 <script src="../assets/js/partner-state.js"></script>
+<script src="../assets/js/i18n.js"></script>
 <script src="../assets/js/network-sim.js"></script>
 </head><body>
-<div class="page-label">P02 · Registration — identity <small>Name · phone+OTP · email · NID · drafts locally (survives 3G drop)</small></div>
+<div class="page-label">P02 · Registration — identity <small>Name · NID · verification (phone/email/both — config-driven) · drafts locally (survives 3G drop)</small></div>
 <div class="device">
   <div class="statusbar"><span>9:41</span><span>Salmon</span><span>●●● ▮</span></div>
   <div id="top" style="flex:0 0 auto"></div>
@@ -16,6 +17,12 @@
 <script>
 var P=window.Partner, lang='en', d=P.getDraft(), otpCode='';
 function t(bn,en){ return lang==='bn'?bn:en; }
+function L(key){ return window.tr ? tr(lang,key) : key; }
+// 6.1.1 — verification method is CONFIG-DRIVEN (phone | email | both), not hardcoded
+function vm(){ return (P.CONFIG&&P.CONFIG.REGISTRATION_VERIFY_METHOD)||'phone'; }
+function hasPhone(){ return vm()==='phone'||vm()==='both'; }
+function hasEmail(){ return vm()==='email'||vm()==='both'; }
+function sendEmailLink(){ if(!(d.email&&d.email.indexOf('@')>0)){ alert(t('আগে একটি ইমেইল দিন।','Enter an email first.')); return; } set('emailVerifySent','1'); }
 function save(k,v){ d=P.saveDraft(k?({}[k]=v,(function(o){o[k]=v;return o;})({})):{}); flashSaved(); }
 function set(k,v){ var o={}; o[k]=v; P.saveDraft(o); d=P.getDraft(); flashSaved(); }
 function flashSaved(){ var s=document.getElementById('saved'); if(s){ s.style.opacity='1'; clearTimeout(window._st); window._st=setTimeout(function(){s.style.opacity='0';},1200); } }
@@ -26,17 +33,29 @@ function bar(){ document.getElementById('top').innerHTML=
   '<div class="steplabel">'+t('ধাপ ১ / ৫ · পরিচয়','Step 1 / 5 · Identity')+' <span id="saved" style="color:var(--success);opacity:0;transition:opacity .3s;float:right">✓ '+t('সংরক্ষিত','saved')+'</span></div>'; }
 function render(){
   bar();
-  document.getElementById('form').innerHTML=
-    '<label class="pf">'+t('পুরো নাম','Full name')+'</label><input class="pinp" id="name" placeholder="'+t('আপনার নাম','Your name')+'" value="'+(d.name||'')+'" oninput="set(\'name\',this.value)">'+
-    '<label class="pf">'+t('মোবাইল নম্বর','Mobile number')+'</label>'+
-    '<div style="display:flex;gap:8px;margin:0 16px"><select class="pinp psel" style="width:96px;margin:0" onchange="set(\'cc\',this.value)"><option>+880</option><option>+971</option></select>'+
-    '<input class="pinp" style="flex:1;margin:0;width:auto" type="tel" inputmode="numeric" id="phone" placeholder="01XXXXXXXXX" value="'+(d.phone||'')+'" oninput="set(\'phone\',this.value)"></div>'+
-    '<button class="btn ghost" style="margin:10px 16px 0;border-radius:10px" onclick="sendOtp()">'+(otpCode?t('কোড আবার পাঠান','Resend code'):t('যাচাই কোড পাঠান','Send verification code'))+'</button>'+
-    '<div id="otpwrap" class="'+(otpCode?'':'hidden')+'"><label class="pf">'+t('৬-সংখ্যার কোড','6-digit code')+'</label><input class="pinp" inputmode="numeric" maxlength="6" placeholder="––––––" value="'+(d.otp||'')+'" oninput="set(\'otp\',this.value)">'+
-    (otpCode?'<div class="lock info" style="margin:8px 16px 0">'+t('কোড পাঠানো হয়েছে ','Code sent to ')+'+'+((d.cc||'+880'))+' '+((d.phone||''))+' · '+t('ডেমো কোড: ','demo code: ')+'<b style="font-variant-numeric:tabular-nums;letter-spacing:.1em">'+otpCode+'</b></div>':'')+'</div>'+
-    '<label class="pf">'+t('ইমেইল','Email')+' <span class="opt">'+t('(ঐচ্ছিক)','(optional)')+'</span></label><input class="pinp" type="email" id="email" placeholder="you@example.com" value="'+(d.email||'')+'" oninput="set(\'email\',this.value)">'+
-    '<label class="pf">'+t('এনআইডি নম্বর','NID number')+'<span class="pflag">'+t('যাচাই পদ্ধতি চূড়ান্ত নয়','method TBD')+'</span></label><input class="pinp" inputmode="numeric" id="nid" placeholder="'+t('জাতীয় পরিচয়পত্র নম্বর','National ID number')+'" value="'+(d.nid||'')+'" oninput="set(\'nid\',this.value)">'+
-    '<p class="phelp">'+t('ফোন, ইমেইল, নাকি এনআইডি — কোনটি দিয়ে যাচাই হবে তা এখনো নির্ধারিত হয়নি (OPEN_QUESTIONS)। আপনার লেখা স্বয়ংক্রিয়ভাবে সংরক্ষিত হচ্ছে — সংযোগ বিচ্ছিন্ন হলেও হারাবে না।','Whether verification uses phone, email or NID is not yet decided (OPEN_QUESTIONS). Your input is saved automatically — a dropped connection won’t lose it.')+'</p>';
+  var h='<label class="pf">'+t('পুরো নাম','Full name')+'</label><input class="pinp" id="name" placeholder="'+t('আপনার নাম','Your name')+'" value="'+(d.name||'')+'" oninput="set(\'name\',this.value)">';
+  // --- phone verification (rendered only when config selects phone/both) ---
+  if(hasPhone()){
+    h+='<label class="pf">'+t('মোবাইল নম্বর','Mobile number')+'</label>'+
+      '<div style="display:flex;gap:8px;margin:0 16px"><select class="pinp psel" style="width:96px;margin:0" onchange="set(\'cc\',this.value)"><option>+880</option><option>+971</option></select>'+
+      '<input class="pinp" style="flex:1;margin:0;width:auto" type="tel" inputmode="numeric" id="phone" placeholder="01XXXXXXXXX" value="'+(d.phone||'')+'" oninput="set(\'phone\',this.value)"></div>'+
+      '<button class="btn ghost" style="margin:10px 16px 0;border-radius:10px" onclick="sendOtp()">'+(otpCode?t('কোড আবার পাঠান','Resend code'):t('যাচাই কোড পাঠান','Send verification code'))+'</button>'+
+      '<div id="otpwrap" class="'+(otpCode?'':'hidden')+'"><label class="pf">'+t('৬-সংখ্যার কোড','6-digit code')+'</label><input class="pinp" inputmode="numeric" maxlength="6" placeholder="––––––" value="'+(d.otp||'')+'" oninput="set(\'otp\',this.value)">'+
+      (otpCode?'<div class="lock info" style="margin:8px 16px 0">'+t('কোড পাঠানো হয়েছে ','Code sent to ')+'+'+((d.cc||'+880'))+' '+((d.phone||''))+' · '+t('ডেমো কোড: ','demo code: ')+'<b style="font-variant-numeric:tabular-nums;letter-spacing:.1em">'+otpCode+'</b></div>':'')+'</div>';
+  }
+  // --- email: verification when config selects email/both, else optional ---
+  var emailReq=hasEmail();
+  h+='<label class="pf">'+t('ইমেইল','Email')+(emailReq?'':' <span class="opt">'+t('(ঐচ্ছিক)','(optional)')+'</span>')+'</label>'+
+    '<input class="pinp" type="email" id="email" placeholder="you@example.com" value="'+(d.email||'')+'" oninput="set(\'email\',this.value)">';
+  if(emailReq){
+    h+='<button class="btn ghost" style="margin:10px 16px 0;border-radius:10px" onclick="sendEmailLink()">'+t('যাচাই লিংক পাঠান','Send verification link')+'</button>'+
+      (d.emailVerifySent?'<div class="lock info" style="margin:8px 16px 0">'+t('যাচাই লিংক পাঠানো হয়েছে — ইমেইল দেখুন (ডেমো)।','Verification link sent — check your email (demo).')+'</div>':'');
+  }
+  // --- NID (identity capture; distinct from the verification method) ---
+  h+='<label class="pf">'+t('এনআইডি নম্বর','NID number')+'</label><input class="pinp" inputmode="numeric" id="nid" placeholder="'+t('জাতীয় পরিচয়পত্র নম্বর','National ID number')+'" value="'+(d.nid||'')+'" oninput="set(\'nid\',this.value)">'+
+    '<div class="lock info" style="margin:12px 16px 0">'+L('verify.methodNote')+'<b>'+t(vm()==='phone'?'ফোন':vm()==='email'?'ইমেইল':'ফোন ও ইমেইল', vm()==='phone'?'phone':vm()==='email'?'email':'phone + email')+'</b> · '+t('স্যামন কর্তৃক নির্ধারিত (OPEN_QUESTIONS #1)।','set by Salmon (OPEN_QUESTIONS #1).')+'</div>'+
+    '<p class="phelp">'+t('আপনার লেখা স্বয়ংক্রিয়ভাবে সংরক্ষিত হচ্ছে — সংযোগ বিচ্ছিন্ন হলেও হারাবে না।','Your input is saved automatically — a dropped connection won’t lose it.')+'</p>';
+  document.getElementById('form').innerHTML=h;
   document.getElementById('next').textContent=t('চালিয়ে যান','Continue');
 }
 function sendOtp(){

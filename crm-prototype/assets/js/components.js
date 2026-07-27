@@ -91,6 +91,47 @@
   }
   function closeMenu(){ var m=document.getElementById('_ctxmenu'); if(m){ if(m._outside)document.removeEventListener('mousedown',m._outside); m.remove(); } }
 
+  /* ---------- User menu + Log out (A11 — shared across EVERY module engine) ----------
+   * The console (app.js) wires its own #user menu. The built module screens
+   * (screens/*.html) each render an identical `.user` avatar but had no menu, so
+   * there was no way to sign out from inside a module. This delegated handler gives
+   * every one of them the same account dropdown with a real Log out — confirm →
+   * clear the mock session + revoke the device token → return to the sign-in wall. */
+  function doLogout(){
+    confirmDialog({ title:'Log out', body:'<p>Sign out of the Salmon admin console on this device? Your session and device token are cleared; you’ll return to the sign-in screen.</p>', danger:true, confirmLabel:'Log out' }).then(function(ok){
+      if(!ok) return;
+      try{ if(root.Audit&&root.Audit.audit) root.Audit.audit({ actor:{ name:'—' }, action:'SIGN_OUT', target:'admin console (module)' }); }catch(e){}
+      try{ sessionStorage.removeItem('crm_authed'); }catch(e){}     // clear mock session
+      try{ localStorage.removeItem('crm_device_token'); }catch(e){} // revoke mock device token
+      location.href='../index.html';                                // → showLogin()
+    });
+  }
+  function openUserMenu(anchor){
+    closeMenu();
+    var nm=(anchor.querySelector('.nm')||{}).textContent||'Signed in';
+    var rl=(anchor.querySelector('.rl')||{}).textContent||'';
+    var m=el('<div class="pop menu" id="_ctxmenu"><div class="mhead"><div class="nm">'+esc(nm)+'</div><div class="rl">'+esc(rl)+'</div></div><div class="msep"></div>'+
+      '<div class="mi" data-a="account">👤 My account</div><div class="mi" data-a="prefs">⚙ Preferences</div><div class="msep"></div>'+
+      '<div class="mi danger" data-a="logout">⇤ Log out</div></div>');
+    document.body.appendChild(m);
+    var r=anchor.getBoundingClientRect(), w=230;
+    m.style.top=(r.bottom+6)+'px'; m.style.left=Math.max(8,Math.min(r.right-w, window.innerWidth-w-10))+'px';
+    m.querySelectorAll('.mi').forEach(function(mi){ mi.onclick=function(){ var a=mi.getAttribute('data-a'); closeMenu();
+      if(a==='logout') doLogout();
+      else toast({ type:'info', title:a==='account'?'My account':'Preferences', text:'Opens in a later part.' });
+    }; });
+    setTimeout(function(){ document.addEventListener('mousedown', outside); },0);
+    function outside(e){ if(!m.contains(e.target)){ document.removeEventListener('mousedown', outside); closeMenu(); } }
+  }
+  // Delegated: any `.user` click opens the menu — EXCEPT on the console, where
+  // app.js owns #user and stops propagation before this listener ever sees it.
+  document.addEventListener('click', function(e){
+    var u = e.target.closest ? e.target.closest('.user') : null;
+    if(!u) return;
+    if(root.App) return;               // console (app.js) handles its own #user
+    e.preventDefault(); openUserMenu(u);
+  });
+
   /* ---------- FilterBar (persistent across navigation via sessionStorage) ---------- */
   function getFilters(id){ try{ return JSON.parse(sessionStorage.getItem('crm_flt_'+id))||{}; }catch(e){ return {}; } }
   function setFilters(id,v){ try{ sessionStorage.setItem('crm_flt_'+id, JSON.stringify(v)); }catch(e){} }

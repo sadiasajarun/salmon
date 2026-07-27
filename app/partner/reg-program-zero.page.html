@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Salmon Partner · Zero Investment (registration)</title>
+<link rel="stylesheet" href="../_shared.css"/>
+<script src="../assets/js/partner-state.js"></script>
+<script src="../assets/js/program-info.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/network-sim.js"></script>
+<style>
+  .secblock{margin:14px 16px 0;padding:0 0 14px;border-bottom:1px solid var(--line,#eee)}
+  .secblock:last-child{border-bottom:none}
+  .sechint{font-size:12.5px;color:var(--ink-subtle);line-height:1.55;margin:0 0 8px}
+  .copyph{font-size:11px;font-weight:800;letter-spacing:.03em;color:#7a5a2a;background:#fbf1dd;border:1px dashed #e4c98a;border-radius:8px;padding:8px 10px}
+  .secmand .copyph{color:#6a4a52;background:#f4e6ea;border-color:#dcb3c0}
+  .reqtag{font-size:9px;font-weight:800;letter-spacing:.05em;color:#fff;background:var(--primary,#800020);border-radius:4px;padding:1px 6px;vertical-align:middle}
+  .legalrow{font-size:11px;font-weight:800;letter-spacing:.03em;color:#7a2a2a;background:#f7e7e7;border:1px dashed #e0aeae;border-radius:8px;padding:7px 10px;margin-top:8px}
+  .framing{font-size:12px;color:var(--ink-subtle);line-height:1.55;margin-top:8px}
+  .openrow{display:flex;gap:8px;align-items:flex-start;margin:12px 16px 0;background:#e7f2ec;border:1px solid #cbe4d6;border-radius:10px;padding:11px 12px;font-size:12px;color:#1E5A38;line-height:1.5}
+</style>
+</head><body>
+<div class="page-label">REG04a · Zero Investment — registration path (light) <small>Open to all · six client-approved sections · straight-through approval · shared pattern with REG04b</small></div>
+<div class="device">
+  <div class="statusbar"><span>9:41</span><span>Salmon</span><span>●●● ▮</span></div>
+  <div id="top" style="flex:0 0 auto"></div>
+  <div class="screen" style="padding-bottom:80px" id="screen"></div>
+  <div class="pbtnbar"><a class="btn ghost" href="p04-program.page.html" style="flex:0 0 auto">‹</a><a class="btn" id="next" href="p05-consent.page.html" style="flex:1">Continue</a></div>
+</div>
+<script>
+var P=window.Partner, lang='en', d=P.getDraft();
+function t(bn,en){ return lang==='bn'?bn:en; }
+// Zero path is LIGHT: no eligibility gate, no legal disclaimer wall — open to all.
+// Same six-section renderer as REG04b so the two read as variants of one design.
+var CFG={ variant:'zero', sections:{
+  description:{ hintBn:'কোনো বিনিয়োগ নয় — ক্রেতা রেফার করুন, যাচাইকৃত রূপান্তরে কমিশন পান।', hintEn:'No money down — refer buyers, earn commission on verified conversion.' },
+  eligibility:{ hintBn:'সবার জন্য উন্মুক্ত — অনুমোদিত পার্টনার তাদের নির্ধারিত টেরিটরির মধ্যে।', hintEn:'Open to all — approved partners within their assigned territory.' },
+  responsibilities:{ hintBn:'সম্মতিসহ সঠিক লিড; স্যামন-অনুমোদিত উপকরণ দিয়ে পিচ।', hintEn:'Submit accurate leads with consent; pitch using Salmon-approved material.' },
+  benefits:{ hintBn:'যাচাইকৃত রূপান্তরে কমিশন; সেলস কিট অ্যাক্সেস।', hintEn:'Commission on verified conversion; sales-kit access.' },
+  conditions:{ hintBn:'রূপান্তর কেবল স্যামন যাচাই করে; কমিশন হাতে বসানো হয়, হিসাব করা হয় না।', hintEn:'Only Salmon verifies a conversion; commission is hand-entered, never computed here.' },
+  disclaimers:{ hintBn:'প্রোগ্রামের আইনি কাঠামো — স্যামন কর্তৃক অনুমোদিত কপি।', hintEn:'The program’s legal framing — Salmon-approved copy.' }
+}};
+function bar(){ document.getElementById('top').innerHTML=
+  '<div class="wkbar"><a class="bk" href="p04-program.page.html">‹</a><h2>'+t('জিরো ইনভেস্টমেন্ট','Zero Investment')+'</h2>'+
+  '<span class="wklang"><button class="'+(lang==='bn'?'on':'')+'" onclick="setLang(\'bn\')">বাং</button><button class="'+(lang==='en'?'on':'')+'" onclick="setLang(\'en\')">EN</button></span></div>'+
+  '<div class="stepper"><i class="st done"></i><i class="st done"></i><i class="st on"></i><i class="st"></i><i class="st"></i></div>'+
+  '<div class="steplabel">'+t('ধাপ ৩ / ৫ · প্রোগ্রাম বিবরণ (জিরো)','Step 3 / 5 · Program details (Zero)')+'</div>'; }
+function render(){
+  bar();
+  d=P.getDraft();
+  var both=d.program==='both';
+  document.getElementById('screen').innerHTML=
+    '<div class="openrow"><span>✓</span><div>'+t('জিরো ইনভেস্টমেন্ট সবার জন্য উন্মুক্ত — কোনো যোগ্যতা যাচাই নেই। অনুমোদন সরাসরি হয়।','Zero Investment is open to all — no eligibility gate. Approval is straight-through.')+'</div></div>'+
+    window.ProgramInfo.render(lang,CFG)+
+    (both?'<p class="phelp" style="margin:14px 16px 0">'+t('এরপর “উইথ ইনভেস্টমেন্ট” বিবরণ ও যোগ্যতা ধাপ আসবে (আপনি উভয় প্রোগ্রাম বেছেছেন)।','Next you’ll see the With Investment details and eligibility step (you chose both programs).')+'</p>':'')+
+    '<p class="phelp" style="margin:14px 16px 16px">'+t('ছয়টি বিভাগের প্রামাণিক কপি স্যামন সরবরাহ করবে (OPEN_QUESTIONS)। কোন ঘটনা “রূপান্তর” গণ্য — এখনো নিশ্চিত নয়।','Authoritative copy for all six sections is supplied by Salmon (OPEN_QUESTIONS). What counts as a “conversion” is not yet confirmed.')+'</p>';
+  // Both → chain into the With Investment info + eligibility step; Zero-only → consent.
+  var n=document.getElementById('next');
+  n.href = both ? 'reg-program-with.page.html' : 'p05-consent.page.html';
+  n.textContent = both ? t('উইথ ইনভেস্টমেন্ট বিবরণে যান','Continue to With Investment') : t('সম্মতিতে যান','Continue to consent');
+}
+function setLang(l){ lang=l; document.documentElement.lang=l; render(); }
+render();
+</script>
+</body></html>

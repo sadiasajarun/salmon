@@ -6,6 +6,7 @@
 <script src="../assets/js/partner-state.js"></script>
 <script src="../assets/js/territory.js"></script>
 <script src="../assets/js/network-sim.js"></script>
+<script src="../assets/js/session.js"></script>
 </head><body>
 <div class="page-label">Partner · P07–P10 status wall <small>Four resolutions of “you registered” · Bengali-first · trust-holding, not a spinner</small></div>
 <div class="device">
@@ -73,7 +74,7 @@ function render(){
       '<div class="lock" style="margin:0 16px 14px">'+t('কারণ: ','Reason: ')+'<b>'+t(P.suspensionReason.bn,P.suspensionReason.en)+'</b></div>'+
       '<p class="phelp" style="margin:0 16px 14px">'+t('পর্যালোচনা শেষে আপনাকে জানানো হবে। প্রশ্ন থাকলে এখনই যোগাযোগ করুন।','You’ll be notified once the review completes. Contact us now if you have questions.')+'</p>'+reach();
   }
-  h+='<p style="text-align:center;padding:8px 0 16px"><a href="../shared/g02-welcome.page.html" style="color:var(--ink-subtle);font-size:12.5px;text-decoration:underline">'+t('লগ আউট','Log out')+'</a></p>';
+  h+='<p style="text-align:center;padding:8px 0 16px"><a href="../shared/g02-welcome.page.html" onclick="Session.logout(event)" style="color:var(--ink-subtle);font-size:12.5px;text-decoration:underline">'+t('লগ আউট','Log out')+'</a></p>';
   document.getElementById('screen').innerHTML=h;
 }
 function setS(s){ P.setStatus(s); render(); }

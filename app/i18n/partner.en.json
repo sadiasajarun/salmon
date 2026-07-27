@@ -1,0 +1,19 @@
+{
+  "consent.intro": "Please accept each of the following. Nothing is pre-ticked — tap each to accept.",
+  "consent.terms": "I have read and accept the <a>Terms of Service</a>.",
+  "consent.privacy": "I agree to the <a>Privacy Policy</a>.",
+  "consent.program": "I have read and accept the partner <a>program conditions</a>.",
+  "consent.dataHandling": "When I submit a prospective customer’s information, I confirm I have their permission to share it — and I will obtain that permission before every submission.",
+  "consent.dataHandling.tag": "Data-handling undertaking",
+  "consent.dataHandling.help": "A standing acknowledgment captured once, up front. It is separate from the per-referral consent you confirm each time you submit a lead.",
+  "consent.investDisclaimer": "With Investment: Salmon is not a guarantor or investment adviser. Returns are not guaranteed; all terms are client-approved.",
+  "consent.invest": "I understand the additional With-Investment conditions and risks.",
+  "consent.continue": "Continue",
+  "eligibility.withConditional": "Eligibility required",
+  "eligibility.withLocked": "With Investment enrolment requires administrator approval. You can register for Zero Investment now and request With Investment later.",
+  "eligibility.zeroOpen": "Open to all approved partners.",
+  "card.scanLabel": "Scan to connect",
+  "verify.phone": "Verify by mobile (OTP)",
+  "verify.email": "Verify by email link",
+  "verify.methodNote": "Verification method is set by Salmon (config). Current: "
+}

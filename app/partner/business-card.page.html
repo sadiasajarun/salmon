@@ -5,6 +5,8 @@
 <link rel="stylesheet" href="../_shared.css"/>
 <script src="../assets/js/partner-state.js"></script>
 <script src="../assets/js/territory.js"></script>
+<script src="../assets/js/qr.js"></script>
+<script src="../assets/js/i18n.js"></script>
 <script src="../assets/js/network-sim.js"></script>
 <style>
   .thumbnote{font-size:11px;color:var(--ink-subtle);text-align:center;margin:0 16px 8px}
@@ -15,7 +17,7 @@
   .toast.show{opacity:1}
 </style>
 </head><body>
-<div class="page-label">P12 · Digital business card ⭐ <small>Shareable-as-image · print-clean · legible at thumbnail size in a chat</small></div>
+<div class="page-label">P12 · Digital business card ⭐ <small>Name · Partner ID · title · territory · QR (referral link) · shareable-as-image · legible at thumbnail size</small></div>
 <div class="device">
   <div class="statusbar"><span>9:41</span><span>Salmon</span><span>●●● ▮</span></div>
   <div class="screen" id="screen" style="padding-bottom:20px"></div>
@@ -58,18 +60,34 @@ function drawCard(){
   // name + role
   g.font='700 34px Georgia, serif'; g.fillText(t(I.nameBn,I.name),40,150);
   g.font='400 16px Inter, system-ui, sans-serif'; g.globalAlpha=.92; g.fillText(t(I.titleBn,I.title),40,186); g.globalAlpha=1;
-  // bottom rows
+  // bottom: LEFT = info (left-aligned so it never collides with the QR), RIGHT = QR
   g.textBaseline='alphabetic';
-  function row(y,label,val){ g.fillStyle='#5B5350'; g.font='400 15px Inter, system-ui, sans-serif'; g.fillText(label,40,y);
-    g.fillStyle='#222222'; g.font='700 15px Inter, system-ui, sans-serif'; g.textAlign='right'; g.fillText(val,W-40,y); g.textAlign='left'; }
-  g.fillStyle='#800020'; g.font='700 16px Inter, system-ui, sans-serif'; g.textAlign='right'; g.fillText(I.partnerId,W-40,290); g.textAlign='left';
-  g.fillStyle='#5B5350'; g.font='400 15px Inter, system-ui, sans-serif'; g.fillText(t('পার্টনার আইডি','Partner ID'),40,290);
-  row(324,t('টেরিটরি','Territory'),t(a.districtBn+', '+a.upazilaBn,a.districtEn+', '+a.upazilaEn));
-  row(358,t('ফোন','Phone'),I.phone);
+  function row(y,label,val){ g.fillStyle='#5B5350'; g.font='400 13px Inter, system-ui, sans-serif'; g.fillText(label,40,y);
+    g.fillStyle='#222222'; g.font='700 15px Inter, system-ui, sans-serif'; g.fillText(val,40,y+19); }
+  g.fillStyle='#5B5350'; g.font='400 13px Inter, system-ui, sans-serif'; g.fillText(t('পার্টনার আইডি','Partner ID'),40,278);
+  g.fillStyle='#800020'; g.font='700 18px Inter, system-ui, sans-serif'; g.fillText(I.partnerId,40,300);
+  row(320,t('টেরিটরি','Territory'),t(a.districtBn+', '+a.upazilaBn,a.districtEn+', '+a.upazilaEn));
+  row(360,t('ফোন','Phone'),I.phone);
+  // QR — encodes the shareable referral link (OQ #3). Part of the card, Salmon-framed.
+  var qx=W-40-118, qy=256, qbox=118;
+  drawQR(g, P.referralLink(), qx, qy, qbox);
+  g.fillStyle='#5B5350'; g.font='600 12px Inter, system-ui, sans-serif'; g.textAlign='center';
+  g.fillText((window.tr?tr(lang,'card.scanLabel'):t('সংযোগে স্ক্যান করুন','Scan to connect')), qx+qbox/2, qy+qbox+16); g.textAlign='left';
   pngUrl=c.toDataURL('image/png');
   var th=document.getElementById('thumb'); if(th) th.src=pngUrl;
 }
 function roundRect(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
+function drawQR(g,url,x,y,box){
+  var q; try{ q=window.QR&&QR.encode(url); }catch(e){ q=null; }
+  // white plate (quiet zone lives inside) with a faint Salmon frame
+  g.fillStyle='#ffffff'; g.fillRect(x,y,box,box);
+  g.strokeStyle='#e6cdd5'; g.lineWidth=1; g.strokeRect(x+.5,y+.5,box-1,box-1);
+  if(!q) return;
+  var n=q.size, quiet=4, total=n+quiet*2, mod=box/total;
+  g.fillStyle='#1a1113';
+  for(var r=0;r<n;r++) for(var cc=0;cc<n;cc++){ if(!q.modules[r][cc]) continue;
+    g.fillRect(x+Math.round((cc+quiet)*mod), y+Math.round((r+quiet)*mod), Math.ceil(mod), Math.ceil(mod)); }
+}
 function download(e){ e.preventDefault(); if(!pngUrl)return; var a=document.createElement('a'); a.href=pngUrl; a.download='salmon-partner-card.png'; a.click(); toast(t('ডাউনলোড হচ্ছে','Downloading')); }
 function shareImg(e){ e.preventDefault(); if(!pngUrl)return;
   if(navigator.canShare && window.fetch){ fetch(pngUrl).then(function(r){return r.blob();}).then(function(b){ var f=new File([b],'salmon-partner-card.png',{type:'image/png'});

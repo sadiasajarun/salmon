@@ -39,13 +39,20 @@
   // Dashboard — ALL backend-supplied display values. No client computation.
   // A FULL-PIPELINE partner (Shahin): money waiting, leads active, target underway.
   var dashboard = {
-    approvedCommissionBdt: 184000,   // display value — the ONE hero number
-    pendingSettlementBdt: 42000,     // display value — supporting text only
+    // --- Earnings: the FIVE facts of Req 6.2 (all backend display values) ---
+    verifiedSalesVolumeBdt: 3200000, // total verified sales volume (context, not spendable)
+    approvedCommissionBdt: 184000,   // approved commission — the ONE hero number (spendable)
+    pendingSettlementBdt: 42000,     // pending settlement
+    settledBdt: 356000,              // settled amount (paid to date)
+    investmentReturnBdt: null,       // recorded investment-return — null for Zero-only (shows —)
     targetBdt: 1000000,              // period target (rule undefined)
     achievedBdt: 620000,             // display value (NOT computed here)
     periodEn: 'Q3 2026', periodBn: 'তৃতীয় প্রান্তিক ২০২৬',
+    // --- Identity status counts (Req 6.2) ---
+    submittedLeads: 12, activeLeads: 4, movedToday: 1, // pipeline (per-status detail on Leads)
     meetingsToday: 2, openTasks: 5,
-    activeLeads: 4, movedToday: 1,   // display values (per-status detail on Leads screen)
+    openTickets: 1, ticketStatusEn: 'awaiting reply', ticketStatusBn: 'উত্তরের অপেক্ষায়',
+    trainingItems: 3,                // new/incomplete training items
     noticesCount: 2, newUnits: true, // quiet footer signals
     lastSyncUtc: '2026-07-14T11:40:00Z', // for the offline "stale" timestamp
     __PLACEHOLDER: true
@@ -53,10 +60,13 @@
 
   // An EMPTY new partner: approved yet, no leads — the hero becomes encouraging.
   var emptyDashboard = {
-    approvedCommissionBdt: 0, pendingSettlementBdt: 0,
+    verifiedSalesVolumeBdt: 0, approvedCommissionBdt: 0, pendingSettlementBdt: 0,
+    settledBdt: 0, investmentReturnBdt: null,
     targetBdt: 1000000, achievedBdt: 0,
     periodEn: 'Q3 2026', periodBn: 'তৃতীয় প্রান্তিক ২০২৬',
-    meetingsToday: 0, openTasks: 0,
+    submittedLeads: 0, meetingsToday: 0, openTasks: 0,
+    openTickets: 0, ticketStatusEn: 'none open', ticketStatusBn: 'কোনোটি খোলা নেই',
+    trainingItems: 0,
     activeLeads: 0, movedToday: 0, noticesCount: 0, newUnits: false,
     lastSyncUtc: '2026-07-14T11:40:00Z',
     __PLACEHOLDER: true
@@ -97,6 +107,12 @@
         staleUpdated:'Cached · updated', offlineSettle:'You need a connection to request settlement.',
         emptyHero:'Your approved earnings will appear here', emptyHeroSub:'A verified conversion becomes commission you can request.',
         emptyLeads:'No leads yet — submit your first', errTitle:'Couldn’t load', errSub:'Check your connection and try again.', retry:'Retry',
+        // --- 6.2 earnings chips + status counts + updates + shortcuts ---
+        verifiedSales:'Verified sales', settledWord:'Settled', returnsWord:'Investment return', returnsNA:'—',
+        returnsNote:'Recorded return applies to With Investment partners — amount held for legal sign-off.',
+        leadsShort:'leads', ticketsShort:'tickets', trainingShort:'training', statusWord:'Status',
+        updatesTitle:'Recent updates', noUpdates:'No new updates',
+        qaBooking:'Booking record', qaSettlement:'Settlement',
         devState:'DEV state' },
       bn: { dashboard:'ড্যাশবোর্ড', leads:'লিড', pipeline:'আমার পাইপলাইন', submitLead:'লিড জমা দিন', quickActions:'দ্রুত কাজ',
         approvedCommission:'অনুমোদিত কমিশন', pendingSettlement:'বকেয়া সেটেলমেন্ট', target:'লক্ষ্য বনাম অর্জন',
@@ -114,6 +130,12 @@
         staleUpdated:'ক্যাশড · সর্বশেষ', offlineSettle:'সেটেলমেন্ট অনুরোধ করতে সংযোগ দরকার।',
         emptyHero:'আপনার অনুমোদিত আয় এখানে দেখা যাবে', emptyHeroSub:'একটি যাচাইকৃত রূপান্তর কমিশনে পরিণত হয়, যা আপনি উত্তোলনের অনুরোধ করতে পারেন।',
         emptyLeads:'এখনো কোনো লিড নেই — প্রথমটি জমা দিন', errTitle:'লোড হয়নি', errSub:'সংযোগ দেখে আবার চেষ্টা করুন।', retry:'আবার চেষ্টা',
+        // --- 6.2 earnings chips + status counts + updates + shortcuts ---
+        verifiedSales:'যাচাইকৃত বিক্রি', settledWord:'পরিশোধিত', returnsWord:'বিনিয়োগ রিটার্ন', returnsNA:'—',
+        returnsNote:'রেকর্ডকৃত রিটার্ন উইথ ইনভেস্টমেন্ট পার্টনারদের জন্য — পরিমাণ আইনি অনুমোদনের অপেক্ষায়।',
+        leadsShort:'লিড', ticketsShort:'টিকিট', trainingShort:'ট্রেনিং', statusWord:'স্ট্যাটাস',
+        updatesTitle:'সাম্প্রতিক আপডেট', noUpdates:'নতুন কোনো আপডেট নেই',
+        qaBooking:'বুকিং রেকর্ড', qaSettlement:'সেটেলমেন্ট',
         devState:'ডেভ স্টেট' }
     }
   };

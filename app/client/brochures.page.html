@@ -54,6 +54,11 @@ function render(){
   document.getElementById('t-title').textContent=s('brochure');
   var files=[];
   if(p.brochure) files.push({ t:p.name+' — '+s('brochure'), s:'PDF · '+(p.brochureSize||'—'), url:p.brochure });
+  // 6.5.6 — downloadable LAYOUT (distinct from the zoomable floor-plan viewer).
+  // Real layout files are supplied by Salmon; until then the brochure carries the
+  // plan and the row is flagged. See OPEN_QUESTIONS (Req 6.5) #10.
+  if(p.layout) files.push({ t:p.name+' — '+(lang==='bn'?'লেআউট / ফ্লোর প্ল্যান':'Layout / floor plan'), s:'PDF · '+(p.layoutSize||'—'), url:p.layout });
+  else if(p.brochure) files.push({ t:(lang==='bn'?'লেআউট / ফ্লোর প্ল্যান':'Layout / floor plan')+' [CLIENT COPY REQUIRED]', s:(lang==='bn'?'স্যামনের ফাইলের অপেক্ষায় — আপাতত ব্রোশিওরে অন্তর্ভুক্ত':'Awaiting Salmon’s file — included in the brochure for now'), url:p.brochure });
   var list=document.getElementById('list');
   if(!files.length){ list.innerHTML='<div class="estate"><span class="ic">📄</span><h3 style="font-family:var(--serif);color:var(--ink);font-size:19px;margin-bottom:8px">'+(lang==='bn'?'ব্রোশিওর শীঘ্রই':'Brochure coming soon')+'</h3><p>'+(lang==='bn'?'এই প্রকল্পের ডাউনলোড শীঘ্রই যোগ করা হবে।':'Downloads for this project will be added soon.')+'</p></div>'; return; }
   list.innerHTML='<div class="rowlist" style="margin:14px var(--gutter)">'+files.map(function(f){

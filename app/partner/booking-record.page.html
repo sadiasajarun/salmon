@@ -4,6 +4,9 @@
 <title>Salmon Partner · Booking record</title>
 <link rel="stylesheet" href="../_shared.css"/>
 <script src="../assets/js/mock-data.js"></script>
+<script src="../assets/js/currency.js"></script>
+<script src="../assets/js/salmon-categories.js"></script>
+<script src="../assets/js/project-selector.js"></script>
 <script src="../assets/js/partner-sales.js"></script>
 <script src="../assets/js/network-sim.js"></script>
 </head><body>
@@ -34,16 +37,24 @@ function render(){
   if(!vl.length){ h+='<div class="empty" style="margin:20px 16px;text-align:center;color:var(--ink-subtle)"><p>'+t('এখনো কোনো যাচাইকৃত লিড নেই।','No verified leads yet.')+'</p></div>'; document.getElementById('form').innerHTML=h; document.getElementById('next').style.pointerEvents='none'; document.getElementById('next').style.opacity='.45'; return; }
   h+='<label class="pf">'+t('যাচাইকৃত লিড','Verified lead')+'</label><select class="pinp psel" onchange="pickLead(this.value)"><option value="">'+t('লিড নির্বাচন','Select a lead')+'</option>'+vl.map(function(l){return '<option value="'+l.id+'"'+(d.leadId===l.id?' selected':'')+'>'+t(l.nameBn,l.name)+' · '+l.projectName+'</option>';}).join('')+'</select>';
   if(lead){
-    h+='<label class="pf">'+t('ইউনিট','Unit')+'</label><select class="pinp psel" onchange="pickUnit(this.value)"><option value="">'+t('ইউনিট নির্বাচন','Select a unit')+'</option>'+units.map(function(u){return '<option value="'+u.label+'"'+(d.unit===u.label?' selected':'')+'>'+u.label+' · '+u.status+'</option>';}).join('')+'</select>';
+    h+='<label class="pf">'+t('ইউনিট','Unit')+' <span class="req" style="color:var(--error)">*</span></label><div id="unit-sel"></div>';
     h+='<div class="rowlist" style="margin:12px 16px"><div class="row"><span>'+t('প্রকল্প','Project')+'</span><span class="u">'+lead.projectName+'</span></div><div class="row"><span>'+t('লিড অবস্থা','Lead status')+'</span><span class="st st-ongoing"><span class="gl">✓</span>'+t('যাচাইকৃত','verified')+'</span></div></div>';
   }
   h+='<p class="phelp">'+t('এখানে কোনো টাকা কাটা হয় না — আপনি স্যামনের অফলাইন প্রক্রিয়ায় ঘটে যাওয়া একটি সেল রেকর্ড করছেন।','No money is charged here — you’re recording a sale that happened through Salmon’s offline process.')+'</p>';
   document.getElementById('form').innerHTML=h;
+  // Req 6.5.7 — same shared selector, in UNIT mode, scoped to the verified
+  // lead's project. Booking a unit and referring a lead now share one picker.
+  if(lead){
+    window.ProjectSelector.field(document.getElementById('unit-sel'), {
+      mode:'unit', required:true, testid:'booking-unit-selector', project: lead.projectSlug,
+      value: d.unit ? { projectId:lead.projectSlug, projectName:lead.projectName, unitId:d.unit, unitLabel:d.unit } : null,
+      onChange: function(ref){ set('unit', ref.unitLabel||ref.unitId); set('unitId', ref.unitId); render(); }
+    });
+  }
   document.getElementById('next').textContent=t('চালিয়ে যান','Continue');
   var ok=lead&&d.unit; document.getElementById('next').style.opacity=ok?'1':'.45'; document.getElementById('next').style.pointerEvents=ok?'auto':'none';
 }
 function pickLead(id){ set('leadId',id); var d=draft(); delete d.unit; localStorage.setItem(K,JSON.stringify(d)); render(); }
-function pickUnit(v){ set('unit',v); render(); }
 function cont(e){ e.preventDefault(); var d=draft(); if(!(d.leadId&&d.unit))return; window.location.href='customer-details.page.html'; }
 function setLang(l){ lang=l; document.documentElement.lang=l; render(); }
 render();

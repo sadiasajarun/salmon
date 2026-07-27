@@ -22,3 +22,9 @@ temp/
 *.1password.live
 *.1password.test
 **/.env.1password.*
+
+# Test-run artifacts
+.playwright-cli/
+.qa-runs/
+**/.playwright-cli/
+**/.qa-runs/

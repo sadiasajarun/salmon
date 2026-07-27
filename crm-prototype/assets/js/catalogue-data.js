@@ -19,7 +19,13 @@
 
   var projects = [
     {
-      id:'PRJ-BEL', name:'Salmon Bellissimo', location:'Bashundhara R/A, Block J, Dhaka', status:'published', publishedUtc: ago(40),
+      id:'PRJ-BEL', name:'Salmon Bellissimo', category:'apartment', location:'Bashundhara R/A, Block J, Dhaka',
+      coordinates:{ lat:23.8188, lng:90.4348 }, status:'published', publishedUtc: ago(40),
+      readyStatus:'under_construction',
+      summary:'A pristine residential seclusion in Bashundhara R/A — South-East facing three-bed homes with double-height lobby, rooftop amenities and two lifts per core.',
+      civicAmenities:['Rooftop community deck','Two lifts per core','Standby generator (100%)','Underground reservoir + WTP','CCTV + intercom security','Covered parking'],
+      contact:{ name:'Salmon Sales Desk', phone:'+880 1700-000000', email:'sales@salmondevelopersbd.com' },
+      visitInfo:'Show unit open Sat–Thu, 10:00–18:00. Book a site visit through the app or call the sales desk; a representative meets you at the Block J gate.',
       glance:{ buildingType:'Residential Apartment', floors:'B2 + G + 12', unitSqft:'1,650 – 2,250 sqft', bed:3, bath:3, balcony:2, lift:2, landFacing:'South-East', frontRoad:'25 ft' },
       handover:'Dec 2026', priceFromBdt:14500000,
       units:[
@@ -49,7 +55,7 @@
       ]
     },
     {
-      id:'PRJ-FLO', name:'Salmon Florentine', location:'Bashundhara R/A, Block C, Dhaka', status:'published', publishedUtc: ago(20),
+      id:'PRJ-FLO', name:'Salmon Florentine', category:'apartment', location:'Bashundhara R/A, Block C, Dhaka', coordinates:{ lat:23.8156, lng:90.4271 }, status:'published', publishedUtc: ago(20), readyStatus:'under_construction',
       glance:{ buildingType:'Residential Apartment', floors:'B1 + G + 10', unitSqft:'1,450 – 1,950 sqft', bed:3, bath:2, balcony:2, lift:2, landFacing:'South', frontRoad:'30 ft' },
       handover:'Jun 2027', priceFromBdt:12800000,
       units:[
@@ -73,7 +79,7 @@
       ]
     },
     {
-      id:'PRJ-ROS', name:'The ROSSA', location:'Bashundhara R/A, Block K, Dhaka', status:'published', publishedUtc: ago(90),
+      id:'PRJ-ROS', name:'The ROSSA', category:'apartment', location:'Bashundhara R/A, Block K, Dhaka', coordinates:{ lat:23.8203, lng:90.4382 }, status:'published', publishedUtc: ago(90), readyStatus:'ready',
       glance:{ buildingType:'Premium Apartment', floors:'B2 + G + 14', unitSqft:'1,850 – 2,600 sqft', bed:4, bath:4, balcony:3, lift:3, landFacing:'South-East', frontRoad:'40 ft' },
       handover:'Handover complete', priceFromBdt:22000000,
       units:[
@@ -97,7 +103,7 @@
       ]
     },
     {
-      id:'PRJ-OAS', name:'Salmon Oasis Park', location:'Bashundhara R/A, Block M, Dhaka', status:'published', publishedUtc: ago(12),
+      id:'PRJ-OAS', name:'Salmon Oasis Park', category:'apartment', location:'Bashundhara R/A, Block M, Dhaka', coordinates:{ lat:23.8129, lng:90.4415 }, status:'published', publishedUtc: ago(12), readyStatus:'under_construction',
       glance:{ buildingType:'Residential Apartment', floors:'B1 + G + 9', unitSqft:'1,350 – 1,800 sqft', bed:3, bath:2, balcony:2, lift:2, landFacing:'North', frontRoad:'25 ft' },
       handover:'Mar 2028', priceFromBdt:11200000,
       units:[
@@ -120,7 +126,7 @@
       ]
     },
     {
-      id:'PRJ-ZHL', name:'Zheel View', location:'Aftabnagar, Block D, Dhaka', status:'draft', publishedUtc:null,
+      id:'PRJ-ZHL', name:'Zheel View', category:'apartment', location:'Aftabnagar, Block D, Dhaka', coordinates:{ lat:23.7691, lng:90.4462 }, status:'draft', publishedUtc:null, readyStatus:'under_construction',
       glance:{ buildingType:'Lake-facing Apartment', floors:'G + 8', unitSqft:'1,500 – 2,000 sqft', bed:3, bath:3, balcony:2, lift:2, landFacing:'West (lake)', frontRoad:'20 ft' },
       handover:'Dec 2028', priceFromBdt:10500000,
       units:[
@@ -130,6 +136,32 @@
       ],
       media:[
         { id:'M-ZHL-1', type:'photo', label:'Concept render', hero:true }
+      ],
+      construction:[]
+    },
+    /* --- A non-apartment project, to prove the configurable schema (6.5.3) ---
+     * Category `land-share` exposes plot size + share fraction, NOT bedrooms.
+     * Title/pricing are placeholders awaiting real Salmon data — see
+     * OPEN_QUESTIONS (Req 6.5) #3 and #10. Structure is real; copy is flagged. */
+    {
+      id:'PRJ-LND', name:'Purbachal Plot Shares [CLIENT COPY REQUIRED]', category:'land-share',
+      location:'Purbachal New Town, Sector 12, Dhaka', coordinates:{ lat:23.8500, lng:90.5100 },
+      status:'draft', publishedUtc:null, readyStatus:'ready',
+      summary:'Fractional plot ownership in Purbachal — shares in registered land parcels. [CLIENT COPY REQUIRED — awaiting Salmon’s plot-share prospectus.]',
+      civicAmenities:['Registered mouza land','Corner and main-road parcels','RAJUK-approved layout [CONFIRM]'],
+      contact:{ name:'Salmon Land Desk', phone:'+880 1700-000000', email:'land@salmondevelopersbd.com' },
+      visitInfo:'Plot viewing by appointment. Share fractions are recorded holdings — see the sales desk for the current share register.',
+      glance:{ buildingType:'Land / plot share', floors:'—', unitSqft:'3 – 10 katha', bed:null, bath:null, balcony:null, lift:null, landFacing:'Various', frontRoad:'20–40 ft' },
+      handover:'Immediate (registered)', priceFromBdt:4500000,
+      units:[
+        { unitNo:'P-12A', config:'1/4 share', plotSize:5,  shareFraction:'25%', areaSqft:0, priceBdt:4500000,  orientation:'Corner', status:'available' },
+        { unitNo:'P-12B', config:'1/2 share', plotSize:5,  shareFraction:'50%', areaSqft:0, priceBdt:8800000,  orientation:'Corner', status:'reserved'  },
+        { unitNo:'P-14C', config:'1/1 share', plotSize:3,  shareFraction:'100%',areaSqft:0, priceBdt:9500000,  orientation:'Main road', status:'available' },
+        { unitNo:'P-20D', config:'1/4 share', plotSize:10, shareFraction:'25%', areaSqft:0, priceBdt:12500000, orientation:'Main road', status:'sold'      }
+      ],
+      media:[
+        { id:'M-LND-1', type:'photo', label:'Layout plan [CLIENT COPY REQUIRED]', hero:true },
+        { id:'M-LND-2', type:'brochure', label:'Plot-share prospectus [CLIENT COPY REQUIRED].pdf' }
       ],
       construction:[]
     }
@@ -147,19 +179,25 @@
     var ov = overrides();
     var patch = ov['proj:'+p.id] || {};
     var m = Object.assign({}, p, patch);
-    m.glance = Object.assign({}, p.glance, patch.glance||{});
+    m.glance = Object.assign({}, p.glance||{}, patch.glance||{});
     // units with per-unit overrides
-    m.units = p.units.map(function(u){ var up = ov['unit:'+p.id+':'+u.unitNo] || {}; return Object.assign({}, u, up); });
+    m.units = (p.units||[]).map(function(u){ var up = ov['unit:'+p.id+':'+u.unitNo] || {}; return Object.assign({}, u, up); });
     // appended media / construction
-    m.media = (patch.mediaAdd||[]).concat(p.media.map(function(x){ var xp = ov['media:'+p.id+':'+x.id]||{}; return Object.assign({}, x, xp); }));
+    m.media = (patch.mediaAdd||[]).concat((p.media||[]).map(function(x){ var xp = ov['media:'+p.id+':'+x.id]||{}; return Object.assign({}, x, xp); }));
     // hero override: only one hero
     if (patch.heroId){ m.media = m.media.map(function(x){ return Object.assign({}, x, { hero: x.id===patch.heroId }); }); }
-    m.construction = (patch.constructionAdd||[]).concat(p.construction).sort(function(a,b){ return a.date<b.date?1:-1; });
+    m.construction = (patch.constructionAdd||[]).concat(p.construction||[]).sort(function(a,b){ return a.date<b.date?1:-1; });
     return m;
   }
 
-  function allProjects(){ return projects.map(mergeProject); }
-  function projectById(id){ var p = projects.filter(function(x){ return x.id===id; })[0]; return p ? mergeProject(p) : null; }
+  // Admin-created projects persist as an override array (6.5.1 — create must
+  // actually enter the list, not just fire an audit).
+  function addedProjects(){ var ov = overrides(); return (ov['projectsAdd'] || []); }
+  function allProjects(){ return addedProjects().concat(projects).map(mergeProject); }
+  function projectById(id){
+    var p = addedProjects().concat(projects).filter(function(x){ return x.id===id; })[0];
+    return p ? mergeProject(p) : null;
+  }
   function unitCounts(p){
     var c = { available:0, reserved:0, booked:0, sold:0, total:p.units.length };
     p.units.forEach(function(u){ if (c[u.status]!=null) c[u.status]++; });

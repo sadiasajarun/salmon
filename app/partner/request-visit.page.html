@@ -4,6 +4,9 @@
 <title>Salmon Partner · Request site visit</title>
 <link rel="stylesheet" href="../_shared.css"/>
 <script src="../assets/js/mock-data.js"></script>
+<script src="../assets/js/currency.js"></script>
+<script src="../assets/js/salmon-categories.js"></script>
+<script src="../assets/js/project-selector.js"></script>
 <script src="../assets/js/partner-sales.js"></script>
 <script src="../assets/js/network-sim.js"></script>
 </head><body>
@@ -18,21 +21,32 @@
 var D=window.SALMON, S=window.PartnerSales, lang='en'; var K='salmon_visit_draft';
 function t(bn,en){ return lang==='bn'?bn:en; }
 function draft(){ try{ return JSON.parse(localStorage.getItem(K))||{kind:'visit'}; }catch(e){ return {kind:'visit'}; } }
+// WI10 (Req 6.6) — a site visit can be requested FROM an investment record.
+// The investment context just TAGS this request; no parallel flow is built.
+// Context-only — never a transaction.
+var Q=new URLSearchParams(location.search); var INV=(Q.get('ctx')==='investment')?(Q.get('ref')||'—'):null;
+if(INV){ var _d=draft(); _d.ctx='investment'; _d.investRef=INV; try{localStorage.setItem(K,JSON.stringify(_d));}catch(e){} }
 function set(k,v){ var d=draft(); d[k]=v; d.kind='visit'; try{localStorage.setItem(K,JSON.stringify(d));}catch(e){} }
 function bar(){ document.getElementById('top').innerHTML=
   '<div class="wkbar"><a class="bk" href="calendar.page.html">‹</a><h2>'+t('সাইট ভিজিট অনুরোধ','Request a site visit')+'</h2>'+
   '<span class="wklang" style="display:inline-flex;border:1px solid #ffffff55;border-radius:999px;overflow:hidden"><button style="border:none;background:'+(lang==='bn'?'#ffffff33':'transparent')+';color:#fdf3f1;font-size:12px;padding:5px 9px" onclick="setLang(\'bn\')">বাং</button><button style="border:none;background:'+(lang==='en'?'#ffffff33':'transparent')+';color:#fdf3f1;font-size:12px;padding:5px 9px" onclick="setLang(\'en\')">EN</button></span></div>'; }
 function render(){
   bar(); var d=draft();
-  var projOpts=D.projects.filter(function(p){return p.status!=='upcoming';}).map(function(p){return '<option value="'+p.slug+'"'+(d.projectSlug===p.slug?' selected':'')+'>'+p.name+'</option>';}).join('');
   var leadOpts='<option value="">'+t('কোনো লিড নয়','No lead')+'</option>'+S.leads.map(function(l){return '<option value="'+l.id+'"'+(d.leadId===l.id?' selected':'')+'>'+t(l.nameBn,l.name)+' ('+l.id+')</option>';}).join('');
   document.getElementById('form').innerHTML=
-    '<label class="pf">'+t('প্রকল্প','Project')+'</label><select class="pinp psel" onchange="set(\'projectSlug\',this.value)">'+projOpts+'</select>'+
+    (INV?'<div style="margin:12px 16px;background:#f6f5f4;border:1px solid #e4e1de;border-left:3px solid var(--ink);border-radius:8px;padding:10px 12px;font-size:12px;color:#3a3a3a;line-height:1.5">'+t('এই অনুরোধটি আপনার বিনিয়োগ রেকর্ডের সাথে যুক্ত — শুধু প্রসঙ্গ, কোনো লেনদেন নয়।','Tied to your investment record — context only, not a transaction.')+' <b style="font-family:var(--mono,monospace)">'+INV+'</b></div>':'')+
+    '<label class="pf">'+t('প্রকল্প','Project')+' <span class="req" style="color:var(--error)">*</span></label><div id="proj-sel"></div>'+
     '<label class="pf">'+t('সম্পর্কিত লিড','Related lead')+' <span class="opt" style="color:var(--ink-subtle);font-weight:400">'+t('(ঐচ্ছিক)','(optional)')+'</span></label><select class="pinp psel" onchange="set(\'leadId\',this.value)">'+leadOpts+'</select>'+
     '<label class="pf">'+t('পছন্দের তারিখ ও সময়','Preferred date & time')+'</label><input class="pinp" type="datetime-local" value="'+(d.pref1||'')+'" oninput="set(\'pref1\',this.value)">'+
     '<label class="pf">'+t('নোট','Notes')+' <span class="opt" style="color:var(--ink-subtle);font-weight:400">'+t('(যেমন: দ্বিধাগ্রস্ত ক্রেতা আনছি)','(e.g. bringing a hesitant buyer)')+'</span></label><textarea class="pinp" style="height:56px;resize:none" oninput="set(\'note\',this.value)">'+(d.note||'')+'</textarea>'+
     '<p class="phelp">'+t('আপনি হয়তো একজন দ্বিধাগ্রস্ত ক্রেতাকে জমিতে দাঁড় করাতে আনছেন। শিডিউলার সময় নিশ্চিত করবেন।','You might be bringing a hesitant buyer to stand on the land. The scheduler confirms the time.')+'</p>';
   document.getElementById('submit').textContent=t('অনুরোধ পাঠান','Send request');
+  // Req 6.5.7 — same shared selector as every other flow.
+  window.ProjectSelector.field(document.getElementById('proj-sel'), {
+    mode:'project', required:true, testid:'visit-project-selector',
+    value: d.projectSlug ? { projectId:d.projectSlug, projectName:d.projectName||d.projectSlug } : null,
+    onChange: function(ref){ set('projectSlug', ref.projectId); set('projectName', ref.projectName); }
+  });
 }
 function submitReq(e){ e.preventDefault();
   if(window.NetSim&&NetSim.isOffline()){ alert(t('আপনি অফলাইনে — অনুরোধটি খসড়া হিসেবে সংরক্ষিত, সংযোগ ফিরলে পাঠানো হবে।','You’re offline — the request is saved as a draft and will be sent when you reconnect.')); return; }

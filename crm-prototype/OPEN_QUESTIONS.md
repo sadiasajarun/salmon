@@ -220,3 +220,159 @@ _Logged during CRM Part 7 (Documents, Communications, Reporting). This completes
 _Logged during CRM Part 8 (Hardening). This completes the panel — every staff role, every audit-worthy
 action, every gated configuration. The remaining gap is the amber-locked **With-Investment** module,
 awaiting Salmon's legal counsel (commercial rules, return schedule, disclaimer copy)._
+
+# Catalogue Alignment — Open Questions (Req 6.5 · Project, Inventory & Media)
+
+> Raised during the Req 6.5 reconcile-and-align pass (configurable categories, publish lifecycle,
+> inventory live-sync, media gallery, shared selector). Placeholdered in-code, never guessed.
+> **Questions 1, 3, 4 and 10 need Salmon** before the Laravel build. Extends Part 3 above.
+
+1. 🔴 **Field-per-category matrix** — the default matrix (apartment → bedrooms/bath/area/floor/balcony/
+   facing/price; commercial & shop → area/floor/frontage/price; land share → plot size/share fraction/
+   price; hospital-hotel share → share fraction/area/return-frame/price) is a **sensible default, not
+   confirmed**. Confirm which config fields apply per category. Shown on E09 with a "placeholder" note.
+2. 🔴 **Who configures categories** — can Salmon add categories/fields **themselves** in production, or
+   is it **dev-configured**? The prototype lets Super Admin add a category + toggle fields (E09), persisted
+   locally. The schema currently lives in **two mirrored files** (`catalogue-categories.js` admin +
+   `salmon-categories.js` client) because the prototypes are separate; unify to one server-owned table at
+   merge time.
+3. 🔴 **Land / plot share representation** — how are shares modelled: **fractions** (1/4, 1/2), **katha/
+   decimal**, or **named lots**? The prototype uses a placeholder unit shape (`plotSize` katha + `shareFraction`
+   %); the `PRJ-LND` demo project is flagged `[CLIENT COPY REQUIRED]`.
+4. 🔴 **Hospital / hotel share returns** — what may be **shown**, given the legal sensitivity? The
+   category declares an `expected-return frame` field, but every return value renders
+   `[AMOUNT — LEGAL SIGN-OFF REQUIRED]` — **no rate, projection, or guarantee**. Same discipline as
+   With-Investment (Req 6.6). Needs Salmon + legal counsel.
+5. 🔴 **Inventory states beyond the four** — beyond **Available / Reserved / Booked / Sold**, any Salmon-
+   specific states (e.g. *On hold*, *Blocked*, *Litigation*)? Only the four are modelled (mirrors Part 3 #2).
+6. 🔴 **Publish / unpublish authority** — is publishing **admin-only** or may **managers** publish too?
+   `PUBLISH_PROJECT` and `CONFIGURE_CATEGORIES` are **Super-Admin-only**; `MANAGE_INVENTORY`, `UPLOAD_MEDIA`,
+   `POST_CONSTRUCTION` are shared with Managers (mirrors Part 3 #1).
+7. 🔴 **Media approval** — single-step **publish**, or a **review workflow**? Media currently goes live on
+   upload; there is no per-media draft/approved state. Confirm whether a review gate is required.
+8. 🔴 **Construction-progress push scope** — does a new dated update push to **all clients**, or only those
+   with a **booking / favourite** on that project? E05 assumes interested-clients-only as a placeholder
+   (mirrors Part 3 #4).
+9. 🔴 **Price-change history** — is a unit price change **audit-tracked** with a retained history ledger?
+   Every price edit emits an audit entry with old→new; a dedicated price-history ledger is unconfirmed
+   (mirrors Part 3 #5).
+10. 🔴 **Real assets Salmon must supply** — verified **project coordinates**, confirmed **pricing**, real
+    **360 / Matterport** equirectangular assets, real **floor-plan / layout** files, and the **AED reference
+    rate**. All currently carry visible `[…placeholder]` / `[CLIENT COPY REQUIRED]` markers; the 360 viewer
+    is a Pannellum-ready seam awaiting client-supplied panoramas.
+
+---
+_Logged during the Req 6.5 Catalogue Alignment pass. Every item is an intentional gap, surfaced in-screen.
+See `ALIGNMENT.md` (repo root) for the clause-by-clause diff._
+
+---
+
+## Commission Settlement Request & Status (Req 6.13)
+
+The module is built and disciplined across all three surfaces (partner one-input
+request → finance `M0x` desk → mark-settled). The **no-bank-field** rule is
+grep-proven by `.claude/gates/settlement-no-bank-field-guard.sh`. See
+`ALIGNMENT-6.13-settlement.md`. Open product decisions:
+
+1. **Minimum settlement amount?** *Demo: none beyond `> 0`.* Confirm a floor and
+   whether partial settlements are allowed.
+2. 🔴 **Hold rules** — what triggers a hold, and who releases it? *Demo: finance
+   holds with a reason; any finance/super-admin resumes via M02.* Trigger policy undefined.
+3. **Channel categories** — is `Cash / Bank / bKash / Nagad / Cheque / Other` the
+   confirmed list? (shared with Part 6.)
+4. **Partner-facing reference** — auto-generated or entered by finance? *Demo: auto
+   (`ST-2026-###`), overridable with a non-sensitive ref on M03.*
+
+## Training & Sales Kit content management (Req 6.15)
+
+The partner library (TR01–TR04, TR06) was already complete; the **admin content
+desk (Y01)** was the gap and is now built — upload / publish / unpublish / update +
+targeting by program/rank/team/territory, permission-gated + audited + rippled.
+Library-only (no LMS) is grep-proven by `.claude/gates/training-library-only-guard.sh`.
+See `ALIGNMENT-6.15-training.md`. Open product decisions:
+
+1. **Content categories** — is the training set (Policies / Guidelines / FAQs / Video
+   tutorials) and kit set (Brochures / Layouts / Images / Videos / Scripts /
+   Presentations) confirmed?
+2. 🔴 **Which content is gated, by what attribute?** *Demo: placeholder gates
+   (rank·gold deck, program·withInvestment brief); team/territory value lists are
+   placeholders.* Salmon must confirm the audience rules.
+3. **Video hosting** — CDN, embed, or in-app? *Demo: poster + tap-to-play mock; kit
+   intro videos link to the client video page.*
+4. **Viewed-state** — tracked per partner server-side, or a local visual marker only?
+   *Demo: local only.* (Still not completion tracking — just "viewed".)
+5. **Y01 discoverability** — the content desk is reachable standalone; wiring it into
+   the console sidebar/dashboard nav is a small merge-time task.
+
+---
+
+# Notifications & Administration — Open Questions (Req 6.14 · 6.18)
+
+> Raised during the Req 6.14 (Notifications & Notice Board) + Req 6.18 (Administration, Roles & Audit)
+> alignment pass. **Most of 6.18's questions were already logged in the Part 8 · Hardening section above**
+> — session/auth (#1, #2), impersonation double-audit (#3), audit retention (#4), audit-export scope (#5),
+> compliance read-only role (#6), two-person approval (#7), template-approval workflow (#8). This section
+> logs only what those did not already cover. Numbering restarts. Items marked need Salmon before the build.
+
+1. 🔴 **Opt-out vs mandatory notifications** — which of the 14 event types may a partner/client mute, and
+   which are **mandatory** (e.g. KYC/booking/settlement)? No per-user notification-preferences screen exists;
+   today all types deliver. Needs a Salmon policy before a preferences UI is built.
+2. 🔴 **Notice scheduling — send now or schedule?** `P02-compose-notice` offers both a *"Send now"* and a
+   *"Schedule for later"* option with a datetime picker, but there is **no scheduler/queue** behind it in the
+   prototype — a scheduled notice is recorded, not actually deferred-and-fired. Confirm whether scheduling is
+   required, and if so the send-window/timezone rules.
+3. 🔴 **Push provider config** — APNs/FCM (or a provider like OneSignal)? No push credentials live in the
+   panel (correct — they belong in a secrets manager). The template layer (`V01–V03`) is provider-agnostic;
+   the actual provider + key management is a merge-time infra decision.
+4. 🔴 **Notification templates for all 14 event types** — only **6** canonical push templates are seeded
+   (`admin-data.js`: partner-approved/rejected, KYC-verified, booking-confirmed, commission-approved,
+   installment-due). The other 8 events (inventory, lead status, meeting, task, document, return, ticket,
+   settlement, payment, construction) emit via module ripples with generic copy. Confirm the full copy set so
+   every event has a reviewed EN/বাংলা template (surfaced in `ALIGNMENT-6.14-notifications.md`).
+5. 🔴 **Task-assignment status set** — `U11` status configuration models task as `Open / In progress / Done`
+   as a **placeholder** — internal task hand-offs are not a fully-specified module yet. Confirm the task
+   lifecycle states (and whether tasks are even a distinct entity vs lead/ticket sub-states).
+6. 🔴 **Investment return-record statuses** — `U11` models return records as `Scheduled / Due / Paid / Hold`,
+   but the **With-Investment module is amber-locked pending legal** (Req 6.6), so these are **record-only** with
+   no rate/projection shown. The real return-state machine needs Salmon + legal counsel — same discipline as 6.6.
+7. 🔴 **Canonical audit-action vocabulary** — audit action strings are currently free-form literals (two are
+   built dynamically: `ASSIGN_<KIND>`, `PROGRAM_<ACTION>`), and the seed uses verbs (`PUBLISH_PROJECT`,
+   `RELEASE_SETTLEMENT`) that don't exactly match live emitters (`EDIT_PROJECT`, `MARK_SETTLED`). Before the
+   Laravel port, a central `AUDIT_ACTIONS` constant would make audit-log filtering/reporting reliable. Not a
+   missing-emission gap (the cross-module sweep confirms every module emits) — a consistency decision.
+8. 🔴 **System-settings sub-panels not yet built** — `U01–U11` cover gateways, currency, booking/slot rules,
+   providers, feature flags, min-app-version, session, invoice/legal wording, **status config**, and templates,
+   but **contact info**, **policy/legal body text**, **languages list**, and **map provider** do not yet have
+   their own config screens (clause 6.18.5). Confirm which of these Salmon edits in-panel vs dev-configures.
+
+---
+_Logged during the Req 6.14 + 6.18 alignment pass. See `ALIGNMENT-6.14-notifications.md` and
+`ALIGNMENT-6.18-administration.md` for the clause-by-clause diff. Every item is an intentional, surfaced gap._
+
+# CRM / Admin Panel — Open Questions (Req 6.17 · Dashboard & Reporting)
+
+> Raised during the Req 6.17 reporting pass (grouped metrics, live+scoped reports, filters,
+> gated CSV export). Placeholdered in-screen, never guessed. **Questions 1 and 3 need Salmon.**
+> See `ALIGNMENT-6.17-reporting.md` for the clause-by-clause diff.
+
+1. 🔴 **Non-sensitive / exportable classification** — the confirmed list of which reports may leave the
+   org as CSV. The prototype gates on an `exportable` flag: aggregate reports (lead-conversion, inventory,
+   territory-activity, meeting-outcomes, task-completion, document-activity, helpdesk) are exportable;
+   anything with identifiers/amounts (sales-records, commission, settlement-recon, investment-return) is
+   view-only. Salmon confirms the final classification.
+2. 🔴 **Report periods** — default date ranges and whether Salmon runs a fiscal calendar. The viewer
+   exposes `From`/`To` date filters but assumes no fiscal-year boundaries; "last 30 days" is used loosely
+   in metric labels. Confirm default ranges and fiscal calendar.
+3. 🔴 **Team-lead / manager reporting scope** — the exact boundary. `scopeFor('MANAGER')` is a placeholder
+   assigning one **division** (`Chattogram`); a real Manager may own a district, a set of teams, or a
+   territory. There is no `TEAM_LEAD` panel role (team leads are mobile partners). Confirm whether report
+   scoping is by division, district, team, or an assigned-territory list — the mechanism is boundary-agnostic.
+4. 🔴 **Metric trend deltas** — vs the previous period, or absolute values? The `MetricCard` supports a
+   delta + direction, but the vs-previous-period basis (and which metrics get one) is unconfirmed; deltas
+   are shown only where a period figure is derivable.
+5. 🔴 **Investment-return metric** — what may be shown, given the legal markers on amounts (Req 6.6). The
+   metric renders `🔒 legal` and the report is amber-locked (`[AMOUNT — LEGAL SIGN-OFF REQUIRED]`); no rate,
+   projection, or total is displayed until legal delivers the return model.
+
+---
+_Logged during the Req 6.17 reporting pass. Every item is an intentional, in-screen gap._

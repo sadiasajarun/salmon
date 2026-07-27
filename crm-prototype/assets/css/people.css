@@ -209,3 +209,23 @@
   .kycsplit{grid-template-columns:1fr}
   .split2,.split3{grid-template-columns:1fr}
 }
+
+/* Program participation panel (Req 6.3.3) */
+.btn.sm{height:26px;padding:0 10px;font-size:12px}
+#participation-card .pprow:first-of-type{border-top:none}
+#participation-card .pprow .hint{margin-top:2px}
+
+/* ---- Req 6.8 · relationship chain (TR02) + tree search highlight ---- */
+.chain{display:flex;flex-direction:column;gap:0;max-width:560px}
+.chainnode{display:flex;align-items:center;gap:12px;border:.5px solid var(--line);border-radius:var(--r-card);
+  background:var(--surface);padding:12px 14px;position:relative;z-index:1}
+.chainnode:hover{border-color:var(--maroon-tint-2)}
+.chainnode .cn-ic{width:38px;height:38px;border-radius:10px;background:var(--maroon-tint);display:grid;place-items:center;font-size:18px;flex:0 0 auto}
+.chainnode .cn-b{min-width:0;flex:1}
+.chainnode .cn-t{font-size:14px;font-weight:800;color:var(--ink)}
+.chainnode .cn-s{font-size:12px;color:var(--ink-muted);margin-top:1px}
+.chainnode .cn-go{color:var(--maroon);font-weight:700}
+.chainlink{height:26px;margin-left:32px;border-left:2px solid var(--line-strong);display:flex;align-items:center;padding-left:14px}
+.chainlink .cl-lbl{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);
+  background:var(--surface-2);border:.5px solid var(--line);border-radius:999px;padding:1px 9px;transform:translateX(-8px)}
+.tree .row.qhit{background:var(--amber-bg);outline:1.5px solid #e7d3a8}

@@ -143,6 +143,29 @@
   ];
 
   /* ---------------------------------------------------------------------------
+   * 6.9.5 — Recurring coordination meetings (twice-monthly head-office) with
+   * per-occurrence ATTENDANCE (attended / absent / excused / pending). A standing
+   * fixture, not an ad-hoc request: it recurs on a cadence and carries a roster.
+   * ------------------------------------------------------------------------- */
+  var ATTENDANCE = ['attended', 'absent', 'excused', 'pending'];
+  var coordinationSeries = {
+    id:'COORD-HO', title:'Head-office coordination', kind:'recurring',
+    cadenceEn:'Twice monthly · 1st & 3rd Thursday, 4:00 PM', cadenceBn:'মাসে দুবার · ১ম ও ৩য় বৃহস্পতিবার',
+    location:'Salmon HQ, Gulshan-1 — Boardroom 2', link:'https://zoom.us/j/salmon-headoffice',
+    roster:[
+      { partnerId:'SDP-CUM-00188', partner:'Karim Rahman' },
+      { partnerId:'SDP-CUM-00417', partner:'Shahin Alam' },
+      { partnerId:'SDP-SAV-00231', partner:'Rokeya Sultana' },
+      { partnerId:'SDP-SYL-00088', partner:'Mizanur Rahman' }
+    ]
+  };
+  function roster(marks){ return coordinationSeries.roster.map(function(r, i){ return { partnerId:r.partnerId, partner:r.partner, status:(marks && marks[i]) || 'pending' }; }); }
+  var coordinationOccurrences = [
+    { id:'CO-2026-07-03', seriesId:'COORD-HO', whenUtc:ago(12), status:'held', attendance:roster(['attended','attended','excused','absent']) },
+    { id:'CO-2026-07-17', seriesId:'COORD-HO', whenUtc:fwd(2,6), status:'upcoming', attendance:roster(null) }
+  ];
+
+  /* ---------------------------------------------------------------------------
    * Consultations (global clients) + scheduler slots (Dhaka time).
    * ------------------------------------------------------------------------- */
   var slots = [
@@ -194,14 +217,21 @@
 
   function partnerStatusOf(internalStatus){ return PARTNER_PROJECTION[internalStatus] || 'submitted'; }
 
+  // Recurring coordination — occurrences merge an override `coord:<id>` carrying
+  // the marked attendance array (never deleted; it is the record of who came).
+  function allCoordination(){ var ov=overrides(); return coordinationOccurrences.map(function(o){ var p=ov['coord:'+o.id]; return p&&p.attendance ? Object.assign({}, o, { status:p.status||o.status, attendance:p.attendance }) : o; }); }
+  function coordinationById(id){ return allCoordination().filter(function(o){return o.id===id;})[0]||null; }
+
   root.CRM = root.CRM || {};
   root.CRM.Pipeline = {
     INTERNAL_STATUS: INTERNAL_STATUS, STATUS_FLOW: STATUS_FLOW,
     PARTNER_PROJECTION: PARTNER_PROJECTION, PARTNER_LABEL: PARTNER_LABEL,
+    ATTENDANCE: ATTENDANCE, coordinationSeries: coordinationSeries,
     allLeads: allLeads, leadById: leadById,
     allMeetings: allMeetings, meetingById: meetingById,
     allSiteVisits: allSiteVisits, visitById: visitById,
     allSlots: allSlots, allConsultations: allConsultations, consultationById: consultationById,
+    allCoordination: allCoordination, coordinationById: coordinationById,
     commissionRecords: commissionRecords, partnerStatusOf: partnerStatusOf,
     ago: ago, fwd: fwd
   };

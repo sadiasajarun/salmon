@@ -1,11 +1,28 @@
 /* ============================================================================
  * Salmon Developers — discovery filter engine (shared by list + filter sheet)
  * Filters operate on the CONVERTED display value for price, but the record
- * never loses BDT. All projects are residential flats -> category 'apartment'.
+ * never loses BDT.
+ *
+ * Req 6.5.3 — the filter DIMENSIONS are driven by the configurable category
+ * schema (SalmonCategories). Category is a live dimension on each project's
+ * real `category`; and which config filters apply (bedrooms / area / price /
+ * plot size / share fraction) is derived from the selected category's declared
+ * fields. Filtering an apartment search by bedrooms works; filtering land
+ * shares surfaces plot-size instead — never bedrooms.
  * ==========================================================================*/
 (function (root) {
   'use strict';
   var KEY = 'salmon_filters';
+  var SC = root.SalmonCategories; // configurable category schema (mirrored module)
+
+  // Which config-filter fields apply, given the currently-selected categories.
+  // No category selected → the union across every category (so discovery still
+  // offers bedrooms for the apartment stock that dominates the catalogue).
+  function fieldsForCats(cats) {
+    if (!SC) return ['bedrooms', 'area', 'priceRange'];
+    return SC.filterUnion(cats && cats.length ? cats : null).map(function (f) { return f.id; });
+  }
+  function fieldApplies(cats, fieldId) { return fieldsForCats(cats).indexOf(fieldId) > -1; }
 
   function def() {
     return { status: [], areas: [], cats: [], beds: [], sqftMin: null, sqftMax: null, priceMaxAed: null, availableOnly: false };
@@ -45,8 +62,11 @@
   function matches(p, f, Currency) {
     if (f.status.length && f.status.indexOf(p.status) < 0) return false;
     if (f.areas.length && f.areas.indexOf(p.area) < 0) return false;
-    if (f.cats.length && f.cats.indexOf('apartment') < 0) return false; // all data = apartments
-    if (!bedOk(p, f.beds)) return false;
+    // Live category dimension (6.5.3) — match the project's real category.
+    var pcat = p.category || 'apartment';
+    if (f.cats.length && f.cats.indexOf(pcat) < 0) return false;
+    // Bedrooms only constrains categories that DECLARE a bedrooms field.
+    if (f.beds.length && fieldApplies(f.cats, 'bedrooms') && !bedOk(p, f.beds)) return false;
     if (!sqftOk(p, f)) return false;
     if (!priceOk(p, f, Currency)) return false;
     if (f.availableOnly && !(p.availableUnits >= 1)) return false;
@@ -64,7 +84,7 @@
     var out = [], s = D.strings[lang];
     f.status.forEach(function (v) { out.push({ k: 'status:' + v, label: s[v] }); });
     f.areas.forEach(function (v) { out.push({ k: 'areas:' + v, label: D.areas[v] ? D.areas[v][lang] : v }); });
-    f.cats.forEach(function (v) { var c = D.categories.find(function (x) { return x.key === v; }); out.push({ k: 'cats:' + v, label: c ? c[lang] : v }); });
+    f.cats.forEach(function (v) { out.push({ k: 'cats:' + v, label: SC ? SC.label(v) : v }); });
     f.beds.forEach(function (v) { out.push({ k: 'beds:' + v, label: v + ' ' + s.bed }); });
     if (f.sqftMin != null || f.sqftMax != null) out.push({ k: 'sqft', label: (f.sqftMin || 0) + '–' + (f.sqftMax || '∞') + ' sqft' });
     if (f.priceMaxAed != null) out.push({ k: 'price', label: '≤ AED ' + f.priceMaxAed.toLocaleString('en-US') });
@@ -81,5 +101,5 @@
     }
     return f;
   }
-  root.Filters = { def: def, load: load, save: save, clear: clear, matches: matches, apply: apply, isEmpty: isEmpty, chips: chips, removeChip: removeChip };
+  root.Filters = { def: def, load: load, save: save, clear: clear, matches: matches, apply: apply, isEmpty: isEmpty, chips: chips, removeChip: removeChip, fieldsForCats: fieldsForCats, fieldApplies: fieldApplies };
 })(window);

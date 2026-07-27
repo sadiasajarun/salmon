@@ -12,7 +12,8 @@
 (function (root) {
   'use strict';
   var C = root.C, Perm = root.Perm, Audit = root.Audit, CRM = root.CRM, Router = root.Router,
-      DevToolbar = root.DevToolbar, CN = root.CRM.Connect, Ripples = root.Ripples;
+      DevToolbar = root.DevToolbar, CN = root.CRM.Connect, Ripples = root.Ripples,
+      RPT = root.CRM.Reporting;   // reporting engine (Req 6.17) — live + role-scoped
 
   root.CRM_NOW = '2026-07-15T10:00:00Z';
   var esc = C.esc, fmt = C.fmt;
@@ -25,7 +26,7 @@
     N01:'N01-document-repository.html', N02:'N02-document-detail.html', N03:'N03-upload-document.html', N04:'N04-change-visibility.html', N05:'N05-version-history.html', N06:'N06-access-log.html',
     O01:'O01-ticket-inbox.html', O02:'O02-ticket-detail.html', O03:'O03-chat-handoff.html',
     P01:'P01-notices-list.html', P02:'P02-compose-notice.html', P03:'P03-notice-detail.html',
-    Q01:'Q01-reports-hub.html', Q02:'Q02-report-viewer.html', Q03:'Q03-export-queue.html'
+    Q01:'Q01-reports-hub.html', Q02:'Q02-report-viewer.html', Q03:'Q03-export-queue.html', Q04:'Q04-metrics-overview.html'
   };
   function href(id, params){
     var f=FILES[id]; if(!f) return '#';
@@ -69,9 +70,9 @@
   function renderSidebar(){
     var sb=document.getElementById('sidebar'); if(!sb) return;
     var sec=sectionOf(state.screen);
-    var activeId = sec==='N'?'documents':(sec==='O'||sec==='P')?'communications':null;
+    var activeId = sec==='N'?'documents':(sec==='O'||sec==='P')?'communications':sec==='Q'?'reporting':null;
     var groups=Router.getSidebarFor(state.role);
-    var MODMAP={ documents:'N01-document-repository.html', communications:'O01-ticket-inbox.html', people:'B02-approval-queue.html', catalogue:'E01-projects-list.html', pipeline:'F01-leads-list.html', finance:'I01-webhook-queue.html' };
+    var MODMAP={ documents:'N01-document-repository.html', communications:'O01-ticket-inbox.html', reporting:'Q01-reports-hub.html', people:'B02-approval-queue.html', catalogue:'E01-projects-list.html', pipeline:'F01-leads-list.html', finance:'I01-webhook-queue.html' };
     sb.innerHTML = groups.map(function(g){
       return '<div class="navgroup"><div class="gl">'+esc(g.title)+'</div>'+g.items.map(function(it){
         var active=it.id===activeId; var route=MODMAP[it.id]||('../index.html'+it.route);
@@ -561,6 +562,7 @@
   SCREENS.Q01 = { title:'Reports', sub:'A fixed menu of report types — no custom builder', perm:'VIEW_REPORT',
     render:function(main){
       main.innerHTML = header(this);
+      main.insertAdjacentHTML('beforeend','<div class="primaryacts" style="margin-bottom:12px"><a class="btn primary" href="'+href('Q04')+'">◱ Metrics overview</a><a class="btn" href="'+href('Q03')+'">Export queue / history</a></div>');
       var grid=C.el('<div class="reporthub"></div>'); main.appendChild(grid);
       CN.reports.forEach(function(r){
         var card=C.el('<div class="rcard"><div class="rt">'+esc(r.name)+'</div><div class="rd">'+esc(r.desc)+'</div><div class="rf">'+(r.exportable?'<span class="exportbadge">CSV exportable</span>':'<span class="sensitivebadge">🔒 View only · sensitive</span>')+'</div></div>');
@@ -582,24 +584,42 @@
       main.insertAdjacentHTML('beforeend', C.PageHeader({ title:r.name, sub:r.desc, actions: canExport?[{ id:'exp', label:'Export CSV', cls:'primary', icon:'⭳' }]:[] }));
       if (!r.exportable) main.insertAdjacentHTML('beforeend','<p class="metaline"><span class="sensitivebadge">🔒 Sensitive — view only</span> · the Export button is hidden for this report (would compromise a real person if it left the org).</p>');
       else if (!Perm.can(state.role,'EXPORT_REPORT')) main.insertAdjacentHTML('beforeend','<p class="metaline">This report is exportable, but your role lacks <span class="mono">EXPORT_REPORT</span>.</p>');
-      // filters (the proposal's set)
+      // Role scope banner (6.17.5) — the same report tells a different truth per role.
+      var scope = RPT.scopeFor(state.role);
+      main.insertAdjacentHTML('beforeend','<p class="metaline">Showing: <b>'+esc(scope.label)+'</b> — switch role (top-right) to see the same report re-scoped.</p>');
+      // filters — the full clause-6.17.2 set, options driven by live data
+      var opt = RPT.filterOptions();
       var fbWrap=C.el('<div></div>'); main.appendChild(fbWrap);
-      C.FilterBar(fbWrap, { id:'q02_'+r.key, filters:[
-        { key:'from', label:'From', type:'date' }, { key:'project', label:'Project', options:['The ROSSA','Salmon Oasis Park','Salmon Bellissimo','Salmon Florentine'] },
-        { key:'territory', label:'Territory', options:['Chattogram › Cumilla','Dhaka › Savar','Sylhet › Sadar'] }, { key:'rank', label:'Rank', options:['Silver','Gold','Platinum'] }, { key:'status', label:'Status', options:['open','converted','settled'] }
-      ], onChange:function(){ C.toast({type:'info',title:'Filters applied',text:'Report re-queried (mock).'}); } });
-      var data = CN.reportData(r.key);
-      // chart (one simple chart, not a dashboard)
-      if (data.chart){
-        var mx=Math.max.apply(null, data.chart.bars.map(function(b){return b[1];}))||1;
-        main.insertAdjacentHTML('beforeend','<div class="reportchart"><h4>'+esc(data.chart.label)+'</h4>'+data.chart.bars.map(function(b){ return '<div class="barrow"><span class="bl">'+esc(b[0])+'</span><span class="bt"><i style="width:'+Math.round(b[1]/mx*100)+'%"></i></span><span class="bv">'+b[1]+'</span></div>'; }).join('')+'</div>');
+      var chartWrap=C.el('<div></div>'); // placeholder anchors so redraw can target them
+      var tableWrap=C.el('<div></div>');
+      function draw(){
+        var filters = C.getFilters('q02_'+r.key) || {};
+        var data = RPT.reportData(r.key, { role:state.role, filters:filters });
+        // chart — one chart, type chosen per report, via the shared helper
+        if (data.chart){ root.ReportChart.render(chartWrap, data.chart); } else { chartWrap.innerHTML=''; }
+        // table
+        var cols = data.columns.map(function(c,i){ return { key:'c'+i, label:c, align: (i>0 && !isNaN(parseInt(String((data.rows[0]||[])[i]).replace(/[^\d]/g,''),10)) )?'right':'' }; });
+        var rows = data.rows.map(function(row,ri){ var o={ _id:'r'+ri }; row.forEach(function(v,i){ o['c'+i]=v; }); return o; });
+        tableWrap.innerHTML='';
+        if (data.note) tableWrap.insertAdjacentHTML('beforeend','<p class="metaline">'+esc(data.note)+'</p>');
+        C.mountDataTable(tableWrap, { rowId:'_id', noun:'rows', rows:rows, columns:cols.map(function(c){ return { key:c.key, label:c.label, align:c.align, render:function(r){ return esc(r[c.key]); } }; }) });
+        var eb=main.querySelector('[data-act="exp"]'); if(eb) eb.onclick=function(){ exportCsv(r, data); };
+        return data;
       }
-      // table
-      var tw=C.el('<div></div>'); main.appendChild(tw);
-      var cols = data.columns.map(function(c,i){ return { key:'c'+i, label:c, align: (i>0 && !isNaN(parseInt(String((data.rows[0]||[])[i]).replace(/\D/g,''),10)) )?'right':'' }; });
-      var rows = data.rows.map(function(row,ri){ var o={ _id:'r'+ri }; row.forEach(function(v,i){ o['c'+i]=v; }); return o; });
-      C.mountDataTable(tw, { rowId:'_id', noun:'rows', rows:rows, columns:cols.map(function(c){ return { key:c.key, label:c.label, align:c.align, render:function(r){ return esc(r[c.key]); } }; }) });
-      var eb=main.querySelector('[data-act="exp"]'); if(eb) eb.onclick=function(){ exportCsv(r, data); };
+      C.FilterBar(fbWrap, { id:'q02_'+r.key, filters:[
+        { key:'from', label:'From', type:'date' }, { key:'to', label:'To', type:'date' },
+        { key:'project', label:'Project', options:opt.project },
+        { key:'inventoryStatus', label:'Inventory status', options:opt.inventoryStatus },
+        { key:'program', label:'Program', options:opt.program },
+        { key:'territory', label:'Territory', options:opt.territory },
+        { key:'team', label:'Team', options:opt.team },
+        { key:'teamLead', label:'Team lead?', options:opt.teamLead },
+        { key:'rank', label:'Rank', options:opt.rank },
+        { key:'status', label:'Status', options:opt.status }
+      ], onChange:function(){ draw(); } });
+      main.appendChild(chartWrap);
+      main.appendChild(tableWrap);
+      draw();
       main.appendChild(auditNote('report:'+r.key));
     }
   };
@@ -629,8 +649,24 @@
         { key:'report', label:'Report' }, { key:'rows', label:'Rows', align:'right' },
         { key:'filters', label:'Filters used', render:function(r){ return '<span class="mono" style="font-size:11px">'+esc(r.filters)+'</span>'; } },
         { key:'by', label:'By' }, { key:'t', label:'When', render:function(r){ return fmt.dhaka(r.t,true); } }
-      ], rowActions:[ { label:'Download CSV', icon:'⬇', onClick:function(r){ var d=CN.reportData(r.key); exportCsv(CN.reportByKey(r.key), d); } } ] });
+      ], rowActions:[ { label:'Download CSV', icon:'⬇', onClick:function(r){ var d=RPT.reportData(r.key, { role:state.role, filters:{} }); exportCsv(CN.reportByKey(r.key), d); } } ] });
       main.insertAdjacentHTML('beforeend','<p class="metaline" style="margin-top:12px">Filters are recorded so a future auditor can reproduce the exact data pull.</p>');
+    }
+  };
+
+  /* ---------- Q04 · Metrics overview ⭐ (Req 6.17.1 — grouped, role-scoped) ---------- */
+  SCREENS.Q04 = { title:'Metrics overview', sub:'Summary metrics grouped by domain — scoped to your role', perm:'VIEW_REPORT',
+    render:function(main){
+      main.innerHTML = header(this);
+      var m = RPT.metricsFor(state.role);
+      main.insertAdjacentHTML('beforeend','<p class="metaline">Showing: <b>'+esc(m.scopeLabel)+'</b> — switch role (top-right) to re-scope every number. Trend deltas are shown only where a period figure is derivable (OPEN_QUESTIONS 6.17 #4).</p>');
+      m.groups.forEach(function(g){
+        main.insertAdjacentHTML('beforeend','<div class="metricgroup"><span class="mg-t">'+esc(g.title)+'</span></div>');
+        main.insertAdjacentHTML('beforeend', C.metricsRow(g.metrics.map(function(x){
+          return { label: x.label + (x.sub?'  ·  '+x.sub:''), value: x.value, delta: x.delta, deltaDir: x.deltaDir };
+        })));
+      });
+      main.insertAdjacentHTML('beforeend','<div class="primaryacts" style="margin-top:14px"><a class="btn" href="'+href('Q01')+'">All reports</a></div>');
     }
   };
 

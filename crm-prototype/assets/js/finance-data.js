@@ -105,9 +105,13 @@
   /* ---------------------------------------------------------------------------
    * Offline / partner-submitted booking payments (J03).
    * ------------------------------------------------------------------------- */
+  // Method is a CATEGORY, never an account number (6.10.6). `reference` is a
+  // non-sensitive note (office receipt / slip no.). `evidence` points at the
+  // shared secure doc repository (6.10.3), never stores the file inline.
   var offlinePayments = [
-    { id:'OP-511', partner:'Shahin Alam', buyer:'Abdul Karim', project:'Salmon Bellissimo', bookingId:null, amountBdt:500000, method:'Bank deposit slip', submittedUtc:ago(1), status:'pending' },
-    { id:'OP-509', partner:'Rokeya Sultana', buyer:'Nadia Islam', project:'Salmon Oasis Park', bookingId:null, amountBdt:300000, method:'bKash', submittedUtc:ago(2), status:'pending' }
+    { id:'OP-511', partner:'Shahin Alam', buyer:'Abdul Karim', project:'Salmon Bellissimo', unit:'B-1204', leadId:'LD-3025', bookingId:null, amountBdt:500000, kind:'down-payment', method:'Bank transfer', reference:'DBBL slip 88431', bookingDate:ago(1), evidence:'DOC-OP511-slip.pdf', submittedUtc:ago(1), status:'pending' },
+    { id:'OP-509', partner:'Rokeya Sultana', buyer:'Nadia Islam', project:'Salmon Oasis Park', unit:'O-6C', leadId:'LD-3038', bookingId:null, amountBdt:300000, kind:'installment', method:'MFS (bKash)', reference:'TrxID 9KZ4A2', bookingDate:ago(2), evidence:'DOC-OP509-screenshot.png', submittedUtc:ago(2), status:'pending' },
+    { id:'OP-505', partner:'Shahin Alam', buyer:'Mizanur Rahman', project:'Salmon Bellissimo', unit:'B-0907', leadId:'LD-3019', bookingId:null, amountBdt:450000, kind:'down-payment', method:'Cheque', reference:'Cheque 220145', bookingDate:ago(6), evidence:'DOC-OP505-cheque.jpg', submittedUtc:ago(6), status:'verified', verifiedUtc:ago(5) }
   ];
 
   /* ---------------------------------------------------------------------------
@@ -124,7 +128,7 @@
    *   booking:<id> → { status }
    *   wh:<id>      → { status:'confirmed'|'resolved', matchedBookingId }
    *   wire:<id>    → { status:'verified'|'rejected'|'held', reason, evidence }
-   *   off:<id>     → { status }
+   *   off:<id>     → { status, reason?, amountBdt?, method?, reference?, verifiedUtc?, history[] }  (6.10.4)
    *   inst:<bid>:<no> → { status, paidUtc }
    *   invoiceAdd / refundAdd / reminderLog → appended arrays
    * ------------------------------------------------------------------------- */

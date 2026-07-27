@@ -6,6 +6,7 @@
 <script src="../assets/js/partner-state.js"></script>
 <script src="../assets/js/territory.js"></script>
 <script src="../assets/js/network-sim.js"></script>
+<script src="../assets/js/session.js"></script>
 <style>
   .wklang{display:inline-flex;border:1px solid #ffffff55;border-radius:999px;overflow:hidden}
   .wklang button{border:none;background:transparent;color:#fdf3f1;font-size:12px;padding:5px 9px;cursor:pointer}.wklang button.on{background:#ffffff33}
@@ -42,7 +43,7 @@ function render(){
       '<a href="notifications.page.html">🔔 '+t('বিজ্ঞপ্তি','Notifications')+'<span class="ch">›</span></a>'+
       '<a href="raise-ticket.page.html">🎫 '+t('টিকিট','Tickets')+'<span class="ch">›</span></a>'+
     '</div>'+
-    '<a class="btn ghost block" href="../shared/g02-welcome.page.html" style="margin:14px 16px 16px;border-radius:10px">'+t('লগ আউট','Log out')+'</a>';
+    '<a class="btn ghost block" href="../shared/g02-welcome.page.html" onclick="Session.logout(event)" style="margin:14px 16px 16px;border-radius:10px">'+t('লগ আউট','Log out')+'</a>';
 }
 function setLang(l){ lang=l; document.documentElement.lang=l; render(); }
 render();

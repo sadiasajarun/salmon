@@ -16,6 +16,7 @@
     finance:        { label: 'Finance',        icon: '₿', route: '#/finance',        perm: 'VIEW_FINANCE',        part: 4 },
     documents:      { label: 'Documents',      icon: '▤', route: '#/documents',      perm: 'VIEW_DOCUMENTS',      part: 5 },
     communications: { label: 'Communications', icon: '✉', route: '#/communications', perm: 'VIEW_COMMUNICATIONS',  part: 6 },
+    reporting:      { label: 'Reports',        icon: '◱', route: '#/reporting',      perm: 'VIEW_REPORT',         part: 7 },
     users:          { label: 'Users & Roles',  icon: '⚙', route: '#/users',          perm: 'VIEW_USERS',          part: 7 },
     audit:          { label: 'Audit Log',      icon: '☰', route: '#/audit',          perm: 'VIEW_AUDIT_LOG',      part: 7 },
     settings:       { label: 'Settings',       icon: '⚙', route: '#/settings',       perm: 'VIEW_SETTINGS',       part: 7 }
@@ -23,9 +24,9 @@
 
   // per-role sidebar composition (Work / Explore / Team) — genuinely different rails
   var SIDEBAR = {
-    SUPER_ADMIN: { Work: ['dashboard', 'pipeline', 'finance', 'documents'], Explore: ['people', 'catalogue', 'communications'], Team: ['users', 'audit', 'settings'] },
-    MANAGER:     { Work: ['dashboard', 'pipeline', 'communications'],       Explore: ['people', 'catalogue'],                     Team: [] },
-    FINANCE:     { Work: ['dashboard', 'finance'],                          Explore: ['catalogue'],                               Team: [] },
+    SUPER_ADMIN: { Work: ['dashboard', 'pipeline', 'finance', 'documents'], Explore: ['people', 'catalogue', 'communications', 'reporting'], Team: ['users', 'audit', 'settings'] },
+    MANAGER:     { Work: ['dashboard', 'pipeline', 'communications'],       Explore: ['people', 'catalogue', 'reporting'],        Team: [] },
+    FINANCE:     { Work: ['dashboard', 'finance'],                          Explore: ['catalogue', 'reporting'],                  Team: [] },
     LEGAL:       { Work: ['dashboard', 'documents'],                        Explore: ['people'],                                  Team: [] }
   };
 

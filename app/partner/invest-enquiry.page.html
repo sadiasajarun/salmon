@@ -3,6 +3,10 @@
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Salmon Partner · Investment enquiry</title>
 <link rel="stylesheet" href="../_shared.css"/>
+<script src="../assets/js/mock-data.js"></script>
+<script src="../assets/js/currency.js"></script>
+<script src="../assets/js/salmon-categories.js"></script>
+<script src="../assets/js/project-selector.js"></script>
 <script src="../assets/js/partner-invest.js"></script>
 <script src="../assets/js/network-sim.js"></script>
 <style>
@@ -31,7 +35,7 @@ var V=window.PartnerInvest, lang='en'; var K='salmon_invest_enquiry_draft';
 function t(bn,en){ return lang==='bn'?bn:en; }
 function s(k){ return V.strings[lang][k]||k; }
 function draft(){ try{ return JSON.parse(localStorage.getItem(K))||{}; }catch(e){ return {}; } }
-function save(){ var d={ ref:val('ref'), amount:val('amount'), time:val('time'), notes:val('notes') }; localStorage.setItem(K,JSON.stringify(d)); }
+function save(){ var prev=draft(); var d={ amount:val('amount'), time:val('time'), notes:val('notes'), projectId:prev.projectId||null, projectName:prev.projectName||null }; localStorage.setItem(K,JSON.stringify(d)); }
 function val(id){ var el=document.getElementById(id); return el?el.value:''; }
 function render(){
   var d=draft();
@@ -40,12 +44,19 @@ function render(){
   document.getElementById('screen').innerHTML=
     '<div class="wkbar"><a class="bk" href="program-with.page.html">‹</a><h2>'+s('enquiryTitle')+'</h2>'+lt+'</div>'+
     '<div class="formal">'+s('enquiryLead')+'</div>'+
-    '<div class="fld"><label>'+s('projectRef')+'</label><input id="ref" value="'+(d.ref||'')+'" placeholder="'+t('যেমন SHARE-OP-07 · স্যামন ওয়েসিস পার্ক','e.g. SHARE-OP-07 · Salmon Oasis Park')+'" oninput="save()"></div>'+
+    '<div class="fld"><label>'+s('projectRef')+' <span style="font-weight:400;color:var(--ink-subtle)">'+t('(ঐচ্ছিক)','(optional)')+'</span></label><div id="proj-sel"></div></div>'+
     '<div class="fld"><label>'+s('interestAmount')+'</label><input id="amount" inputmode="numeric" value="'+(d.amount||'')+'" placeholder="'+t('আনুমানিক পরিমাণ','Indicative amount')+'" oninput="save()"><div class="help">'+s('interestHelp')+'</div></div>'+
     '<div class="fld"><label>'+s('preferredTime')+'</label><select id="time" onchange="save()">'+times+'</select></div>'+
     '<div class="fld"><label>'+s('notes')+'</label><textarea id="notes" rows="3" placeholder="'+t('কিছু জানাতে চাইলে লিখুন','Anything you want us to know')+'" oninput="save()">'+(d.notes||'')+'</textarea></div>'+
     '<div class="discstrip">'+t('চালিয়ে যাওয়ার আগে ','Before you continue, ')+'<a href="disclaimer.page.html">'+s('readDisclaimer')+' ›</a></div>';
   document.getElementById('submit').textContent=s('submitEnquiry');
+  // Req 6.5.7 — same shared selector. A share enquiry may name a specific
+  // project/share; record-only, no amount or projection is implied here.
+  window.ProjectSelector.field(document.getElementById('proj-sel'), {
+    mode:'project', testid:'invest-project-selector', placeholder:t('শেয়ার / প্রকল্প নির্বাচন','Select share / project'),
+    value: d.projectId ? { projectId:d.projectId, projectName:d.projectName||d.projectId } : null,
+    onChange: function(ref){ var dd=draft(); dd.projectId=ref.projectId; dd.projectName=ref.projectName; localStorage.setItem(K,JSON.stringify(dd)); }
+  });
 }
 function submit(e){ e.preventDefault();
   if(window.NetSim && window.NetSim.isOffline && window.NetSim.isOffline()){ alert(t('অনুসন্ধান জমা দিতে সংযোগ দরকার। কিছু জমা হয়নি।','You need a connection to submit an enquiry. Nothing has been submitted.')); return false; }

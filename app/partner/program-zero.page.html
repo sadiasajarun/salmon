@@ -4,10 +4,22 @@
 <title>Salmon Partner · Zero Investment</title>
 <link rel="stylesheet" href="../_shared.css"/>
 <script src="../assets/js/partner-state.js"></script>
+<script src="../assets/js/program-info.js"></script>
 <script src="../assets/js/network-sim.js"></script>
-<style>.wklang{display:inline-flex;border:1px solid #ffffff55;border-radius:999px;overflow:hidden}.wklang button{border:none;background:transparent;color:#fdf3f1;font-size:12px;padding:5px 9px;cursor:pointer}</style>
+<style>
+  .wklang{display:inline-flex;border:1px solid #ffffff55;border-radius:999px;overflow:hidden}
+  .wklang button{border:none;background:transparent;color:#fdf3f1;font-size:12px;padding:5px 9px;cursor:pointer}
+  .secblock{margin:14px 16px 0;padding:0 0 14px;border-bottom:1px solid var(--line,#eee)}
+  .secblock:last-child{border-bottom:none}
+  .sechint{font-size:12.5px;color:var(--ink-subtle);line-height:1.55;margin:0 0 8px}
+  .copyph{font-size:11px;font-weight:800;letter-spacing:.03em;color:#7a5a2a;background:#fbf1dd;border:1px dashed #e4c98a;border-radius:8px;padding:8px 10px}
+  .secmand .copyph{color:#6a4a52;background:#f4e6ea;border-color:#dcb3c0}
+  .reqtag{font-size:9px;font-weight:800;letter-spacing:.05em;color:#fff;background:var(--primary,#800020);border-radius:4px;padding:1px 6px;vertical-align:middle}
+  .legalrow{font-size:11px;font-weight:800;letter-spacing:.03em;color:#7a2a2a;background:#f7e7e7;border:1px dashed #e0aeae;border-radius:8px;padding:7px 10px;margin-top:8px}
+  .framing{font-size:12px;color:var(--ink-subtle);line-height:1.55;margin-top:8px}
+</style>
 </head><body>
-<div class="page-label">P17 · Program: Zero Investment <small>Client-approved eligibility, responsibilities, benefits, conditions — plain</small></div>
+<div class="page-label">P17 · Program: Zero Investment <small>Six client-approved sections · shared pattern with P18 · placeholders where copy is absent</small></div>
 <div class="device">
   <div class="statusbar"><span>9:41</span><span>Salmon</span><span>●●● ▮</span></div>
   <div class="screen" id="screen" style="padding-bottom:20px"></div>
@@ -15,19 +27,24 @@
 <script>
 var P=window.Partner, lang='en';
 function t(bn,en){ return lang==='bn'?bn:en; }
-function list(title,items){ return '<div class="sectitle" style="margin-left:16px">'+title+'</div><div class="rowlist" style="margin:0 16px 12px">'+items.map(function(x){return '<div class="row"><span class="u" style="font-weight:500;font-size:13px">'+x+'</span></div>';}).join('')+'</div>'; }
+// Section content = CLIENT-APPROVED copy. Hints are neutral mechanism framing;
+// authoritative copy is a [CLIENT-APPROVED COPY REQUIRED] block.
+var CFG={ variant:'zero', sections:{
+  description:{ hintBn:'কোনো বিনিয়োগ নয় — ক্রেতা রেফার করুন, যাচাইকৃত রূপান্তরে কমিশন পান।', hintEn:'No money down — refer buyers, earn commission on verified conversion.' },
+  eligibility:{ hintBn:'অনুমোদিত পার্টনার, নির্ধারিত টেরিটরির মধ্যে (প্রক্রিয়া — নিয়ম OQ)।', hintEn:'Approved partners within their assigned territory (mechanism — the rule is an open question).' },
+  responsibilities:{ hintBn:'সম্মতিসহ সঠিক লিড; স্যামন-অনুমোদিত উপকরণ দিয়ে পিচ।', hintEn:'Submit accurate leads with consent; pitch using Salmon-approved material.' },
+  benefits:{ hintBn:'যাচাইকৃত রূপান্তরে কমিশন; সেলস কিট অ্যাক্সেস।', hintEn:'Commission on verified conversion; sales-kit access.' },
+  conditions:{ hintBn:'রূপান্তর কেবল স্যামন যাচাই করে; কমিশন হাতে বসানো হয়, হিসাব করা হয় না।', hintEn:'Only Salmon verifies a conversion; commission is hand-entered, never computed here.' },
+  disclaimers:{ hintBn:'প্রোগ্রামের আইনি কাঠামো — স্যামন কর্তৃক অনুমোদিত কপি।', hintEn:'The program’s legal framing — Salmon-approved copy.' }
+}};
 function render(){
-  var inIt=P.identity.programs.indexOf('zeroInvestment')>-1;
+  var inIt=(P.identity.participation.zeroInvestment||{}).status==='active';
   document.getElementById('screen').innerHTML=
     '<div class="wkbar"><a class="bk" href="enrolment.page.html">‹</a><h2>'+t('জিরো ইনভেস্টমেন্ট','Zero Investment')+'</h2>'+
     '<span class="wklang"><button class="'+(lang==='bn'?'on':'')+'" onclick="setLang(\'bn\')">বাং</button><button class="'+(lang==='en'?'on':'')+'" onclick="setLang(\'en\')">EN</button></span></div>'+
-    (inIt?'<div class="lock info" style="margin:12px 16px 8px">✓ '+t('আপনি এই প্রোগ্রামে আছেন','You’re enrolled in this program')+'</div>':'')+
-    '<p style="font-size:13.5px;color:var(--ink-subtle);line-height:1.6;margin:10px 16px 4px">'+t('কোনো বিনিয়োগ নয় — ক্রেতা রেফার করুন, যাচাইকৃত রূপান্তরে কমিশন পান।','No money down — refer buyers, earn commission on verified conversion.')+'</p>'+
-    list(t('যোগ্যতা','Eligibility'),[t('অনুমোদিত পার্টনার','Approved partner'),t('আপনার নির্ধারিত টেরিটরির মধ্যে','Within your assigned territory')])+
-    list(t('দায়িত্ব','Responsibilities'),[t('সম্মতিসহ সঠিক লিড জমা দেওয়া','Submit accurate leads with consent'),t('স্যামন-অনুমোদিত তথ্য দিয়ে পিচ করা','Pitch using Salmon-approved material')])+
-    list(t('সুবিধা','Benefits'),[t('যাচাইকৃত রূপান্তরে কমিশন','Commission on verified conversion'),t('সেলস কিট অ্যাক্সেস','Sales-kit access')])+
-    list(t('শর্ত','Conditions'),[t('রূপান্তর কেবল স্যামন যাচাই করে','Only Salmon verifies a conversion'),t('কমিশন হার ও শর্ত ক্লায়েন্ট-অনুমোদিত (চূড়ান্ত নয়)','Commission rate & terms are client-approved (not yet finalised)')])+
-    '<p class="phelp" style="margin:0 16px 16px">'+t('কোন ঘটনা “রূপান্তর” হিসেবে গণ্য এবং কে ঘোষণা করেন — এখনো নিশ্চিত নয় (OPEN_QUESTIONS)।','What counts as a “conversion” and who declares it is not yet confirmed (OPEN_QUESTIONS).')+'</p>';
+    (inIt?'<div class="lock info" style="margin:12px 16px 0">✓ '+t('আপনি এই প্রোগ্রামে সক্রিয়','You’re active in this program')+'</div>':'')+
+    window.ProgramInfo.render(lang,CFG)+
+    '<p class="phelp" style="margin:14px 16px 16px">'+t('ছয়টি বিভাগের প্রামাণিক কপি স্যামন সরবরাহ করবে (OPEN_QUESTIONS)। কোন ঘটনা “রূপান্তর” গণ্য — এখনো নিশ্চিত নয়।','Authoritative copy for all six sections is supplied by Salmon (OPEN_QUESTIONS). What counts as a “conversion” is not yet confirmed.')+'</p>';
 }
 function setLang(l){ lang=l; document.documentElement.lang=l; render(); }
 render();

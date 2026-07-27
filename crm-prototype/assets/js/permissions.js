@@ -41,6 +41,8 @@
 
     // --- consequential actions ---
     APPROVE_PARTNER:     [ROLES.SUPER_ADMIN, ROLES.MANAGER],
+    MANAGE_PROGRAM_PARTICIPATION: [ROLES.SUPER_ADMIN, ROLES.MANAGER], // 6.3.3 suspend/close/activate-zero
+    ACTIVATE_WITH_INVESTMENT:     [ROLES.SUPER_ADMIN],                 // 6.1 eligibility approval — admin-only
     VERIFY_CONVERSION:   [ROLES.SUPER_ADMIN, ROLES.MANAGER],
     CONFIRM_MEETING:     [ROLES.SUPER_ADMIN, ROLES.MANAGER],
     VERIFY_KYC:          [ROLES.SUPER_ADMIN, ROLES.LEGAL],
@@ -77,6 +79,7 @@
     // PUBLISH_PROJECT + MANAGE_INVENTORY defined above (MANAGE_INVENTORY widened to include MANAGER).
     CREATE_PROJECT:       [ROLES.SUPER_ADMIN],
     EDIT_PROJECT:         [ROLES.SUPER_ADMIN],
+    CONFIGURE_CATEGORIES: [ROLES.SUPER_ADMIN],           // configurable property categories (6.5.3) — admin-only; self-serve is OPEN_QUESTIONS (Req 6.5) #2
     UPLOAD_MEDIA:         [ROLES.SUPER_ADMIN, ROLES.MANAGER],
     POST_CONSTRUCTION:    [ROLES.SUPER_ADMIN, ROLES.MANAGER],
 
@@ -93,6 +96,12 @@
     VIEW_PAYMENTS:        [ROLES.SUPER_ADMIN, ROLES.FINANCE],
     CONFIRM_WEBHOOK:      [ROLES.SUPER_ADMIN, ROLES.FINANCE],
     REJECT_PAYMENT:       [ROLES.SUPER_ADMIN, ROLES.FINANCE],
+    // --- Offline/partner booking payment-history desk (Req 6.10.4) — the four
+    // finance verbs on a partner-recorded claim. Correct/Reject/Reverse each
+    // demand a mandatory reason + audit in code; nothing is ever hard-deleted.
+    VERIFY_PAYMENT:       [ROLES.SUPER_ADMIN, ROLES.FINANCE],
+    CORRECT_PAYMENT:      [ROLES.SUPER_ADMIN, ROLES.FINANCE],
+    REVERSE_PAYMENT:      [ROLES.SUPER_ADMIN, ROLES.FINANCE],
     GENERATE_INVOICE:     [ROLES.SUPER_ADMIN, ROLES.FINANCE],
     TRIGGER_REMINDER:     [ROLES.SUPER_ADMIN, ROLES.FINANCE, ROLES.MANAGER],
     RECORD_REFUND:        [ROLES.SUPER_ADMIN, ROLES.FINANCE],
@@ -106,6 +115,15 @@
     APPROVE_SETTLEMENT:   [ROLES.SUPER_ADMIN, ROLES.FINANCE],
     REJECT_SETTLEMENT:    [ROLES.SUPER_ADMIN, ROLES.FINANCE],
     MARK_SETTLED:         [ROLES.SUPER_ADMIN, ROLES.FINANCE],
+
+    // --- With Investment (Req 6.6) — the legally-sensitive record desk ---
+    // The app is a passive record-keeper: staff record the SHAPE of a share /
+    // return entry after OFFLINE documentation + payment verification. No amount
+    // is ever entered here — every value is held as [AMOUNT — LEGAL SIGN-OFF
+    // REQUIRED]. Recording is Finance/Super-Admin; Legal + Manager may view.
+    VIEW_INVESTMENT:       [ROLES.SUPER_ADMIN, ROLES.FINANCE, ROLES.LEGAL, ROLES.MANAGER],
+    RECORD_INVESTMENT_SHARE: [ROLES.SUPER_ADMIN, ROLES.FINANCE],
+    RECORD_RETURN_ENTRY:   [ROLES.SUPER_ADMIN, ROLES.FINANCE],
 
     // --- Documents, Communications, Reporting (Part 7) ---
     // VIEW_DOCUMENTS already defined above (SUPER_ADMIN, LEGAL) — gates the repository.
@@ -122,6 +140,13 @@
 
     MANAGE_NOTICES:       [ROLES.SUPER_ADMIN, ROLES.MANAGER],
     PUBLISH_NOTICE:       [ROLES.SUPER_ADMIN],
+
+    // --- Training & Sales Kit content (Req 6.15) — a content LIBRARY, not an LMS ---
+    // Upload / publish / unpublish / update training + sales-kit content, and
+    // target it by program / rank / team / territory. NO quizzes/certification.
+    VIEW_CONTENT:         [ROLES.SUPER_ADMIN, ROLES.MANAGER],
+    MANAGE_CONTENT:       [ROLES.SUPER_ADMIN, ROLES.MANAGER],   // upload/edit/publish/unpublish
+    TARGET_CONTENT:       [ROLES.SUPER_ADMIN, ROLES.MANAGER],   // assign audience (gate)
 
     VIEW_REPORT:          [ROLES.SUPER_ADMIN, ROLES.MANAGER, ROLES.FINANCE],
     EXPORT_REPORT:        [ROLES.SUPER_ADMIN, ROLES.FINANCE],   // only where the report is exportable=true

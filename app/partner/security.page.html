@@ -4,6 +4,7 @@
 <title>Salmon Partner · Security</title>
 <link rel="stylesheet" href="../_shared.css"/>
 <script src="../assets/js/network-sim.js"></script>
+<script src="../assets/js/session.js"></script>
 <style>
   .wklang{display:inline-flex;border:1px solid #ffffff55;border-radius:999px;overflow:hidden}
   .wklang button{border:none;background:transparent;color:#fdf3f1;font-size:12px;padding:5px 9px;cursor:pointer}.wklang button.on{background:#ffffff33}
@@ -38,7 +39,7 @@ function render(){
     '<div class="row sess"><div><div class="dev">Realme 9 · '+t('কুমিল্লা','Cumilla')+'</div><div class="sub2">'+t('এই ডিভাইস · এখন সক্রিয়','This device · active now')+'</div></div><span class="pill p-green"><span class="dot"></span>'+t('এই ডিভাইস','This device')+'</span></div>'+
     '<div class="row sess"><div><div class="dev">Chrome · Dhaka</div><div class="sub2">'+t('সর্বশেষ ২ দিন আগে','Last seen 2 days ago')+'</div></div><a onclick="revoke(this)">'+t('সাইন আউট','Sign out')+'</a></div>'+
     '<p class="note">'+t('লগ আউট করলে সার্ভারে টোকেন বাতিল হয় — শুধু এই ফোনে নয়, সব জায়গায়।','Logging out revokes the token on the server — everywhere, not just this phone.')+'</p>'+
-    '<a class="btn block" href="../shared/g02-welcome.page.html" style="margin:8px 16px 6px;border-radius:10px">'+t('লগ আউট','Log out')+'</a>'+
+    '<a class="btn block" href="../shared/g02-welcome.page.html" onclick="Session.logout(event)" style="margin:8px 16px 6px;border-radius:10px">'+t('লগ আউট','Log out')+'</a>'+
     '<a class="btn ghost block" href="profile.page.html" style="margin:0 16px 16px;border-radius:10px">'+t('ফিরে যান','Back')+'</a>';
 }
 function revoke(el){ el.textContent=t('সাইন আউট হয়েছে','Signed out'); el.style.color='var(--ink-subtle)'; el.onclick=null; }

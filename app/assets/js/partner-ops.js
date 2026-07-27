@@ -31,7 +31,10 @@
   var meetings = [
     { id: 'MT-501', kind: 'virtual', withKey: 'manager', title: 'Deal review with sales manager', titleBn: 'সেলস ম্যানেজারের সাথে ডিল রিভিউ', status: 'confirmed', whenUtc: '2026-07-17T09:00:00Z', link: 'https://zoom.us/j/000000000?pwd=__PLACEHOLDER' },
     { id: 'MT-498', kind: 'visit', project: 'The ROSSA', leadId: 'LD-3025', title: 'Site visit · The ROSSA', titleBn: 'সাইট ভিজিট · দ্য রোসা', status: 'requested', whenUtc: null },
-    { id: 'MT-490', kind: 'virtual', withKey: 'sales', title: 'Head-office meeting (recurring)', titleBn: 'হেড অফিস মিটিং (নিয়মিত)', status: 'recurring', whenUtc: '2026-07-20T10:00:00Z', link: 'https://zoom.us/j/111111111?pwd=__PLACEHOLDER', attendance: 'confirmed', cadenceEn: 'Twice monthly', cadenceBn: 'মাসে দুবার' },
+    { id: 'MT-490', kind: 'virtual', withKey: 'sales', title: 'Head-office coordination (recurring)', titleBn: 'হেড অফিস সমন্বয় (নিয়মিত)', status: 'recurring', whenUtc: '2026-07-20T10:00:00Z', link: 'https://zoom.us/j/111111111?pwd=__PLACEHOLDER',
+      // 6.9.5 — attendance is an enum per occurrence: attended | absent | excused | pending.
+      attendance: 'attended', cadenceEn: 'Twice monthly · 1st & 3rd Thursday', cadenceBn: 'মাসে দুবার · ১ম ও ৩য় বৃহস্পতিবার',
+      attendanceHistory: [ { dateUtc: '2026-07-03T10:00:00Z', status: 'attended' }, { dateUtc: '2026-06-19T10:00:00Z', status: 'excused' }, { dateUtc: '2026-06-05T10:00:00Z', status: 'attended' } ] },
     { id: 'MT-482', kind: 'virtual', withKey: 'accounts', title: 'Settlement query with accounts', titleBn: 'অ্যাকাউন্টসের সাথে সেটেলমেন্ট প্রশ্ন', status: 'completed', whenUtc: '2026-07-05T11:00:00Z' },
     { id: 'MT-475', kind: 'visit', project: 'Salmon Oasis Park', title: 'Site visit · Oasis Park', titleBn: 'সাইট ভিজিট · ওয়েসিস পার্ক', status: 'cancelled', whenUtc: '2026-06-28T09:00:00Z' }
   ];

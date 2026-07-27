@@ -4,9 +4,17 @@
 <title>Salmon Partner · Program</title>
 <link rel="stylesheet" href="../_shared.css"/>
 <script src="../assets/js/partner-state.js"></script>
+<script src="../assets/js/i18n.js"></script>
 <script src="../assets/js/network-sim.js"></script>
+<style>
+  .chan.locked{opacity:.72}
+  .chan.locked .ring{border-color:#cbb9ad}
+  .lockrow{display:flex;gap:8px;align-items:flex-start;margin:2px 16px 10px;background:#f4e6ea;border:1px solid #e6cdd5;border-radius:10px;padding:10px 12px;font-size:11.5px;color:#6a4a52;line-height:1.5}
+  .lockrow .lk{flex:0 0 auto}
+  .condtag{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--primary);background:#f4e6ea;border-radius:4px;padding:1px 6px;margin-left:6px}
+</style>
 </head><body>
-<div class="page-label">P04 · Program selection <small>Zero Investment · With Investment · Both — one honest line each</small></div>
+<div class="page-label">P04 · Program selection <small>Zero (open) · With Investment (eligibility-gated) · Both — mechanism config-driven, rule logged</small></div>
 <div class="device">
   <div class="statusbar"><span>9:41</span><span>Salmon</span><span>●●● ▮</span></div>
   <div id="top" style="flex:0 0 auto"></div>
@@ -16,25 +24,36 @@
 <script>
 var P=window.Partner, lang='en', d=P.getDraft();
 function t(bn,en){ return lang==='bn'?bn:en; }
-function pick(v){ P.saveDraft({program:v}); d=P.getDraft(); render(); }
+function L(key){ return window.tr ? tr(lang,key) : key; }
+// eligibility comes from config/back-end (Partner.eligibleFor) — never invented here
+function withEligible(){ return P.eligibleFor('with'); }
+function pick(v){ if((v==='with'||v==='both') && !withEligible()){ return; } P.saveDraft({program:v}); d=P.getDraft(); render(); }
 function bar(){ document.getElementById('top').innerHTML=
   '<div class="wkbar"><a class="bk" href="p03-register-profile.page.html">‹</a><h2>'+t('প্রোগ্রাম','Program')+'</h2>'+
   '<span class="wklang"><button class="'+(lang==='bn'?'on':'')+'" onclick="setLang(\'bn\')">বাং</button><button class="'+(lang==='en'?'on':'')+'" onclick="setLang(\'en\')">EN</button></span></div>'+
   '<div class="stepper"><i class="st done"></i><i class="st done"></i><i class="st on"></i><i class="st"></i><i class="st"></i></div>'+
   '<div class="steplabel">'+t('ধাপ ৩ / ৫ · প্রোগ্রাম নির্বাচন','Step 3 / 5 · Choose a program')+'</div>'; }
-function card(key,titleBn,titleEn,lineBn,lineEn){ var on=d.program===key;
-  return '<div class="chan'+(on?' on':'')+'" style="border-radius:12px" onclick="pick(\''+key+'\')"><span class="ring"></span><div class="m"><div class="t">'+t(titleBn,titleEn)+'</div><div class="d">'+t(lineBn,lineEn)+'</div></div></div>'; }
+function card(key,titleBn,titleEn,lineBn,lineEn,locked){ var on=d.program===key;
+  return '<div class="chan'+(on?' on':'')+(locked?' locked':'')+'" style="border-radius:12px" onclick="pick(\''+key+'\')"><span class="ring"></span><div class="m"><div class="t">'+t(titleBn,titleEn)+(locked?'<span class="condtag">🔒 '+L('eligibility.withConditional')+'</span>':'')+'</div><div class="d">'+t(lineBn,lineEn)+'</div></div></div>'; }
 function render(){
   bar();
-  var Z=P.PROGRAMS.zeroInvestment, W=P.PROGRAMS.withInvestment;
-  document.getElementById('form').innerHTML=
-    '<p class="phelp" style="margin-top:14px">'+t('আপনি একটি বা উভয় প্রোগ্রামে যোগ দিতে পারেন।','You can join one program or both.')+'</p>'+
-    card('zero',Z.bn,Z.en,Z.lineBn,Z.lineEn)+
-    card('with',W.bn,W.en,W.lineBn,W.lineEn)+
-    card('both',t('উভয়','Both'),t('Both'),t('দুটি প্রোগ্রামেই যোগ দিন।','Join both programs.'),'Join both programs.')+
-    '<p class="phelp">'+t('উইথ-ইনভেস্টমেন্ট বেছে নিলে পরবর্তী ধাপে একটি অতিরিক্ত ডিসক্লেইমার থাকবে।','Choosing With Investment adds an extra disclaimer on the next step.')+'</p>';
-  document.getElementById('next').textContent=t('চালিয়ে যান','Continue');
-  var n=document.getElementById('next'); if(!d.program){ n.style.opacity='.5'; n.style.pointerEvents='none'; } else { n.style.opacity='1'; n.style.pointerEvents='auto'; }
+  var Z=P.PROGRAMS.zeroInvestment, W=P.PROGRAMS.withInvestment, elig=withEligible();
+  var h='<p class="phelp" style="margin-top:14px">'+t('আপনি একটি বা উভয় প্রোগ্রামে যোগ দিতে পারেন।','You can join one program or both.')+'</p>'+
+    card('zero',Z.bn,Z.en,Z.lineBn,Z.lineEn,false)+
+    card('with',W.bn,W.en,W.lineBn,W.lineEn,!elig)+
+    card('both',t('উভয়','Both'),t('উভয়','Both'),t('দুটি প্রোগ্রামেই যোগ দিন।','Join both programs.'),t('দুটি প্রোগ্রামেই যোগ দিন।','Join both programs.'),!elig);
+  if(!elig){ h+='<div class="lockrow"><span class="lk">🔒</span><div>'+L('eligibility.withLocked')+'</div></div>'; }
+  h+='<p class="phelp">'+t('উইথ-ইনভেস্টমেন্ট বেছে নিলে পরবর্তী ধাপে একটি অতিরিক্ত ডিসক্লেইমার থাকবে।','Choosing With Investment adds an extra disclaimer on the next step.')+'</p>';
+  document.getElementById('form').innerHTML=h;
+  // Branch point: each program takes its OWN registration path, not one generic one.
+  //   zero → REG04a (light, open)   with → REG04b (gated + disclaimer)   both → zero then with
+  var routes={ zero:'reg-program-zero.page.html', with:'reg-program-with.page.html', both:'reg-program-zero.page.html' };
+  var n=document.getElementById('next');
+  n.href = routes[d.program] || 'p05-consent.page.html';
+  n.textContent = d.program==='zero' ? t('জিরো বিবরণে যান','Continue · Zero details')
+    : (d.program==='with'||d.program==='both') ? t('উইথ বিবরণে যান','Continue · program details')
+    : t('চালিয়ে যান','Continue');
+  if(!d.program){ n.style.opacity='.5'; n.style.pointerEvents='none'; } else { n.style.opacity='1'; n.style.pointerEvents='auto'; }
 }
 function setLang(l){ lang=l; document.documentElement.lang=l; render(); }
 render();

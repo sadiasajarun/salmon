@@ -10,7 +10,8 @@
 (function (root) {
   'use strict';
   var C = root.C, Perm = root.Perm, Audit = root.Audit, CRM = root.CRM, Router = root.Router,
-      DevToolbar = root.DevToolbar, Cat = root.CRM.Catalogue, Ripples = root.Ripples;
+      DevToolbar = root.DevToolbar, Cat = root.CRM.Catalogue, Ripples = root.Ripples,
+      SC = root.SalmonCategories;
 
   root.CRM_NOW = '2026-07-15T10:00:00Z';
   var esc = C.esc, fmt = C.fmt;
@@ -25,7 +26,8 @@
   var FILES = {
     E01:'E01-projects-list.html', E02:'E02-project-overview.html', E03:'E03-project-units.html',
     E04:'E04-project-media.html', E05:'E05-construction-updates.html', E06:'E06-create-project.html',
-    E07:'E07-publish-project.html', E08:'E08-unit-detail.html'
+    E07:'E07-publish-project.html', E08:'E08-unit-detail.html',
+    E09:'E09-category-config.html'
   };
   function href(id, params){
     var f = FILES[id]; if (!f) return '#';
@@ -170,8 +172,26 @@
 
   /* ===================== chips / helpers ===================== */
   function unitChip(status){ var m={ available:['green','Available'], reserved:['amber','Reserved'], booked:['blue','Booked'], sold:['grey','Sold'] }[status] || ['grey',status]; return '<span class="chip '+m[0]+'"><span class="d"></span>'+m[1]+'</span>'; }
-  function statusChip(status){ return status==='published' ? '<span class="chip green"><span class="d"></span>Published</span>' : '<span class="chip grey"><span class="d"></span>Draft</span>'; }
+  function statusChip(status){
+    if (status==='published') return '<span class="chip green"><span class="d"></span>Published</span>';
+    if (status==='unpublished') return '<span class="chip amber"><span class="d"></span>Unpublished</span>';
+    return '<span class="chip grey"><span class="d"></span>Draft</span>';
+  }
   function initials(name){ return name.replace(/^(The|Salmon)\s+/i,'').split(' ').map(function(w){return w[0];}).slice(0,2).join('').toUpperCase(); }
+  // 6.5.2 — summary, civic amenities, contact, visit info, map coordinates.
+  function projectDetailBlock(p){
+    var coords = p.coordinates && p.coordinates.lat ? (p.coordinates.lat+', '+p.coordinates.lng) : '<span class="hint">[coordinates required]</span>';
+    var amen = (p.civicAmenities&&p.civicAmenities.length) ? p.civicAmenities.map(function(a){ return '<span class="chip grey" style="margin:2px 4px 2px 0">'+esc(a)+'</span>'; }).join('') : '<span class="hint">[CLIENT COPY REQUIRED]</span>';
+    var c = p.contact||{};
+    return '<div class="sectitle">Project detail</div>'+
+      '<div class="detailblock">'+
+        '<div class="drow"><div class="dl">Summary</div><div class="dv">'+esc(p.summary||'[CLIENT COPY REQUIRED]')+'</div></div>'+
+        '<div class="drow"><div class="dl">Civic amenities</div><div class="dv">'+amen+'</div></div>'+
+        '<div class="drow"><div class="dl">Contact</div><div class="dv">'+esc(c.name||'—')+(c.phone?' · '+esc(c.phone):'')+(c.email?' · '+esc(c.email):'')+'</div></div>'+
+        '<div class="drow"><div class="dl">Visit information</div><div class="dv">'+esc(p.visitInfo||'[CLIENT COPY REQUIRED]')+'</div></div>'+
+        '<div class="drow"><div class="dl">Map coordinates</div><div class="dv">'+coords+'</div></div>'+
+      '</div>';
+  }
   function unitSummary(p){
     var c = Cat.unitCounts(p);
     return '<div class="unitsummary">'+['available','reserved','booked','sold'].map(function(k){
@@ -228,8 +248,12 @@
     }).then(function(v){
       if (!v) return;
       Perm.requirePermission(state.role, 'PUBLISH_PROJECT');
-      Ripples.mutate('proj:'+p.id, { status: publishing?'published':'draft', publishedUtc: publishing?root.CRM_NOW:null });
-      Audit.audit({ actor:actor(), action: publishing?'PUBLISH_PROJECT':'UNPUBLISH_PROJECT', target:p.id+' · '+p.name, changes:{ reason:(v.reason||null) } });
+      // 3-state lifecycle (6.5.1): draft → published → unpublished. Unpublish is
+      // its own audited state (a project that was live and is now hidden), NOT a
+      // silent collapse back to draft — those read very differently to staff.
+      var next = publishing ? 'published' : (p.status === 'draft' ? 'draft' : 'unpublished');
+      Ripples.mutate('proj:'+p.id, { status: next, publishedUtc: publishing?root.CRM_NOW:p.publishedUtc, unpublishedUtc: publishing?null:root.CRM_NOW });
+      Audit.audit({ actor:actor(), action: publishing?'PUBLISH_PROJECT':'UNPUBLISH_PROJECT', target:p.id+' · '+p.name, changes:{ from:p.status, to:next, reason:(v.reason||null) } });
       Ripples.emit({ kind:'project', screen: publishing?'Discovery map':'Hidden', headline: (publishing?'Published ':'Unpublished ')+p.name+(publishing?' — now on the mobile discovery map':' — removed from discovery') });
       C.toast({ type: publishing?'success':'warning', persist:true, title: publishing?'Project published':'Project unpublished', text:p.name, ripple: publishing?'now visible in the mobile app':'now hidden in the mobile app' });
       after && after();
@@ -339,25 +363,49 @@
   }
 
   function createProject(after){
+    var catOpts = SC.all().map(function(c){ return c.label; });
     formDialog({
       title:'Create project',
-      width:560, grid:true,
-      intro:'<p class="hint" style="margin-bottom:6px">A new project starts as a <b>draft</b> — invisible in the mobile app until published (E07).</p>',
+      width:600, grid:true,
+      intro:'<p class="hint" style="margin-bottom:6px">A new project starts as a <b>draft</b> — invisible in the mobile app until published (E07). The <b>category</b> decides which configuration fields apply (6.5.3).</p>',
       fields:[
         { type:'text', key:'name', label:'Project name', required:true, placeholder:'e.g. Salmon Serenity', full:true },
+        { type:'select', key:'category', label:'Property category', options:catOpts, required:true, full:true },
         { type:'text', key:'location', label:'Location', required:true, placeholder:'Bashundhara R/A, Block …, Dhaka', full:true },
-        { type:'text', key:'buildingType', label:'Building type', placeholder:'Residential Apartment' },
+        { type:'text', key:'lat', label:'Latitude', placeholder:'23.8188' },
+        { type:'text', key:'lng', label:'Longitude', placeholder:'90.4348' },
+        { type:'select', key:'readyStatus', label:'Status', options:['Under construction','Ready'] },
         { type:'text', key:'floors', label:'Floors', placeholder:'B1 + G + 10' },
-        { type:'text', key:'bed', label:'Bedrooms', placeholder:'3' },
-        { type:'text', key:'priceFrom', label:'Price from (BDT)', placeholder:'12500000' }
+        { type:'text', key:'priceFrom', label:'Price from (BDT)', placeholder:'12500000' },
+        { type:'textarea', key:'summary', label:'Summary', placeholder:'One-paragraph project summary', full:true },
+        { type:'text', key:'civicAmenities', label:'Civic amenities (comma-separated)', placeholder:'Rooftop deck, Standby generator, CCTV', full:true },
+        { type:'text', key:'contactPhone', label:'Contact phone', placeholder:'+880 …' },
+        { type:'text', key:'visitInfo', label:'Visit information', placeholder:'How a buyer arranges a visit', full:true }
       ],
       confirmLabel:'Create as draft'
     }).then(function(v){
       if (!v) return;
       Perm.requirePermission(state.role, 'CREATE_PROJECT');
       var pid = 'PRJ-NEW-'+Date0();
-      Audit.audit({ actor:actor(), action:'CREATE_PROJECT', target:pid+' · '+v.name, changes:{ location:v.location } });
-      C.toast({ type:'success', title:'Project created (draft)', text:v.name+' — not yet visible on mobile. Publish from E07 when ready.' });
+      var catId = (SC.all().filter(function(c){ return c.label===v.category; })[0]||{}).id || 'apartment';
+      var proj = {
+        id:pid, name:v.name, category:catId, location:v.location,
+        coordinates:{ lat:parseFloat(v.lat)||null, lng:parseFloat(v.lng)||null },
+        status:'draft', publishedUtc:null,
+        readyStatus: v.readyStatus==='Ready' ? 'ready' : 'under_construction',
+        summary: v.summary || '[CLIENT COPY REQUIRED]',
+        civicAmenities: (v.civicAmenities||'').split(',').map(function(s){ return s.trim(); }).filter(Boolean),
+        contact:{ name:'Salmon Sales Desk', phone:v.contactPhone||'', email:'sales@salmondevelopersbd.com' },
+        visitInfo: v.visitInfo || '[CLIENT COPY REQUIRED]',
+        glance:{ buildingType:v.category, floors:v.floors||'—', unitSqft:'—', bed:null, bath:null, balcony:null, lift:null, landFacing:'—', frontRoad:'—' },
+        handover:'—', priceFromBdt: parseInt(v.priceFrom,10) || 0,
+        units:[], media:[], construction:[]
+      };
+      // persist: append to the projectsAdd override array so it appears in E01
+      var ov = readOv(); ov['projectsAdd'] = (ov['projectsAdd']||[]); ov['projectsAdd'].unshift(proj);
+      try { localStorage.setItem('crm_people_mut', JSON.stringify(ov)); } catch(e){}
+      Audit.audit({ actor:actor(), action:'CREATE_PROJECT', target:pid+' · '+v.name, changes:{ category:catId, location:v.location, status:'draft' } });
+      C.toast({ type:'success', title:'Project created (draft)', text:v.name+' — saved as a draft. Not yet visible on mobile; publish from E07 when ready.' });
       after && after();
     });
   }
@@ -373,20 +421,28 @@
   SCREENS.E01 = { title:'Projects', sub:'Every Salmon development', perm:'VIEW_CATALOGUE',
     render:function(main){
       var projects = Cat.allProjects();
-      main.innerHTML = C.PageHeader({ title:this.title, sub:this.sub, actions: Perm.can(state.role,'CREATE_PROJECT') ? [{ id:'create', label:'Create project', cls:'primary', icon:'＋' }] : [] });
+      var headerActions = [];
+      if (Perm.can(state.role,'CREATE_PROJECT')) headerActions.push({ id:'create', label:'Create project', cls:'primary', icon:'＋' });
+      if (Perm.can(state.role,'CONFIGURE_CATEGORIES')) headerActions.push({ id:'categories', label:'Property categories', cls:'', icon:'⚙' });
+      main.innerHTML = C.PageHeader({ title:this.title, sub:this.sub, actions: headerActions });
       var ca = main.querySelector('[data-act="create"]'); if (ca) ca.onclick = function(){ createProject(function(){ location.reload(); }); };
+      var cc = main.querySelector('[data-act="categories"]'); if (cc) cc.onclick = function(){ go('E09'); };
       var fbWrap = C.el('<div></div>'); main.appendChild(fbWrap);
       var tableWrap = C.el('<div></div>'); main.appendChild(tableWrap);
+      // Category options are driven by the configurable schema (6.5.3), not hardcoded building types.
+      var catOpts = SC.all().map(function(c){ return { value:c.id, label:c.label }; });
       C.FilterBar(fbWrap, { id:'e01', filters:[
-        { key:'status', label:'Publish state', options:['published','draft'] },
-        { key:'type', label:'Type', options:['Residential Apartment','Premium Apartment','Lake-facing Apartment'] }
+        { key:'status', label:'Publish state', options:['published','draft','unpublished'] },
+        { key:'category', label:'Category', options:catOpts.map(function(o){ return o.label; }) }
       ], onChange:draw });
-      function filtered(){ var f=C.getFilters('e01'); return projects.filter(function(p){ if (f.status && p.status!==f.status) return false; if (f.type && p.glance.buildingType!==f.type) return false; return true; }); }
+      function catLabel(p){ return SC.label(p.category || 'apartment'); }
+      function filtered(){ var f=C.getFilters('e01'); return projects.filter(function(p){ if (f.status && p.status!==f.status) return false; if (f.category && catLabel(p)!==f.category) return false; return true; }); }
       function draw(){
         C.mountDataTable(tableWrap, {
           rowId:'id', noun:'projects', defaultSort:'name', rows:filtered(),
           columns:[
             { key:'name', label:'Project', strong:true, sortable:true },
+            { key:'category', label:'Category', render:function(r){ return esc(SC.label(r.category||'apartment')); } },
             { key:'location', label:'Location' },
             { key:'floors', label:'Floors', sortValue:function(r){return r.glance.floors;}, render:function(r){ return esc(r.glance.floors); } },
             { key:'avail', label:'Units (avail / total)', align:'right', render:function(r){ var c=Cat.unitCounts(r); return '<span class="num"><b>'+c.available+'</b> / '+c.total+'</span>'; } },
@@ -418,12 +474,15 @@
       var canEdit = Perm.can(state.role,'EDIT_PROJECT');
       main.insertAdjacentHTML('beforeend', '<div class="sectitle">At A Glance'+(canEdit?'<span class="link" id="edit-glance">Edit fields</span>':'')+'</div>');
       var g = p.glance;
+      var readyLabel = p.readyStatus==='ready' ? 'Ready' : p.readyStatus==='under_construction' ? 'Under construction' : (p.handover||'—');
       var tiles = [
-        ['Building type', g.buildingType], ['Floors', g.floors], ['Unit size', g.unitSqft], ['Handover', p.handover],
-        ['Bed', g.bed], ['Bath', g.bath], ['Balcony', g.balcony], ['Lift', g.lift],
+        ['Category', SC.label(p.category||'apartment')], ['Ready status', readyLabel], ['Floors', g.floors], ['Handover', p.handover],
+        ['Unit size', g.unitSqft], ['Bed', g.bed], ['Bath', g.bath], ['Balcony', g.balcony],
         ['Land facing', g.landFacing], ['Front road', g.frontRoad], ['Price from', fmt.bdt(p.priceFromBdt)], ['Publish state', p.status]
       ];
-      main.insertAdjacentHTML('beforeend', '<div class="glancegrid">'+tiles.map(function(t){ return '<div class="gtile"><div class="gl">'+esc(t[0])+'</div><div class="gv">'+esc(t[1])+'</div></div>'; }).join('')+'</div>');
+      main.insertAdjacentHTML('beforeend', '<div class="glancegrid">'+tiles.map(function(t){ return '<div class="gtile"><div class="gl">'+esc(t[0])+'</div><div class="gv">'+esc(t[1]==null?'—':t[1])+'</div></div>'; }).join('')+'</div>');
+      // 6.5.2 — the fields the discovery view and a buyer need beyond structural glance.
+      main.insertAdjacentHTML('beforeend', projectDetailBlock(p));
       main.appendChild(auditNote(p.id));
       var eg = document.getElementById('edit-glance'); if (eg) eg.onclick = function(){ editGlance(p, function(){ location.reload(); }); };
     }
@@ -619,6 +678,57 @@
   };
 
   function wireEmpty(main, screen){ var b=main.querySelector('[data-empty-act]'); if(b) b.onclick=function(){ go(screen); }; }
+
+  /* ---------- E09 · Configurable property categories (6.5.3) ---------- */
+  SCREENS.E09 = { title:'Property categories', sub:'Configure categories and the fields that apply to each', perm:'CONFIGURE_CATEGORIES',
+    render:function(main){
+      var canEdit = Perm.can(state.role,'CONFIGURE_CATEGORIES');
+      main.innerHTML = C.PageHeader({ title:this.title, sub:this.sub, actions: canEdit ? [{ id:'addcat', label:'Add category', cls:'primary', icon:'＋' },{ id:'resetcat', label:'Reset to defaults', cls:'' }] : [] });
+      main.insertAdjacentHTML('beforeend', '<div class="effectbox" style="margin:0 0 14px">Each category declares which configuration fields apply. A project of that category exposes exactly those fields — an <b>apartment</b> shows bedrooms; a <b>land / plot share</b> shows plot size and share fraction, not bedrooms. These same declarations drive the <b>Global Client filters</b> (6.5.3). The default matrix is a placeholder — confirm with Salmon (OPEN QUESTIONS #1).</div>');
+      var ac = main.querySelector('[data-act="addcat"]'); if (ac) ac.onclick = function(){ addCategoryDialog(function(){ location.reload(); }); };
+      var rc = main.querySelector('[data-act="resetcat"]'); if (rc) rc.onclick = function(){ C.confirmDialog ? C.confirmDialog({ title:'Reset categories?', text:'Restore the five default categories and their fields.' }).then(function(ok){ if(ok){ SC.resetToDefaults(); Audit.audit({ actor:actor(), action:'RESET_CATEGORIES', target:'Property categories' }); location.reload(); } }) : (SC.resetToDefaults(), location.reload()); };
+      var fieldIds = Object.keys(SC.FIELDS);
+      var wrap = C.el('<div class="catgrid"></div>');
+      SC.all().forEach(function(cat){
+        var card = C.el('<div class="card catcard"></div>');
+        var applied = {}; cat.fields.forEach(function(f){ applied[f]=1; });
+        card.innerHTML = '<div class="row between" style="align-items:center"><div><h3 style="margin:0">'+esc(cat.label)+'</h3><div class="hint">'+esc(cat.id)+(cat.system?' · seed':'')+'</div></div>'+
+          (canEdit && !cat.system ? '<button class="link danger" data-del>Remove</button>' : '')+'</div>'+
+          '<div class="hint" style="margin:8px 0 6px">Applicable configuration fields — click to toggle:</div>'+
+          '<div class="fieldchips">'+fieldIds.map(function(fid){
+            var f = SC.FIELDS[fid];
+            var on = !!applied[fid];
+            return '<button class="fchip'+(on?' on':'')+(f.sensitive?' sensitive':'')+'" data-f="'+fid+'"'+(canEdit?'':' disabled')+'>'+esc(f.label)+(f.filter?' <span class="ff">filter</span>':'')+(f.sensitive?' <span class="ff sens">legal</span>':'')+'</button>';
+          }).join('')+'</div>'+
+          '<div class="hint" style="margin-top:8px">Drives client filters: <b>'+(SC.filtersFor(cat.id).map(function(f){return f.label;}).join(', ')||'—')+'</b></div>';
+        if (canEdit){
+          card.querySelectorAll('[data-f]').forEach(function(btn){ btn.onclick = function(){
+            var fid = btn.getAttribute('data-f');
+            SC.toggleField(cat.id, fid);
+            Audit.audit({ actor:actor(), action:'CONFIGURE_CATEGORY', target:cat.label, changes:{ field:fid, applied: btn.className.indexOf('on')<0 } });
+            location.reload();
+          }; });
+          var del = card.querySelector('[data-del]'); if (del) del.onclick = function(){ SC.removeCategory(cat.id); Audit.audit({ actor:actor(), action:'REMOVE_CATEGORY', target:cat.label }); location.reload(); };
+        }
+        wrap.appendChild(card);
+      });
+      main.appendChild(wrap);
+    }
+  };
+  function addCategoryDialog(after){
+    formDialog({
+      title:'Add property category', width:520, grid:false,
+      intro:'<p class="hint">Name the category. It starts with <b>Area</b> + <b>Price range</b> applied; toggle the rest of its fields on the category card afterwards.</p>',
+      fields:[ { type:'text', key:'label', label:'Category name', required:true, placeholder:'e.g. Duplex' } ],
+      confirmLabel:'Add category'
+    }).then(function(v){
+      if (!v || !v.label) return;
+      var id = SC.addCategory(v.label, ['area','priceRange']);
+      Audit.audit({ actor:actor(), action:'ADD_CATEGORY', target:v.label, changes:{ id:id, fields:'area,priceRange' } });
+      C.toast({ type:'success', title:'Category added', text:v.label+' — now selectable when creating a project and as a client filter. Toggle its fields below.' });
+      after && after();
+    });
+  }
 
   /* ===================== boot ===================== */
   function boot(screenId){

@@ -17,6 +17,10 @@
   .rec .kv:last-child{border-bottom:none} .rec .kv .k{color:var(--ink-subtle)} .rec .kv .v{font-weight:600;text-align:right}
   .disc{margin:0 16px 12px;background:#f6f5f4;border:1px solid #e4e1de;border-left:3px solid var(--ink);border-radius:8px;padding:12px 13px;font-size:12px;color:#3a3a3a;line-height:1.55}
   .disc a{color:var(--primary);font-weight:700;text-decoration:none;display:inline-block;margin-top:6px}
+  /* Held value — a marker, never a number. Deliberately un-money-like. */
+  .hold{display:inline-block;font-family:var(--mono,monospace);font-size:12px;font-weight:800;color:var(--primary);background:#fbf3f3;border:1px dashed var(--primary);border-radius:6px;padding:3px 8px;line-height:1.4;white-space:normal}
+  .rec .amt .hold{font-size:12.5px}
+  .heldnote{font-size:11px;color:var(--ink-subtle);line-height:1.5;margin:5px 0 0}
 </style>
 </head><body>
 <div class="page-label">P53 · Investment record <small>Recorded by staff after offline docs + payment verification · app DISPLAYS only, never processed payment</small></div>
@@ -30,22 +34,31 @@ function t(bn,en){ return lang==='bn'?bn:en; }
 function s(k){ return V.strings[lang][k]||k; }
 function bdt(n){ if(n==null)return '—'; var x=String(Math.round(n)); var l=x.slice(-3),r=x.slice(0,-3); if(r)r=r.replace(/\B(?=(\d{2})+(?!\d))/g,','); return '৳ '+(r?r+','+l:l); }
 function dt(iso){ try{ return new Intl.DateTimeFormat(lang==='bn'?'bn-BD':'en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'Asia/Dhaka'}).format(new Date(iso)); }catch(e){ return iso.slice(0,10); } }
+function mk(k){ return V[k][lang==='bn'?'bn':'en']; }  // marker string in current language
 function render(){
   var r=V.record;
   var lt='<span class="wklang"><button class="'+(lang==='bn'?'on':'')+'" onclick="setLang(\'bn\')">বাং</button><button class="'+(lang==='en'?'on':'')+'" onclick="setLang(\'en\')">EN</button></span>';
+  // Amount and effective date are HELD as markers; terms are held offline. Never a number.
+  var effDate = (V.LEGAL_SIGNOFF_RECEIVED && r.effectiveDate) ? dt(r.effectiveDate) : mk('EFFDATE_MARKER');
   document.getElementById('screen').innerHTML=
     '<div class="wkbar"><a class="bk" href="program-with.page.html">‹</a><h2>'+s('recordTitle')+'</h2>'+lt+'</div>'+
     '<div class="disc">'+s('recordNote')+'<a href="disclaimer.page.html">'+s('readDisclaimer')+' ›</a></div>'+
     '<div class="rec">'+
-      '<div class="amt"><div class="k">'+s('amountRecorded')+'</div><div class="v">'+bdt(r.amountBdt)+'</div></div>'+
+      '<div class="amt"><div class="k">'+s('amountRecorded')+'</div><div class="v"><span class="hold">'+mk('AMOUNT_MARKER')+'</span></div><div class="heldnote">'+t('আইনি অনুমোদন না আসা পর্যন্ত কোনো পরিমাণ দেখানো হয় না।','No amount is shown until legal sign-off.')+'</div></div>'+
       '<div class="kv"><span class="k">'+s('project')+'</span><span class="v">'+t(r.projectBn,r.project)+'</span></div>'+
       '<div class="kv"><span class="k">'+s('share')+'</span><span class="v">'+r.shareRef+'</span></div>'+
       '<div class="kv"><span class="k">'+s('reference')+'</span><span class="v">'+r.ref+'</span></div>'+
+      '<div class="kv"><span class="k">'+s('effectiveDate')+'</span><span class="v"><span class="hold">'+effDate+'</span></span></div>'+
+      '<div class="kv"><span class="k">'+s('clientTerms')+'</span><span class="v"><span class="hold">'+mk('TERMS_MARKER')+'</span></span></div>'+
       '<div class="kv"><span class="k">'+s('recordedOn')+'</span><span class="v">'+dt(r.recordedUtc)+'</span></div>'+
       '<div class="kv"><span class="k">'+s('recordedBy')+'</span><span class="v">'+t(r.recordedByBn,r.recordedBy)+'</span></div>'+
     '</div>'+
+    '<p class="heldnote" style="margin:0 16px 10px">'+s('termsHeld')+'</p>'+
     '<p class="phelp" style="margin:0 16px 12px;font-size:11.5px;color:var(--ink-subtle);line-height:1.55">'+s('recordSub')+'</p>'+
     '<a class="btn block" href="return-schedule.page.html" style="margin:0 16px 8px;border-radius:10px">'+s('scheduleTitle')+' ›</a>'+
+    // Clause 5 — consultation / site visit reuse the EXISTING flows (no parallel one), tagged with investment context.
+    '<a class="btn ghost block" href="request-meeting.page.html?ctx=investment&ref='+encodeURIComponent(r.ref)+'" style="margin:0 16px 6px;border-radius:10px">'+t('পরামর্শের অনুরোধ','Request a consultation')+'</a>'+
+    '<a class="btn ghost block" href="request-visit.page.html?ctx=investment&ref='+encodeURIComponent(r.ref)+'" style="margin:0 16px 8px;border-radius:10px">'+t('সাইট ভিজিটের অনুরোধ','Request a site visit')+'</a>'+
     '<a class="btn ghost block" href="disclaimer.page.html" style="margin:0 16px 16px;border-radius:10px">'+s('readDisclaimer')+'</a>';
 }
 function setLang(l){ lang=l; document.documentElement.lang=l; render(); }

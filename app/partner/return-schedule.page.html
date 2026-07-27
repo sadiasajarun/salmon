@@ -20,6 +20,9 @@
   .rtbl .rw:last-child{border-bottom:none} .rtbl .rw{text-decoration:none;color:inherit}
   .rtbl .per{font-weight:600;font-size:13px} .rtbl .dt{font-size:11px;color:var(--ink-subtle);margin-top:2px}
   .rtbl .amt{font-variant-numeric:tabular-nums;font-weight:600;font-size:13px;text-align:right}
+  .hold{display:inline-block;font-family:var(--mono,monospace);font-size:10px;font-weight:800;color:var(--primary);background:#fbf3f3;border:1px dashed var(--primary);border-radius:5px;padding:2px 6px;line-height:1.35;white-space:normal;text-align:right}
+  .freqline{margin:8px 16px 4px;font-size:11.5px;color:var(--ink-subtle);line-height:1.5}
+  .freqline .hold{font-size:10px}
   .rs{font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;white-space:nowrap}
   .rs-paid{background:#eceeec;color:#3f4a41;border:1px solid #d5dbd6} /* neutral, NOT green */
   .rs-pending{background:#f7efe0;color:#8a6d2f;border:1px solid #ecdcbf}
@@ -39,13 +42,15 @@ function bdt(n){ if(n==null)return '—'; var x=String(Math.round(n)); var l=x.s
 function dt(iso){ try{ return new Intl.DateTimeFormat(lang==='bn'?'bn-BD':'en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'Asia/Dhaka'}).format(new Date(iso)); }catch(e){ return iso.slice(0,10); } }
 function render(){
   var lt='<span class="wklang"><button class="'+(lang==='bn'?'on':'')+'" onclick="setLang(\'bn\')">বাং</button><button class="'+(lang==='en'?'on':'')+'" onclick="setLang(\'en\')">EN</button></span>';
+  var amtMarker=V.AMOUNT_MARKER[lang==='bn'?'bn':'en'];
   var rows=V.returnSchedule.map(function(e){
     var st=V.RETURN_STATUS[e.status];
     return '<a class="rw" href="return-entry-detail.page.html?id='+e.id+'">'+
       '<div><div class="per">'+t(e.periodLabelBn,e.periodLabelEn)+'</div><div class="dt">'+t('রেকর্ড','Recorded')+' · '+dt(e.recordedUtc)+'</div></div>'+
-      '<div class="amt">'+bdt(e.amountBdt)+'</div>'+
+      '<div class="amt"><span class="hold">'+amtMarker+'</span></div>'+
       '<div><span class="rs '+st.cls+'">'+t(st.bn,st.en)+'</span></div></a>';
   }).join('');
+  var freqMarker=V.FREQUENCY_MARKER[lang==='bn'?'bn':'en'];
   document.getElementById('screen').innerHTML=
     '<div class="wkbar"><a class="bk" href="invest-record.page.html">‹</a><h2>'+s('scheduleTitle')+'</h2>'+lt+'</div>'+
     // Disclaimer FIRST, prominent — before any figures.
@@ -53,7 +58,9 @@ function render(){
       '<p>'+s('scheduleSub')+'</p>'+
       '<a href="disclaimer.page.html">'+s('readDisclaimer')+' ›</a></div>'+
     '<div class="rtbl"><div class="hd"><span>'+t('এন্ট্রি','Entry')+'</span><span style="text-align:right">'+t('পরিমাণ','Amount')+'</span><span>'+t('অবস্থা','Status')+'</span></div>'+rows+'</div>'+
-    '<p class="phelp" style="margin:8px 16px 12px;font-size:11.5px;color:var(--ink-subtle);line-height:1.55">'+t('“অপেক্ষমাণ” বা “স্থগিত” মানে ভবিষ্যতের কোনো নিশ্চয়তা নয় — এগুলো স্টাফ কর্তৃক লেখা রেকর্ড মাত্র।','“Pending” or “On hold” is not a guarantee about the future — these are records typed in by staff.')+'</p>'+
+    // Clause 4 — frequency is client-approved, never decided or computed by the app.
+    '<p class="freqline">'+s('frequency')+': <span class="hold">'+freqMarker+'</span><br>'+s('frequencyNote')+'</p>'+
+    '<p class="phelp" style="margin:8px 16px 12px;font-size:11.5px;color:var(--ink-subtle);line-height:1.55">'+t('“অপেক্ষমাণ” বা “স্থগিত” মানে ভবিষ্যতের কোনো নিশ্চয়তা নয় — এগুলো স্টাফ কর্তৃক লেখা রেকর্ড মাত্র। কোনো পরিমাণ আইনি অনুমোদন ছাড়া দেখানো হয় না।','“Pending” or “On hold” is not a guarantee about the future — these are records typed in by staff. No amount is shown without legal sign-off.')+'</p>'+
     '<a class="btn ghost block" href="disclaimer.page.html" style="margin:0 16px 16px;border-radius:10px">'+s('readDisclaimer')+'</a>';
 }
 function setLang(l){ lang=l; document.documentElement.lang=l; render(); }

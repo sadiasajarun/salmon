@@ -1,0 +1,13 @@
+{
+  "name": "salmon-live-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Salmon — connected live demo: Client mobile app <-> Admin panel, one store, two views.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

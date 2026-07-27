@@ -49,6 +49,41 @@
   };
 
   /* ---------------------------------------------------------------------------
+   * Status sets (clause 6.18.2) — the "basic statuses" every module reads.
+   * These are the ENUMS the modules already use, surfaced here so a Super Admin
+   * can rename the client-facing LABEL and toggle a value active/retired. The
+   * canonical `key` is never editable (it is what the backend stores) — only the
+   * display label and whether the value is offered on new records. Retiring a
+   * value never rewrites history (records already in that state keep it) — same
+   * "nothing hard-deletes" discipline as user deactivation. Values sourced from
+   * the real module code; where a set is not yet nailed down it carries an
+   * OPEN_QUESTIONS marker rather than an invented workflow.
+   * ------------------------------------------------------------------------- */
+  function S(key, label, active){ return { key:key, label:label==null?key:label, active:active!==false }; }
+  var statusSets = [
+    { id:'lead', label:'Lead', note:'Pipeline advance path (F03). Terminal states cannot be retired.',
+      values:[ S('new','New'), S('contacted','Contacted'), S('qualified','Qualified'), S('meetingScheduled','Meeting scheduled'), S('visitScheduled','Visit scheduled'), S('visitCompleted','Visit completed'), S('negotiation','Negotiation'), S('converted','Converted'), S('onHold','On hold'), S('rejected','Rejected') ] },
+    { id:'booking', label:'Booking', note:'Booking record lifecycle (I/J).',
+      values:[ S('pending','Pending'), S('confirmed','Confirmed'), S('cancelled','Cancelled') ] },
+    { id:'meeting', label:'Meeting / consultation', note:'Meeting & site-visit queue (G).',
+      values:[ S('pending','Requested'), S('confirmed','Confirmed'), S('completed','Completed'), S('cancelled','Cancelled') ] },
+    { id:'task', label:'Task assignment', note:'Internal task hand-offs. Set not yet finalised — OPEN_QUESTIONS #5.',
+      values:[ S('open','Open'), S('inProgress','In progress'), S('done','Done') ] },
+    { id:'document', label:'Document', note:'Controlled-document verification (N).',
+      values:[ S('draft','Draft'), S('pending','Pending review'), S('verified','Verified'), S('archived','Archived') ] },
+    { id:'commission', label:'Commission', note:'Commission queue → ledger (L).',
+      values:[ S('submitted','Submitted'), S('approved','Approved'), S('held','On hold'), S('rejected','Rejected'), S('settled','Settled') ] },
+    { id:'return', label:'Investment return record', note:'With-Investment return records (6.6) — amber-locked pending legal, so values are record-only. OPEN_QUESTIONS #6.',
+      values:[ S('scheduled','Scheduled'), S('due','Due'), S('paid','Paid'), S('held','On hold') ] },
+    { id:'ticket', label:'Support ticket', note:'Support inbox (O01).',
+      values:[ S('open','Open'), S('inProgress','In progress'), S('waiting','Waiting'), S('resolved','Resolved'), S('closed','Closed') ] },
+    { id:'settlement', label:'Settlement', note:'Settlement queue → mark settled (M).',
+      values:[ S('submitted','Submitted'), S('approved','Approved'), S('held','On hold'), S('rejected','Rejected'), S('settled','Settled') ] }
+  ];
+  // Terminal values that may be relabelled but never retired (a record can always land here).
+  var LOCKED_STATUS_VALUES = { lead:['converted','rejected','onHold'], commission:['settled','rejected'], settlement:['settled','rejected'], ticket:['closed'] };
+
+  /* ---------------------------------------------------------------------------
    * Notification templates — where every mobile push originates. EN + BN copy.
    * The mobile rule: NO sensitive value in a push payload (deep-link, don't
    * disclose). SENSITIVE_VARS is what the editor blocks on save.
@@ -101,11 +136,27 @@
     return found;
   }
 
+  // Status sets are override-aware too (label + active toggles persist to the
+  // same cfg: namespace, keyed statusset:<setId>:<valueKey>:<field>).
+  function getStatusSets(){
+    var ov = overrides();
+    return statusSets.map(function(set){
+      return Object.assign({}, set, { values: set.values.map(function(v){
+        var lp = ov['statusset:'+set.id+':'+v.key+':label'];
+        var ap = ov['statusset:'+set.id+':'+v.key+':active'];
+        return Object.assign({}, v, { label: lp!=null?lp:v.label, active: ap!=null?ap:v.active });
+      }) });
+    });
+  }
+  function statusSetById(id){ return getStatusSets().filter(function(s){ return s.id===id; })[0]; }
+  function isStatusLocked(setId, valueKey){ return (LOCKED_STATUS_VALUES[setId]||[]).indexOf(valueKey) > -1; }
+
   root.CRM = root.CRM || {};
   root.CRM.Admin = {
     COUNTRIES: COUNTRIES, SENSITIVE_VARS: SENSITIVE_VARS,
     allUsers: allUsers, userById: userById, ROLE_LIST:[R.SUPER_ADMIN,R.MANAGER,R.FINANCE,R.LEGAL],
     getConfig: getConfig,
+    getStatusSets: getStatusSets, statusSetById: statusSetById, isStatusLocked: isStatusLocked,
     allTemplates: allTemplates, templateById: templateById, sensitiveVarsIn: sensitiveVarsIn,
     ago: ago
   };

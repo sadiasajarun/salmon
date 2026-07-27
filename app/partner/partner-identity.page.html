@@ -6,6 +6,7 @@
 <script src="../assets/js/partner-state.js"></script>
 <script src="../assets/js/territory.js"></script>
 <script src="../assets/js/network-sim.js"></script>
+<script src="../assets/js/session.js"></script>
 </head><body>
 <div class="page-label">P11 · Partner identity <small>His credential page — Partner ID, territory, rank, programs, join date</small></div>
 <div class="device">
@@ -30,7 +31,7 @@ function render(){
     '<div class="wktile"><div class="k">'+t('যোগদানের তারিখ','Join date')+'</div><div class="v" style="font-size:14px">'+fmtDate(I.joinDate)+'</div></div></div>'+
     '<a class="btn block" href="business-card.page.html" style="margin:8px 16px 0;border-radius:10px">'+t('ডিজিটাল বিজনেস কার্ড','Digital business card')+'</a>'+
     '<a class="btn ghost block" href="dashboard.page.html" style="margin:10px 16px 6px;border-radius:10px">'+t('ড্যাশবোর্ড','Dashboard')+'</a>'+
-    '<p style="text-align:center;padding:8px 0 16px"><a href="../shared/g02-welcome.page.html" style="color:var(--ink-subtle);font-size:13px;text-decoration:underline">'+t('লগ আউট','Log out')+'</a></p>';
+    '<p style="text-align:center;padding:8px 0 16px"><a href="../shared/g02-welcome.page.html" onclick="Session.logout(event)" style="color:var(--ink-subtle);font-size:13px;text-decoration:underline">'+t('লগ আউট','Log out')+'</a></p>';
 }
 function setLang(l){ lang=l; document.documentElement.lang=l; render(); }
 render();

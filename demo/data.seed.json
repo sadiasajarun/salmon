@@ -1,0 +1,2291 @@
+{
+  "meta": {
+    "seededAt": "2026-07-24T10:00:00.000Z",
+    "currency": "BDT",
+    "currentPeriod": "2026-07"
+  },
+  "config": {
+    "tokenAmountBdt": 50000,
+    "lockWindowSec": 60,
+    "lockWindowFastSec": 10,
+    "pendingDelayMs": 5000,
+    "pendingDelayFastMs": 2000,
+    "speed": "normal",
+    "installmentCount": 12,
+    "installmentAmountBdt": 200000,
+    "clientSupportChannel": "in_app",
+    "whatsappNumber": "+8801700000000"
+  },
+  "gateways": [
+    {
+      "id": "stripe",
+      "name": "Stripe",
+      "enabledFor": [
+        "UAE",
+        "United Arab Emirates"
+      ],
+      "badge": "Cards · UAE"
+    },
+    {
+      "id": "sslcommerz",
+      "name": "SSLCommerz",
+      "enabledFor": [
+        "Bangladesh"
+      ],
+      "badge": "Cards/MFS · BD"
+    },
+    {
+      "id": "wire",
+      "name": "Bank Wire",
+      "enabledFor": [
+        "*"
+      ],
+      "badge": "Wire · Global"
+    }
+  ],
+  "staff": [
+    {
+      "id": "ST-1",
+      "name": "Nabila Islam",
+      "role": "Super Admin",
+      "initials": "NI"
+    },
+    {
+      "id": "ST-4",
+      "name": "Farhana Kabir",
+      "role": "Manager",
+      "initials": "FK"
+    },
+    {
+      "id": "ST-2",
+      "name": "Tanvir Ahmed",
+      "role": "Finance Officer",
+      "initials": "TA"
+    },
+    {
+      "id": "ST-3",
+      "name": "Sadia Chowdhury",
+      "role": "Legal / Document Controller",
+      "initials": "SC"
+    }
+  ],
+  "session": {
+    "staffId": "ST-1",
+    "clientId": null,
+    "partnerId": "SDP-CUM-00417",
+    "applicantId": null
+  },
+  "projects": [
+    {
+      "id": "PRJ-BEL",
+      "name": "Salmon Bellissimo",
+      "location": "Bashundhara R/A, Block J, Dhaka",
+      "status": "ongoing",
+      "siteStatus": "Sale Ongoing",
+      "tagline": "Invite yourself to a pristine seclusion.",
+      "handover": "Dec 2026",
+      "priceFromBdt": 14500000,
+      "pricePlaceholder": true,
+      "glance": {
+        "buildingType": "Residential Apartment",
+        "floors": "G+9",
+        "unitSqft": "1,650 – 2,250 sqft",
+        "bed": 4,
+        "bath": 3,
+        "balcony": 3,
+        "lift": 1,
+        "landFacing": "South",
+        "frontRoad": "25 ft"
+      },
+      "banner": "https://admin.salmondevelopersbd.com/uploads/projects/banners/_bdd5ac45-79eb-40d2-8576-f1b6e88bc697.png",
+      "gallery": [
+        "https://admin.salmondevelopersbd.com/uploads/projects/gallery/_105edaed-b71d-4da2-a73b-1f8a07370d81.png",
+        "https://admin.salmondevelopersbd.com/uploads/projects/gallery/_fdb65544-a5a2-41bf-911f-89aae23d1a50.png",
+        "https://admin.salmondevelopersbd.com/uploads/projects/gallery/_1a14692a-d5ca-46c1-9f3e-fead9043d812.png"
+      ],
+      "units": [
+        {
+          "unitNo": "B-201",
+          "floor": 2,
+          "config": "3 Bed",
+          "areaSqft": 1650,
+          "priceBdt": 14800000,
+          "orientation": "South",
+          "status": "sold"
+        },
+        {
+          "unitNo": "B-202",
+          "floor": 2,
+          "config": "3 Bed",
+          "areaSqft": 1770,
+          "priceBdt": 15200000,
+          "orientation": "South-East",
+          "status": "available"
+        },
+        {
+          "unitNo": "B-203",
+          "floor": 2,
+          "config": "3 Bed",
+          "areaSqft": 1890,
+          "priceBdt": 15600000,
+          "orientation": "East",
+          "status": "sold"
+        },
+        {
+          "unitNo": "B-301",
+          "floor": 3,
+          "config": "3 Bed",
+          "areaSqft": 1650,
+          "priceBdt": 14950000,
+          "orientation": "North-East",
+          "status": "available"
+        },
+        {
+          "unitNo": "B-302",
+          "floor": 3,
+          "config": "3 Bed",
+          "areaSqft": 1770,
+          "priceBdt": 15350000,
+          "orientation": "South",
+          "status": "sold"
+        },
+        {
+          "unitNo": "B-303",
+          "floor": 3,
+          "config": "3 Bed",
+          "areaSqft": 1890,
+          "priceBdt": 15750000,
+          "orientation": "South-East",
+          "status": "available"
+        },
+        {
+          "unitNo": "B-401",
+          "floor": 4,
+          "config": "3 Bed",
+          "areaSqft": 1650,
+          "priceBdt": 15100000,
+          "orientation": "East",
+          "status": "sold"
+        },
+        {
+          "unitNo": "B-402",
+          "floor": 4,
+          "config": "3 Bed",
+          "areaSqft": 1770,
+          "priceBdt": 15500000,
+          "orientation": "North-East",
+          "status": "available"
+        },
+        {
+          "unitNo": "B-403",
+          "floor": 4,
+          "config": "3 Bed",
+          "areaSqft": 1890,
+          "priceBdt": 15900000,
+          "orientation": "South",
+          "status": "sold"
+        },
+        {
+          "unitNo": "B-501",
+          "floor": 5,
+          "config": "3 Bed",
+          "areaSqft": 1650,
+          "priceBdt": 15250000,
+          "orientation": "South-East",
+          "status": "available"
+        },
+        {
+          "unitNo": "B-502",
+          "floor": 5,
+          "config": "3 Bed",
+          "areaSqft": 1770,
+          "priceBdt": 15650000,
+          "orientation": "East",
+          "status": "sold"
+        },
+        {
+          "unitNo": "B-503",
+          "floor": 5,
+          "config": "3 Bed",
+          "areaSqft": 1890,
+          "priceBdt": 16050000,
+          "orientation": "North-East",
+          "status": "available"
+        },
+        {
+          "unitNo": "B-601",
+          "floor": 6,
+          "config": "3 Bed",
+          "areaSqft": 1650,
+          "priceBdt": 15400000,
+          "orientation": "South",
+          "status": "sold"
+        },
+        {
+          "unitNo": "B-602",
+          "floor": 6,
+          "config": "3 Bed",
+          "areaSqft": 1770,
+          "priceBdt": 15800000,
+          "orientation": "South-East",
+          "status": "booked"
+        },
+        {
+          "unitNo": "B-603",
+          "floor": 6,
+          "config": "3 Bed",
+          "areaSqft": 1890,
+          "priceBdt": 16200000,
+          "orientation": "East",
+          "status": "sold"
+        },
+        {
+          "unitNo": "B-704",
+          "floor": 7,
+          "config": "3 Bed",
+          "areaSqft": 2050,
+          "priceBdt": 18900000,
+          "orientation": "South-East",
+          "status": "available"
+        },
+        {
+          "unitNo": "B-702",
+          "floor": 7,
+          "config": "3 Bed",
+          "areaSqft": 1770,
+          "priceBdt": 15950000,
+          "orientation": "South",
+          "status": "sold"
+        },
+        {
+          "unitNo": "B-703",
+          "floor": 7,
+          "config": "3 Bed",
+          "areaSqft": 1890,
+          "priceBdt": 16350000,
+          "orientation": "South-East",
+          "status": "booked"
+        },
+        {
+          "unitNo": "B-801",
+          "floor": 8,
+          "config": "3 Bed",
+          "areaSqft": 1650,
+          "priceBdt": 15700000,
+          "orientation": "East",
+          "status": "sold"
+        },
+        {
+          "unitNo": "B-802",
+          "floor": 8,
+          "config": "3 Bed",
+          "areaSqft": 1770,
+          "priceBdt": 16100000,
+          "orientation": "North-East",
+          "status": "reserved"
+        },
+        {
+          "unitNo": "B-803",
+          "floor": 8,
+          "config": "3 Bed",
+          "areaSqft": 1890,
+          "priceBdt": 16500000,
+          "orientation": "South",
+          "status": "sold"
+        },
+        {
+          "unitNo": "B-901",
+          "floor": 9,
+          "config": "3 Bed",
+          "areaSqft": 1650,
+          "priceBdt": 15850000,
+          "orientation": "South-East",
+          "status": "booked"
+        },
+        {
+          "unitNo": "B-902",
+          "floor": 9,
+          "config": "3 Bed",
+          "areaSqft": 1770,
+          "priceBdt": 16250000,
+          "orientation": "East",
+          "status": "sold"
+        },
+        {
+          "unitNo": "B-903",
+          "floor": 9,
+          "config": "3 Bed",
+          "areaSqft": 1890,
+          "priceBdt": 16650000,
+          "orientation": "North-East",
+          "status": "reserved"
+        }
+      ]
+    },
+    {
+      "id": "PRJ-FLO",
+      "name": "Salmon Florentine",
+      "location": "Bashundhara R/A, Block N, Dhaka",
+      "status": "ongoing",
+      "siteStatus": "Under Construction",
+      "tagline": "Invite yourself to a pristine seclusion.",
+      "handover": "Jun 2027",
+      "priceFromBdt": 12800000,
+      "pricePlaceholder": true,
+      "glance": {
+        "buildingType": "Residential Apartment",
+        "floors": "G+9",
+        "unitSqft": "1,450 – 1,950 sqft",
+        "bed": 4,
+        "bath": 3,
+        "balcony": 4,
+        "lift": 1,
+        "landFacing": "North",
+        "frontRoad": "25 ft"
+      },
+      "banner": "https://admin.salmondevelopersbd.com/uploads/projects/ataglanceimages/salmon-florentine_f06aea34-bbd7-4951-878b-a88053d924db_size_.png",
+      "gallery": [
+        "https://admin.salmondevelopersbd.com/uploads/projects/gallery/_97029cfd-fb2d-493f-a59c-e4624ec6f828.png",
+        "https://admin.salmondevelopersbd.com/uploads/projects/gallery/_042bbbce-2b13-421f-b5ea-32890d81e2f6.png",
+        "https://admin.salmondevelopersbd.com/uploads/projects/gallery/_96dfb977-dc4a-4485-ad44-9232d663c5d6.png"
+      ],
+      "units": [
+        {
+          "unitNo": "F-201",
+          "floor": 2,
+          "config": "3 Bed",
+          "areaSqft": 1450,
+          "priceBdt": 13100000,
+          "orientation": "South",
+          "status": "sold"
+        },
+        {
+          "unitNo": "F-202",
+          "floor": 2,
+          "config": "3 Bed",
+          "areaSqft": 1570,
+          "priceBdt": 13500000,
+          "orientation": "South-East",
+          "status": "available"
+        },
+        {
+          "unitNo": "F-203",
+          "floor": 2,
+          "config": "3 Bed",
+          "areaSqft": 1690,
+          "priceBdt": 13900000,
+          "orientation": "East",
+          "status": "sold"
+        },
+        {
+          "unitNo": "F-301",
+          "floor": 3,
+          "config": "3 Bed",
+          "areaSqft": 1450,
+          "priceBdt": 13250000,
+          "orientation": "North-East",
+          "status": "available"
+        },
+        {
+          "unitNo": "F-302",
+          "floor": 3,
+          "config": "3 Bed",
+          "areaSqft": 1570,
+          "priceBdt": 13650000,
+          "orientation": "South",
+          "status": "sold"
+        },
+        {
+          "unitNo": "F-303",
+          "floor": 3,
+          "config": "3 Bed",
+          "areaSqft": 1690,
+          "priceBdt": 14050000,
+          "orientation": "South-East",
+          "status": "available"
+        },
+        {
+          "unitNo": "F-401",
+          "floor": 4,
+          "config": "3 Bed",
+          "areaSqft": 1450,
+          "priceBdt": 13400000,
+          "orientation": "East",
+          "status": "sold"
+        },
+        {
+          "unitNo": "F-402",
+          "floor": 4,
+          "config": "3 Bed",
+          "areaSqft": 1570,
+          "priceBdt": 13800000,
+          "orientation": "North-East",
+          "status": "available"
+        },
+        {
+          "unitNo": "F-403",
+          "floor": 4,
+          "config": "3 Bed",
+          "areaSqft": 1690,
+          "priceBdt": 14200000,
+          "orientation": "South",
+          "status": "sold"
+        },
+        {
+          "unitNo": "F-501",
+          "floor": 5,
+          "config": "3 Bed",
+          "areaSqft": 1450,
+          "priceBdt": 13550000,
+          "orientation": "South-East",
+          "status": "available"
+        },
+        {
+          "unitNo": "F-502",
+          "floor": 5,
+          "config": "3 Bed",
+          "areaSqft": 1570,
+          "priceBdt": 13950000,
+          "orientation": "East",
+          "status": "sold"
+        },
+        {
+          "unitNo": "F-503",
+          "floor": 5,
+          "config": "3 Bed",
+          "areaSqft": 1690,
+          "priceBdt": 14350000,
+          "orientation": "North-East",
+          "status": "available"
+        },
+        {
+          "unitNo": "F-601",
+          "floor": 6,
+          "config": "3 Bed",
+          "areaSqft": 1450,
+          "priceBdt": 13700000,
+          "orientation": "South",
+          "status": "sold"
+        },
+        {
+          "unitNo": "F-602",
+          "floor": 6,
+          "config": "3 Bed",
+          "areaSqft": 1570,
+          "priceBdt": 14100000,
+          "orientation": "South-East",
+          "status": "available"
+        },
+        {
+          "unitNo": "F-603",
+          "floor": 6,
+          "config": "3 Bed",
+          "areaSqft": 1690,
+          "priceBdt": 14500000,
+          "orientation": "East",
+          "status": "sold"
+        },
+        {
+          "unitNo": "F-701",
+          "floor": 7,
+          "config": "3 Bed",
+          "areaSqft": 1450,
+          "priceBdt": 13850000,
+          "orientation": "North-East",
+          "status": "available"
+        },
+        {
+          "unitNo": "F-702",
+          "floor": 7,
+          "config": "3 Bed",
+          "areaSqft": 1570,
+          "priceBdt": 14250000,
+          "orientation": "South",
+          "status": "sold"
+        },
+        {
+          "unitNo": "F-703",
+          "floor": 7,
+          "config": "3 Bed",
+          "areaSqft": 1690,
+          "priceBdt": 14650000,
+          "orientation": "South-East",
+          "status": "available"
+        },
+        {
+          "unitNo": "F-801",
+          "floor": 8,
+          "config": "3 Bed",
+          "areaSqft": 1450,
+          "priceBdt": 14000000,
+          "orientation": "East",
+          "status": "sold"
+        },
+        {
+          "unitNo": "F-802",
+          "floor": 8,
+          "config": "3 Bed",
+          "areaSqft": 1570,
+          "priceBdt": 14400000,
+          "orientation": "North-East",
+          "status": "available"
+        },
+        {
+          "unitNo": "F-803",
+          "floor": 8,
+          "config": "3 Bed",
+          "areaSqft": 1690,
+          "priceBdt": 14800000,
+          "orientation": "South",
+          "status": "sold"
+        },
+        {
+          "unitNo": "F-901",
+          "floor": 9,
+          "config": "3 Bed",
+          "areaSqft": 1450,
+          "priceBdt": 14150000,
+          "orientation": "South-East",
+          "status": "available"
+        },
+        {
+          "unitNo": "F-902",
+          "floor": 9,
+          "config": "3 Bed",
+          "areaSqft": 1570,
+          "priceBdt": 14550000,
+          "orientation": "East",
+          "status": "sold"
+        },
+        {
+          "unitNo": "F-903",
+          "floor": 9,
+          "config": "3 Bed",
+          "areaSqft": 1690,
+          "priceBdt": 14950000,
+          "orientation": "North-East",
+          "status": "available"
+        },
+        {
+          "unitNo": "F-1001",
+          "floor": 10,
+          "config": "3 Bed",
+          "areaSqft": 1450,
+          "priceBdt": 14300000,
+          "orientation": "South",
+          "status": "sold"
+        },
+        {
+          "unitNo": "F-1002",
+          "floor": 10,
+          "config": "3 Bed",
+          "areaSqft": 1570,
+          "priceBdt": 14700000,
+          "orientation": "South-East",
+          "status": "booked"
+        },
+        {
+          "unitNo": "F-1003",
+          "floor": 10,
+          "config": "3 Bed",
+          "areaSqft": 1690,
+          "priceBdt": 15100000,
+          "orientation": "East",
+          "status": "sold"
+        },
+        {
+          "unitNo": "F-1101",
+          "floor": 11,
+          "config": "3 Bed",
+          "areaSqft": 1450,
+          "priceBdt": 14450000,
+          "orientation": "North-East",
+          "status": "reserved"
+        },
+        {
+          "unitNo": "F-1102",
+          "floor": 11,
+          "config": "3 Bed",
+          "areaSqft": 1570,
+          "priceBdt": 14850000,
+          "orientation": "South",
+          "status": "sold"
+        },
+        {
+          "unitNo": "F-1103",
+          "floor": 11,
+          "config": "3 Bed",
+          "areaSqft": 1690,
+          "priceBdt": 15250000,
+          "orientation": "South-East",
+          "status": "booked"
+        },
+        {
+          "unitNo": "F-1201",
+          "floor": 12,
+          "config": "3 Bed",
+          "areaSqft": 1450,
+          "priceBdt": 14600000,
+          "orientation": "East",
+          "status": "sold"
+        },
+        {
+          "unitNo": "F-1202",
+          "floor": 12,
+          "config": "3 Bed",
+          "areaSqft": 1570,
+          "priceBdt": 15000000,
+          "orientation": "North-East",
+          "status": "reserved"
+        }
+      ]
+    },
+    {
+      "id": "PRJ-ZHL",
+      "name": "Zheel View",
+      "location": "35 Ulon, West Rampura, Dhaka",
+      "status": "completed",
+      "siteStatus": "Handed Over",
+      "tagline": "Invite yourself to a pristine seclusion.",
+      "handover": "Handover complete",
+      "priceFromBdt": 8500000,
+      "pricePlaceholder": true,
+      "glance": {
+        "buildingType": "Residential Apartment",
+        "floors": "G+9",
+        "unitSqft": "1,375 sqft",
+        "bed": 3,
+        "bath": 3,
+        "balcony": 3,
+        "lift": 1,
+        "landFacing": "West",
+        "frontRoad": "20 ft"
+      },
+      "banner": "https://admin.salmondevelopersbd.com/uploads/projects/banners/_83678dd0-d2bc-4e9a-a8c6-e8055d7f086e.jpg",
+      "gallery": [
+        "https://admin.salmondevelopersbd.com/uploads/projects/gallery/_03cc79f3-cc3a-494d-a2c1-f2c9c675b35a.jpg",
+        "https://admin.salmondevelopersbd.com/uploads/projects/gallery/_b89ff626-8d08-4156-b8cf-94144a1ed206.png",
+        "https://admin.salmondevelopersbd.com/uploads/projects/gallery/_78396f64-8a08-4bd1-8e10-ca7eadbf2638.png",
+        "https://admin.salmondevelopersbd.com/uploads/projects/gallery/_31260e62-33a0-4adf-9939-1e7e814701fa.jpg"
+      ],
+      "units": [
+        {
+          "unitNo": "Z-201",
+          "floor": 2,
+          "config": "3 Bed",
+          "areaSqft": 1375,
+          "priceBdt": 8800000,
+          "orientation": "South",
+          "status": "sold"
+        },
+        {
+          "unitNo": "Z-202",
+          "floor": 2,
+          "config": "3 Bed",
+          "areaSqft": 1495,
+          "priceBdt": 9200000,
+          "orientation": "South-East",
+          "status": "available"
+        },
+        {
+          "unitNo": "Z-203",
+          "floor": 2,
+          "config": "3 Bed",
+          "areaSqft": 1615,
+          "priceBdt": 9600000,
+          "orientation": "East",
+          "status": "sold"
+        },
+        {
+          "unitNo": "Z-301",
+          "floor": 3,
+          "config": "3 Bed",
+          "areaSqft": 1375,
+          "priceBdt": 8950000,
+          "orientation": "North-East",
+          "status": "available"
+        },
+        {
+          "unitNo": "Z-302",
+          "floor": 3,
+          "config": "3 Bed",
+          "areaSqft": 1495,
+          "priceBdt": 9350000,
+          "orientation": "South",
+          "status": "sold"
+        },
+        {
+          "unitNo": "Z-303",
+          "floor": 3,
+          "config": "3 Bed",
+          "areaSqft": 1615,
+          "priceBdt": 9750000,
+          "orientation": "South-East",
+          "status": "available"
+        },
+        {
+          "unitNo": "Z-401",
+          "floor": 4,
+          "config": "3 Bed",
+          "areaSqft": 1375,
+          "priceBdt": 9100000,
+          "orientation": "East",
+          "status": "sold"
+        },
+        {
+          "unitNo": "Z-402",
+          "floor": 4,
+          "config": "3 Bed",
+          "areaSqft": 1495,
+          "priceBdt": 9500000,
+          "orientation": "North-East",
+          "status": "reserved"
+        },
+        {
+          "unitNo": "Z-403",
+          "floor": 4,
+          "config": "3 Bed",
+          "areaSqft": 1615,
+          "priceBdt": 9900000,
+          "orientation": "South",
+          "status": "sold"
+        },
+        {
+          "unitNo": "Z-501",
+          "floor": 5,
+          "config": "3 Bed",
+          "areaSqft": 1375,
+          "priceBdt": 9250000,
+          "orientation": "South-East",
+          "status": "booked"
+        },
+        {
+          "unitNo": "Z-502",
+          "floor": 5,
+          "config": "3 Bed",
+          "areaSqft": 1495,
+          "priceBdt": 9650000,
+          "orientation": "East",
+          "status": "sold"
+        },
+        {
+          "unitNo": "Z-503",
+          "floor": 5,
+          "config": "3 Bed",
+          "areaSqft": 1615,
+          "priceBdt": 10050000,
+          "orientation": "North-East",
+          "status": "reserved"
+        },
+        {
+          "unitNo": "Z-601",
+          "floor": 6,
+          "config": "3 Bed",
+          "areaSqft": 1375,
+          "priceBdt": 9400000,
+          "orientation": "South",
+          "status": "sold"
+        },
+        {
+          "unitNo": "Z-602",
+          "floor": 6,
+          "config": "3 Bed",
+          "areaSqft": 1495,
+          "priceBdt": 9800000,
+          "orientation": "South-East",
+          "status": "booked"
+        },
+        {
+          "unitNo": "Z-603",
+          "floor": 6,
+          "config": "3 Bed",
+          "areaSqft": 1615,
+          "priceBdt": 10200000,
+          "orientation": "East",
+          "status": "sold"
+        },
+        {
+          "unitNo": "Z-701",
+          "floor": 7,
+          "config": "3 Bed",
+          "areaSqft": 1375,
+          "priceBdt": 9550000,
+          "orientation": "North-East",
+          "status": "reserved"
+        },
+        {
+          "unitNo": "Z-702",
+          "floor": 7,
+          "config": "3 Bed",
+          "areaSqft": 1495,
+          "priceBdt": 9950000,
+          "orientation": "South",
+          "status": "sold"
+        },
+        {
+          "unitNo": "Z-703",
+          "floor": 7,
+          "config": "3 Bed",
+          "areaSqft": 1615,
+          "priceBdt": 10350000,
+          "orientation": "South-East",
+          "status": "booked"
+        }
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "id": "CL-1001",
+      "name": "Ayesha Rahman",
+      "email": "ayesha.rahman@gmail.com",
+      "phone": "+8801711234567",
+      "country": "Bangladesh",
+      "password": "demo",
+      "createdAt": "2026-05-01T07:30:00.000Z",
+      "kycStatus": "verified",
+      "kycFile": "passport-ayesha.jpg",
+      "bookings": [
+        "BK-2024-01120"
+      ],
+      "schedule": [
+        {
+          "id": "INST-1001-1",
+          "n": 1,
+          "label": "Installment 1 of 12",
+          "amountBdt": 200000,
+          "dueDate": "2026-05-29T00:00:00.000Z",
+          "status": "paid",
+          "paidAt": "2026-05-05T08:00:00.000Z"
+        },
+        {
+          "id": "INST-1001-2",
+          "n": 2,
+          "label": "Installment 2 of 12",
+          "amountBdt": 200000,
+          "dueDate": "2026-06-29T00:00:00.000Z",
+          "status": "paid",
+          "paidAt": "2026-06-05T08:00:00.000Z"
+        },
+        {
+          "id": "INST-1001-3",
+          "n": 3,
+          "label": "Installment 3 of 12",
+          "amountBdt": 200000,
+          "dueDate": "2026-07-29T00:00:00.000Z",
+          "status": "due",
+          "paidAt": null
+        },
+        {
+          "id": "INST-1001-4",
+          "n": 4,
+          "label": "Installment 4 of 12",
+          "amountBdt": 200000,
+          "dueDate": "2026-08-29T00:00:00.000Z",
+          "status": "due",
+          "paidAt": null
+        },
+        {
+          "id": "INST-1001-5",
+          "n": 5,
+          "label": "Installment 5 of 12",
+          "amountBdt": 200000,
+          "dueDate": "2026-09-29T00:00:00.000Z",
+          "status": "due",
+          "paidAt": null
+        },
+        {
+          "id": "INST-1001-6",
+          "n": 6,
+          "label": "Installment 6 of 12",
+          "amountBdt": 200000,
+          "dueDate": "2026-10-29T00:00:00.000Z",
+          "status": "due",
+          "paidAt": null
+        },
+        {
+          "id": "INST-1001-7",
+          "n": 7,
+          "label": "Installment 7 of 12",
+          "amountBdt": 200000,
+          "dueDate": "2026-11-29T00:00:00.000Z",
+          "status": "due",
+          "paidAt": null
+        },
+        {
+          "id": "INST-1001-8",
+          "n": 8,
+          "label": "Installment 8 of 12",
+          "amountBdt": 200000,
+          "dueDate": "2026-12-29T00:00:00.000Z",
+          "status": "due",
+          "paidAt": null
+        },
+        {
+          "id": "INST-1001-9",
+          "n": 9,
+          "label": "Installment 9 of 12",
+          "amountBdt": 200000,
+          "dueDate": "2027-01-29T00:00:00.000Z",
+          "status": "due",
+          "paidAt": null
+        },
+        {
+          "id": "INST-1001-10",
+          "n": 10,
+          "label": "Installment 10 of 12",
+          "amountBdt": 200000,
+          "dueDate": "2027-03-01T00:00:00.000Z",
+          "status": "due",
+          "paidAt": null
+        },
+        {
+          "id": "INST-1001-11",
+          "n": 11,
+          "label": "Installment 11 of 12",
+          "amountBdt": 200000,
+          "dueDate": "2027-03-29T00:00:00.000Z",
+          "status": "due",
+          "paidAt": null
+        },
+        {
+          "id": "INST-1001-12",
+          "n": 12,
+          "label": "Installment 12 of 12",
+          "amountBdt": 200000,
+          "dueDate": "2027-04-29T00:00:00.000Z",
+          "status": "due",
+          "paidAt": null
+        }
+      ],
+      "ledger": [
+        {
+          "id": "LG-1001-1",
+          "ts": "2026-05-02T10:01:00.000Z",
+          "desc": "Booking token — Florentine F-503",
+          "debitBdt": 0,
+          "creditBdt": 50000,
+          "method": "SSLCommerz",
+          "status": "verified",
+          "ref": "PAY-BEL-88213"
+        },
+        {
+          "id": "LG-1001-2",
+          "ts": "2026-05-05T08:00:00.000Z",
+          "desc": "Installment 1 of 12",
+          "debitBdt": 0,
+          "creditBdt": 200000,
+          "method": "SSLCommerz",
+          "status": "verified",
+          "ref": "PAY-FLO-90011"
+        },
+        {
+          "id": "LG-1001-3",
+          "ts": "2026-06-05T08:00:00.000Z",
+          "desc": "Installment 2 of 12",
+          "debitBdt": 0,
+          "creditBdt": 200000,
+          "method": "Wire",
+          "status": "verified",
+          "ref": "PAY-FLO-90342"
+        }
+      ],
+      "scheduleProjectName": "Salmon Florentine",
+      "scheduleUnitNo": "F-503"
+    },
+    {
+      "id": "CL-2001",
+      "name": "Rezaul Karim",
+      "email": "rezaul.karim@email.com",
+      "phone": "+971502148890",
+      "country": "UAE",
+      "password": "demo",
+      "createdAt": "2026-07-24T08:00:00.000Z",
+      "kycStatus": "pending",
+      "kycFile": "passport-rezaul.jpg",
+      "kycQuality": "clean",
+      "bookings": [],
+      "schedule": [],
+      "ledger": [],
+      "scheduleProjectName": null,
+      "scheduleUnitNo": null
+    },
+    {
+      "id": "CL-2002",
+      "name": "Imran Hossain",
+      "email": "imran.hossain@gmail.com",
+      "phone": "+8801720098765",
+      "country": "Bangladesh",
+      "password": "demo",
+      "createdAt": "2026-07-23T09:00:00.000Z",
+      "kycStatus": "pending",
+      "kycFile": "passport-imran-blurry.jpg",
+      "kycQuality": "blurry",
+      "bookings": [],
+      "schedule": [],
+      "ledger": [],
+      "scheduleProjectName": null,
+      "scheduleUnitNo": null
+    },
+    {
+      "id": "CL-2003",
+      "name": "Sadia Akter",
+      "email": "sadia.akter@gmail.com",
+      "phone": "+971555512340",
+      "country": "UAE",
+      "password": "demo",
+      "createdAt": "2026-07-22T07:00:00.000Z",
+      "kycStatus": "pending",
+      "kycFile": "passport-sadia-dup.jpg",
+      "kycQuality": "duplicate",
+      "bookings": [],
+      "schedule": [],
+      "ledger": [],
+      "scheduleProjectName": null,
+      "scheduleUnitNo": null
+    },
+    {
+      "id": "CL-3001",
+      "name": "Farhan Rahman",
+      "email": "farhan.rahman@gmail.com",
+      "phone": "+8801700000000",
+      "country": "Bangladesh",
+      "password": "demo",
+      "createdAt": "2026-07-21T08:00:00.000Z",
+      "kycStatus": "verified",
+      "kycFile": "passport.jpg",
+      "bookings": [],
+      "schedule": [],
+      "ledger": [],
+      "scheduleProjectName": null,
+      "scheduleUnitNo": null
+    },
+    {
+      "id": "CL-3002",
+      "name": "Nabil Chowdhury",
+      "email": "nabil.chowdhury@gmail.com",
+      "phone": "+8801700000000",
+      "country": "Bangladesh",
+      "password": "demo",
+      "createdAt": "2026-07-21T08:00:00.000Z",
+      "kycStatus": "verified",
+      "kycFile": "passport.jpg",
+      "bookings": [],
+      "schedule": [],
+      "ledger": [],
+      "scheduleProjectName": null,
+      "scheduleUnitNo": null
+    },
+    {
+      "id": "CL-3003",
+      "name": "Zayan Islam",
+      "email": "zayan.islam@email.com",
+      "phone": "+8801700000000",
+      "country": "UAE",
+      "password": "demo",
+      "createdAt": "2026-07-21T08:00:00.000Z",
+      "kycStatus": "verified",
+      "kycFile": "passport.jpg",
+      "bookings": [],
+      "schedule": [],
+      "ledger": [],
+      "scheduleProjectName": null,
+      "scheduleUnitNo": null
+    }
+  ],
+  "bookings": [
+    {
+      "id": "BK-2024-01120",
+      "clientId": "CL-1001",
+      "projectId": "PRJ-FLO",
+      "projectName": "Salmon Florentine",
+      "unitNo": "F-503",
+      "amountBdt": 50000,
+      "status": "confirmed",
+      "reference": "PAY-BEL-88213",
+      "createdAt": "2026-05-02T09:12:00.000Z",
+      "confirmedAt": "2026-05-02T10:01:00.000Z"
+    },
+    {
+      "id": "BK-2024-01870",
+      "clientId": "CL-3001",
+      "clientName": "Farhan Rahman",
+      "projectId": "PRJ-FLO",
+      "projectName": "Salmon Florentine",
+      "unitNo": "F-505",
+      "unitAreaSqft": 2050,
+      "unitPriceBdt": 18900000,
+      "amountBdt": 50000,
+      "status": "awaiting_confirmation",
+      "reference": "PAY-BEL-4901",
+      "lockStartedAt": 1788048000000,
+      "lockExpiresAt": 1788048000000,
+      "lockWindowSec": 60,
+      "createdAt": "2026-07-24T09:00:00.000Z"
+    },
+    {
+      "id": "BK-2024-01871",
+      "clientId": "CL-3002",
+      "clientName": "Nabil Chowdhury",
+      "projectId": "PRJ-BEL",
+      "projectName": "Salmon Bellissimo",
+      "unitNo": "B-902",
+      "unitAreaSqft": 2050,
+      "unitPriceBdt": 18900000,
+      "amountBdt": 50000,
+      "status": "awaiting_confirmation",
+      "reference": "PAY-BEL-4902",
+      "lockStartedAt": 1788048000000,
+      "lockExpiresAt": 1788048000000,
+      "lockWindowSec": 60,
+      "createdAt": "2026-07-24T09:00:00.000Z"
+    },
+    {
+      "id": "BK-2024-01872",
+      "clientId": "CL-3003",
+      "clientName": "Zayan Islam",
+      "projectId": "PRJ-BEL",
+      "projectName": "Salmon Bellissimo",
+      "unitNo": "B-905",
+      "unitAreaSqft": 2050,
+      "unitPriceBdt": 18900000,
+      "amountBdt": 50000,
+      "status": "awaiting_confirmation",
+      "reference": "WIRE-77120",
+      "lockStartedAt": 1788048000000,
+      "lockExpiresAt": 1788048000000,
+      "lockWindowSec": 60,
+      "createdAt": "2026-07-24T09:00:00.000Z"
+    }
+  ],
+  "webhooks": [
+    {
+      "id": "WH-4901",
+      "kind": "booking",
+      "reference": "PAY-BEL-4901",
+      "bookingId": "BK-2024-01870",
+      "clientId": "CL-3001",
+      "clientName": "Farhan Rahman",
+      "projectName": "Salmon Florentine",
+      "unitNo": "F-505",
+      "amountBdt": 50000,
+      "gateway": "SSLCommerz",
+      "signatureVerified": true,
+      "status": "pending",
+      "createdAt": "2026-07-24T09:00:00.000Z"
+    },
+    {
+      "id": "WH-4902",
+      "kind": "booking",
+      "reference": "PAY-BEL-4902",
+      "bookingId": "BK-2024-01871",
+      "clientId": "CL-3002",
+      "clientName": "Nabil Chowdhury",
+      "projectName": "Salmon Bellissimo",
+      "unitNo": "B-902",
+      "amountBdt": 48500,
+      "gateway": "Stripe",
+      "signatureVerified": true,
+      "status": "pending",
+      "currencyMismatch": true,
+      "createdAt": "2026-07-24T10:00:00.000Z"
+    }
+  ],
+  "wires": [
+    {
+      "id": "WIRE-2024-0044",
+      "reference": "WIRE-77120",
+      "clientId": "CL-3003",
+      "clientName": "Zayan Islam",
+      "bookingId": "BK-2024-01872",
+      "projectName": "Salmon Bellissimo",
+      "unitNo": "B-905",
+      "amountBdt": 50000,
+      "currency": "AED",
+      "receiptConfirmed": true,
+      "status": "pending",
+      "createdAt": "2026-07-23T11:00:00.000Z"
+    }
+  ],
+  "notifications": {
+    "admin": [],
+    "client": [],
+    "partner": []
+  },
+  "events": [],
+  "partners": [
+    {
+      "id": "SDP-CUM-00417",
+      "name": "Md. Shahin Alam",
+      "phone": "+8801812345678",
+      "email": "shahin.alam@gmail.com",
+      "nid": "1990123456789",
+      "address": "Kandirpar, Cumilla Sadar, Cumilla",
+      "territory": "Cumilla",
+      "program": "zero",
+      "rank": "Silver",
+      "teamLead": false,
+      "teamLeadId": "SDP-CUM-00188",
+      "status": "active",
+      "createdAt": "2026-04-12T06:00:00.000Z",
+      "referralCode": "SHAHIN417",
+      "approvedBalanceBdt": 0,
+      "card": {
+        "name": "Md. Shahin Alam",
+        "id": "SDP-CUM-00417",
+        "rank": "Silver",
+        "territory": "Cumilla",
+        "phone": "+8801812345678",
+        "program": "zero",
+        "qr": "salmon://partner/SDP-CUM-00417"
+      }
+    },
+    {
+      "id": "SDP-DHK-00210",
+      "name": "Nasrin Ahmed",
+      "phone": "+8801711002200",
+      "email": "nasrin.ahmed@gmail.com",
+      "nid": "1988044556677",
+      "address": "Mirpur DOHS, Dhaka",
+      "territory": "Dhaka",
+      "program": "with",
+      "rank": "Gold",
+      "teamLead": false,
+      "teamLeadId": null,
+      "status": "active",
+      "createdAt": "2026-03-01T06:00:00.000Z",
+      "referralCode": "NASRIN210",
+      "approvedBalanceBdt": 0,
+      "card": {
+        "name": "Nasrin Ahmed",
+        "id": "SDP-DHK-00210",
+        "rank": "Gold",
+        "territory": "Dhaka",
+        "phone": "+8801711002200",
+        "program": "with",
+        "qr": "salmon://partner/SDP-DHK-00210"
+      }
+    },
+    {
+      "id": "SDP-CUM-00188",
+      "name": "Karim Rahman",
+      "phone": "+8801912223344",
+      "email": "karim.rahman@gmail.com",
+      "nid": "1985099887766",
+      "address": "Jhawtala, Cumilla",
+      "territory": "Cumilla",
+      "program": "zero",
+      "rank": "Gold",
+      "teamLead": true,
+      "teamLeadId": null,
+      "status": "active",
+      "createdAt": "2026-01-15T06:00:00.000Z",
+      "referralCode": "KARIM188",
+      "approvedBalanceBdt": 24000,
+      "team": [
+        {
+          "id": "SDP-CUM-00417",
+          "name": "Md. Shahin Alam",
+          "rank": "Silver",
+          "leadsMTD": 3,
+          "convertedMTD": 1
+        },
+        {
+          "id": "SDP-CUM-00251",
+          "name": "Jahangir Alam",
+          "rank": "Silver",
+          "leadsMTD": 2,
+          "convertedMTD": 0
+        },
+        {
+          "id": "SDP-CUM-00263",
+          "name": "Sultana Begum",
+          "rank": "Bronze",
+          "leadsMTD": 5,
+          "convertedMTD": 2
+        }
+      ],
+      "teamTargetBdt": 300000,
+      "teamAchievedBdt": 186000,
+      "card": {
+        "name": "Karim Rahman",
+        "id": "SDP-CUM-00188",
+        "rank": "Gold",
+        "territory": "Cumilla",
+        "phone": "+8801912223344",
+        "program": "zero",
+        "qr": "salmon://partner/SDP-CUM-00188"
+      }
+    }
+  ],
+  "applications": [
+    {
+      "id": "APP-2024-0032",
+      "name": "Rafiqul Islam",
+      "phone": "+8801677889900",
+      "email": "rafiqul.islam@gmail.com",
+      "nid": "1992066778899",
+      "address": "Agrabad, Chattogram",
+      "territory": "Chattogram",
+      "program": "both",
+      "referralCode": "",
+      "status": "pending",
+      "reason": null,
+      "createdAt": "2026-07-22T09:30:00.000Z"
+    }
+  ],
+  "leads": [
+    {
+      "id": "LEAD-2024-0501",
+      "partnerId": "SDP-CUM-00417",
+      "partnerName": "Md. Shahin Alam",
+      "prospectName": "Karim Uddin",
+      "phone": "+8801733445566",
+      "projectId": "PRJ-BEL",
+      "projectName": "Salmon Bellissimo",
+      "notes": "Looking for a 3-bed, ready to visit this month.",
+      "consent": true,
+      "status": "meeting_scheduled",
+      "createdAt": "2026-07-18T10:00:00.000Z",
+      "timeline": [
+        {
+          "status": "new",
+          "at": "2026-07-18T10:00:00.000Z"
+        },
+        {
+          "status": "contacted",
+          "at": "2026-07-19T11:00:00.000Z"
+        },
+        {
+          "status": "meeting_scheduled",
+          "at": "2026-07-21T09:00:00.000Z"
+        }
+      ],
+      "internalNotes": [
+        {
+          "at": "2026-07-19T11:05:00.000Z",
+          "by": "Farhana Kabir",
+          "text": "Prospect prefers weekend visit. Budget confirmed ~1.8 Cr."
+        }
+      ]
+    },
+    {
+      "id": "LEAD-2024-0502",
+      "partnerId": "SDP-CUM-00188",
+      "partnerName": "Karim Rahman",
+      "prospectName": "Sultana Parvin",
+      "phone": "+8801799887766",
+      "projectId": "PRJ-FLO",
+      "projectName": "Salmon Florentine",
+      "notes": "Interested in a lower-floor unit; budget ~1.4 Cr.",
+      "consent": true,
+      "status": "meeting_scheduled",
+      "createdAt": "2026-07-21T10:00:00.000Z",
+      "timeline": [
+        {
+          "status": "new",
+          "at": "2026-07-21T10:00:00.000Z"
+        },
+        {
+          "status": "contacted",
+          "at": "2026-07-22T11:00:00.000Z"
+        },
+        {
+          "status": "meeting_scheduled",
+          "at": "2026-07-23T09:00:00.000Z"
+        }
+      ],
+      "internalNotes": []
+    }
+  ],
+  "commissions": [
+    {
+      "id": "COM-2024-0681",
+      "kind": "conversion",
+      "category": null,
+      "partnerId": "SDP-CUM-00188",
+      "partnerName": "Karim Rahman",
+      "program": "zero",
+      "leadId": "LEAD-2024-0490",
+      "prospectName": "Mizanur Rahman",
+      "projectId": "PRJ-BEL",
+      "projectName": "Salmon Bellissimo",
+      "verifiedAt": "2026-07-22T14:00:00.000Z",
+      "verifiedBy": "Farhana Kabir",
+      "status": "pending",
+      "amountBdt": null,
+      "note": "",
+      "approvedAt": null,
+      "approver": null,
+      "events": [
+        {
+          "at": "2026-07-22T14:00:00.000Z",
+          "by": "Farhana Kabir",
+          "role": "Manager",
+          "action": "created",
+          "detail": "From verified conversion of Mizanur Rahman"
+        }
+      ]
+    },
+    {
+      "id": "COM-2024-0685",
+      "kind": "conversion",
+      "category": null,
+      "partnerId": "SDP-DHK-00210",
+      "partnerName": "Nasrin Ahmed",
+      "program": "with",
+      "leadId": "LEAD-2024-0495",
+      "prospectName": "Tahmid Alam",
+      "projectId": "PRJ-FLO",
+      "projectName": "Salmon Florentine",
+      "verifiedAt": "2026-07-23T15:00:00.000Z",
+      "verifiedBy": "Farhana Kabir",
+      "status": "pending",
+      "amountBdt": null,
+      "note": "",
+      "approvedAt": null,
+      "approver": null,
+      "events": [
+        {
+          "at": "2026-07-23T15:00:00.000Z",
+          "by": "Farhana Kabir",
+          "role": "Manager",
+          "action": "created",
+          "detail": "From verified conversion of Tahmid Alam"
+        }
+      ]
+    },
+    {
+      "id": "COM-2024-0672",
+      "kind": "conversion",
+      "category": null,
+      "partnerId": "SDP-CUM-00188",
+      "partnerName": "Karim Rahman",
+      "program": "zero",
+      "leadId": "LEAD-2024-0480",
+      "prospectName": "Rina Akter",
+      "projectId": "PRJ-BEL",
+      "projectName": "Salmon Bellissimo",
+      "verifiedAt": "2026-07-04T12:00:00.000Z",
+      "verifiedBy": "Farhana Kabir",
+      "status": "settled",
+      "amountBdt": 14000,
+      "note": "Standard Zero Investment rate applied",
+      "approvedAt": "2026-07-06T11:00:00.000Z",
+      "approver": "Tanvir Ahmed",
+      "settlementId": null,
+      "events": [
+        {
+          "at": "2026-07-06T11:00:00.000Z",
+          "by": "Tanvir Ahmed",
+          "role": "Finance Officer",
+          "action": "approved",
+          "detail": "৳14,000 approved"
+        },
+        {
+          "at": "2026-07-04T12:00:00.000Z",
+          "by": "Farhana Kabir",
+          "role": "Manager",
+          "action": "created",
+          "detail": "From verified conversion of Rina Akter"
+        }
+      ]
+    },
+    {
+      "id": "COM-2024-0668",
+      "kind": "conversion",
+      "category": null,
+      "partnerId": "SDP-CUM-00188",
+      "partnerName": "Karim Rahman",
+      "program": "zero",
+      "leadId": "LEAD-2024-0475",
+      "prospectName": "Sohel Mia",
+      "projectId": "PRJ-FLO",
+      "projectName": "Salmon Florentine",
+      "verifiedAt": "2026-06-19T12:00:00.000Z",
+      "verifiedBy": "Farhana Kabir",
+      "status": "settled",
+      "amountBdt": 11500,
+      "note": "Standard rate",
+      "approvedAt": "2026-06-21T11:00:00.000Z",
+      "approver": "Tanvir Ahmed",
+      "settlementId": null,
+      "events": [
+        {
+          "at": "2026-06-21T11:00:00.000Z",
+          "by": "Tanvir Ahmed",
+          "role": "Finance Officer",
+          "action": "approved",
+          "detail": "৳11,500 approved"
+        }
+      ]
+    }
+  ],
+  "settlements": [],
+  "investmentShares": [
+    {
+      "id": "INV-2024-0007",
+      "partnerId": "SDP-DHK-00210",
+      "status": "confirmed",
+      "shareLabel": "[AMOUNT — LEGAL SIGN-OFF REQUIRED]",
+      "confirmedAt": "2026-05-10T06:00:00.000Z",
+      "returnSchedule": [
+        {
+          "n": 1,
+          "period": "Q1 2026",
+          "status": "paid",
+          "amount": "[AMOUNT — LEGAL SIGN-OFF REQUIRED]"
+        },
+        {
+          "n": 2,
+          "period": "Q2 2026",
+          "status": "pending",
+          "amount": "[AMOUNT — LEGAL SIGN-OFF REQUIRED]"
+        },
+        {
+          "n": 3,
+          "period": "Q3 2026",
+          "status": "on_hold",
+          "amount": "[AMOUNT — LEGAL SIGN-OFF REQUIRED]"
+        }
+      ]
+    }
+  ],
+  "investmentEnquiries": [],
+  "meetings": [
+    {
+      "id": "MTG-2024-0041",
+      "partnerId": "SDP-CUM-00417",
+      "partnerName": "Md. Shahin Alam",
+      "staffType": "Manager",
+      "notes": "Wants to discuss a corporate buyer in Cumilla.",
+      "status": "requested",
+      "requestedAt": "2026-07-23T12:00:00.000Z",
+      "zoomLink": null,
+      "time": null
+    }
+  ],
+  "consultations": [
+    {
+      "id": "CONS-2024-0018",
+      "clientId": "CL-1001",
+      "clientName": "Ayesha Rahman",
+      "topic": "Site visit — Salmon Florentine",
+      "status": "requested",
+      "requestedAt": "2026-07-23T13:00:00.000Z",
+      "slot": "Sat 26 Jul, 11:00 AM",
+      "link": null
+    }
+  ],
+  "tickets": [
+    {
+      "source": "partner",
+      "partnerId": "SDP-CUM-00417",
+      "partnerName": "Md. Shahin Alam",
+      "clientId": null,
+      "clientName": null,
+      "dept": "Accounts",
+      "channel": "ticket",
+      "slaHours": 4,
+      "firstResponseAt": null,
+      "resolvedAt": null,
+      "attachments": [],
+      "replies": [],
+      "body": "My approved settlement from last week still has not been paid. This is urgent — client is waiting.",
+      "history": [
+        {
+          "action": "created",
+          "by": "Md. Shahin Alam",
+          "at": "2026-07-25T19:33:55.606Z",
+          "note": "partner · Accounts"
+        }
+      ],
+      "id": "TKT-2024-0071",
+      "requesterId": "SDP-CUM-00417",
+      "requesterName": "Md. Shahin Alam",
+      "category": "Accounts",
+      "subject": "Settlement not received",
+      "priority": "urgent",
+      "status": "open",
+      "assigneeId": "ST-2",
+      "assigneeName": "Tanvir Ahmed",
+      "createdAt": "2026-07-25T19:33:55.606Z",
+      "updatedAt": "2026-07-25T19:33:55.606Z",
+      "thread": [
+        {
+          "by": "Md. Shahin Alam",
+          "side": "requester",
+          "at": "2026-07-25T19:33:55.606Z",
+          "kind": "message",
+          "text": "My approved settlement from last week still has not been paid. This is urgent — client is waiting."
+        }
+      ]
+    },
+    {
+      "source": "partner",
+      "partnerId": "SDP-DHK-00210",
+      "partnerName": "Nasrin Ahmed",
+      "clientId": null,
+      "clientName": null,
+      "dept": "Sales",
+      "channel": "ticket",
+      "slaHours": 8,
+      "firstResponseAt": "2026-07-26T03:33:55.606Z",
+      "resolvedAt": null,
+      "attachments": [],
+      "replies": [
+        {
+          "by": "Farhana Kabir",
+          "at": "2026-07-26T03:33:55.606Z",
+          "text": "The Q3 list is published to your sales kit now — check Shared documents on the project page."
+        }
+      ],
+      "body": "Can I get the latest Bellissimo Q3 price list to share with a prospect?",
+      "history": [
+        {
+          "action": "created",
+          "by": "Nasrin Ahmed",
+          "at": "2026-07-25T22:33:55.606Z",
+          "note": "partner · Sales"
+        }
+      ],
+      "id": "TKT-2024-0072",
+      "requesterId": "SDP-DHK-00210",
+      "requesterName": "Nasrin Ahmed",
+      "category": "Sales",
+      "subject": "Latest Bellissimo price list",
+      "priority": "high",
+      "status": "in_progress",
+      "assigneeId": "ST-4",
+      "assigneeName": "Farhana Kabir",
+      "createdAt": "2026-07-25T22:33:55.606Z",
+      "updatedAt": "2026-07-26T03:33:55.606Z",
+      "thread": [
+        {
+          "by": "Nasrin Ahmed",
+          "side": "requester",
+          "at": "2026-07-25T22:33:55.606Z",
+          "kind": "message",
+          "text": "Can I get the latest Bellissimo Q3 price list to share with a prospect?"
+        },
+        {
+          "by": "Farhana Kabir",
+          "byRole": "Manager",
+          "side": "staff",
+          "at": "2026-07-26T03:33:55.606Z",
+          "kind": "message",
+          "text": "The Q3 list is published to your sales kit now — check Shared documents on the project page."
+        }
+      ]
+    },
+    {
+      "source": "partner",
+      "partnerId": "SDP-CUM-00188",
+      "partnerName": "Karim Rahman",
+      "clientId": null,
+      "clientName": null,
+      "dept": "Customer Care",
+      "channel": "ticket",
+      "slaHours": 24,
+      "firstResponseAt": null,
+      "resolvedAt": null,
+      "attachments": [],
+      "replies": [],
+      "body": "I moved to a new upazila — how do I request a territory change?",
+      "history": [
+        {
+          "action": "created",
+          "by": "Karim Rahman",
+          "at": "2026-07-26T03:33:55.606Z",
+          "note": "partner · Customer Care"
+        }
+      ],
+      "id": "TKT-2024-0073",
+      "requesterId": "SDP-CUM-00188",
+      "requesterName": "Karim Rahman",
+      "category": "Customer Care",
+      "subject": "How do I update my territory?",
+      "priority": "normal",
+      "status": "open",
+      "assigneeId": "ST-4",
+      "assigneeName": "Farhana Kabir",
+      "createdAt": "2026-07-26T03:33:55.606Z",
+      "updatedAt": "2026-07-26T03:33:55.606Z",
+      "thread": [
+        {
+          "by": "Karim Rahman",
+          "side": "requester",
+          "at": "2026-07-26T03:33:55.606Z",
+          "kind": "message",
+          "text": "I moved to a new upazila — how do I request a territory change?"
+        }
+      ]
+    },
+    {
+      "source": "partner",
+      "partnerId": "SDP-DHK-00210",
+      "partnerName": "Nasrin Ahmed",
+      "clientId": null,
+      "clientName": null,
+      "dept": "Administration",
+      "channel": "ticket",
+      "slaHours": 48,
+      "firstResponseAt": "2026-07-24T03:33:55.606Z",
+      "resolvedAt": "2026-07-24T05:33:55.606Z",
+      "attachments": [],
+      "replies": [
+        {
+          "by": "Nabila Islam",
+          "at": "2026-07-24T03:33:55.606Z",
+          "text": "Updated. You should receive future notifications at the new address."
+        },
+        {
+          "by": "Nabila Islam",
+          "at": "2026-07-24T05:33:55.606Z",
+          "text": "Marking this resolved — let us know if anything else is needed."
+        }
+      ],
+      "body": "Please update my registered email to nasrin.ahmed@newmail.com.",
+      "history": [
+        {
+          "action": "created",
+          "by": "Nasrin Ahmed",
+          "at": "2026-07-23T05:33:55.606Z",
+          "note": "partner · Administration"
+        }
+      ],
+      "id": "TKT-2024-0068",
+      "requesterId": "SDP-DHK-00210",
+      "requesterName": "Nasrin Ahmed",
+      "category": "Administration",
+      "subject": "Update my email address",
+      "priority": "low",
+      "status": "resolved",
+      "assigneeId": "ST-1",
+      "assigneeName": "Nabila Islam",
+      "createdAt": "2026-07-23T05:33:55.606Z",
+      "updatedAt": "2026-07-24T05:33:55.606Z",
+      "thread": [
+        {
+          "by": "Nasrin Ahmed",
+          "side": "requester",
+          "at": "2026-07-23T05:33:55.606Z",
+          "kind": "message",
+          "text": "Please update my registered email to nasrin.ahmed@newmail.com."
+        },
+        {
+          "by": "Nabila Islam",
+          "byRole": "Super Admin",
+          "side": "staff",
+          "at": "2026-07-24T03:33:55.606Z",
+          "kind": "message",
+          "text": "Updated. You should receive future notifications at the new address."
+        },
+        {
+          "by": "Nabila Islam",
+          "byRole": "Super Admin",
+          "side": "staff",
+          "at": "2026-07-24T05:33:55.606Z",
+          "kind": "message",
+          "text": "Marking this resolved — let us know if anything else is needed."
+        }
+      ]
+    },
+    {
+      "source": "partner",
+      "partnerId": "SDP-CUM-00417",
+      "partnerName": "Md. Shahin Alam",
+      "clientId": null,
+      "clientName": null,
+      "dept": "Accounts",
+      "channel": "ticket",
+      "slaHours": 24,
+      "firstResponseAt": "2026-07-22T21:33:55.606Z",
+      "resolvedAt": null,
+      "attachments": [],
+      "replies": [
+        {
+          "by": "Tanvir Ahmed",
+          "at": "2026-07-22T21:33:55.606Z",
+          "text": "Reviewed — the amount reflects the agreed rate for that program. Resolving."
+        }
+      ],
+      "body": "My commission for the Florentine conversion looks lower than expected.",
+      "history": [
+        {
+          "action": "created",
+          "by": "Md. Shahin Alam",
+          "at": "2026-07-22T05:33:55.606Z",
+          "note": "partner · Accounts"
+        }
+      ],
+      "id": "TKT-2024-0065",
+      "requesterId": "SDP-CUM-00417",
+      "requesterName": "Md. Shahin Alam",
+      "category": "Accounts",
+      "subject": "Commission amount looks wrong",
+      "priority": "normal",
+      "status": "reopened",
+      "assigneeId": "ST-2",
+      "assigneeName": "Tanvir Ahmed",
+      "createdAt": "2026-07-22T05:33:55.606Z",
+      "updatedAt": "2026-07-26T02:33:55.606Z",
+      "thread": [
+        {
+          "by": "Md. Shahin Alam",
+          "side": "requester",
+          "at": "2026-07-22T05:33:55.606Z",
+          "kind": "message",
+          "text": "My commission for the Florentine conversion looks lower than expected."
+        },
+        {
+          "by": "Tanvir Ahmed",
+          "byRole": "Finance Officer",
+          "side": "staff",
+          "at": "2026-07-22T21:33:55.606Z",
+          "kind": "message",
+          "text": "Reviewed — the amount reflects the agreed rate for that program. Resolving."
+        },
+        {
+          "by": "Md. Shahin Alam",
+          "side": "requester",
+          "at": "2026-07-26T02:33:55.606Z",
+          "kind": "message",
+          "text": "I still think this is off — reopening. Can we go through the calculation together?"
+        }
+      ]
+    },
+    {
+      "source": "client",
+      "partnerId": null,
+      "partnerName": null,
+      "clientId": "CL-1001",
+      "clientName": "Ayesha Rahman",
+      "dept": "Customer Care",
+      "channel": "in_app",
+      "slaHours": 24,
+      "firstResponseAt": "2026-07-26T05:03:55.606Z",
+      "resolvedAt": null,
+      "attachments": [],
+      "replies": [
+        {
+          "by": "Farhana Kabir",
+          "at": "2026-07-26T05:03:55.606Z",
+          "text": "Hello Ayesha — your next installment is due on 5 Aug. You can pay it from Bookings → Installments in the app."
+        }
+      ],
+      "body": "Hi, when is my next installment due for Florentine F-503?",
+      "history": [
+        {
+          "action": "created",
+          "by": "Ayesha Rahman",
+          "at": "2026-07-26T04:03:55.606Z",
+          "note": "client · Customer Care"
+        }
+      ],
+      "id": "TKT-2024-0074",
+      "requesterId": "CL-1001",
+      "requesterName": "Ayesha Rahman",
+      "category": "Customer Care",
+      "subject": "Chat with Ayesha Rahman",
+      "priority": "normal",
+      "status": "in_progress",
+      "assigneeId": "ST-4",
+      "assigneeName": "Farhana Kabir",
+      "createdAt": "2026-07-26T04:03:55.606Z",
+      "updatedAt": "2026-07-26T05:03:55.606Z",
+      "thread": [
+        {
+          "by": "Ayesha Rahman",
+          "side": "requester",
+          "at": "2026-07-26T04:03:55.606Z",
+          "kind": "message",
+          "text": "Hi, when is my next installment due for Florentine F-503?"
+        },
+        {
+          "by": "Farhana Kabir",
+          "byRole": "Manager",
+          "side": "staff",
+          "at": "2026-07-26T05:03:55.606Z",
+          "kind": "message",
+          "text": "Hello Ayesha — your next installment is due on 5 Aug. You can pay it from Bookings → Installments in the app."
+        }
+      ]
+    }
+  ],
+  "documents": [
+    {
+      "id": "DOC-REP-1",
+      "name": "Bellissimo — Price List Q3 2026.pdf",
+      "projectId": "PRJ-BEL",
+      "projectName": "Salmon Bellissimo",
+      "visibility": "partner",
+      "sizeKb": 640,
+      "uploadedBy": "Sadia Chowdhury",
+      "uploadedAt": "2026-07-18T10:00:00.000Z",
+      "classifiedAt": "2026-07-18T10:00:00.000Z"
+    },
+    {
+      "id": "DOC-REP-2",
+      "name": "Salmon Buyer Handbook.pdf",
+      "projectId": null,
+      "projectName": "All projects",
+      "visibility": "client",
+      "sizeKb": 1200,
+      "uploadedBy": "Sadia Chowdhury",
+      "uploadedAt": "2026-07-15T09:00:00.000Z",
+      "classifiedAt": "2026-07-15T09:00:00.000Z"
+    },
+    {
+      "id": "DOC-REP-3",
+      "name": "Land Deed — Bellissimo (internal).pdf",
+      "projectId": "PRJ-BEL",
+      "projectName": "Salmon Bellissimo",
+      "visibility": "internal",
+      "sizeKb": 880,
+      "uploadedBy": "Sadia Chowdhury",
+      "uploadedAt": "2026-07-12T08:00:00.000Z",
+      "classifiedAt": "2026-07-12T08:00:00.000Z"
+    }
+  ],
+  "accessLog": [
+    {
+      "id": "AL-1",
+      "docId": "DOC-REP-1",
+      "docName": "Bellissimo — Price List Q3 2026.pdf",
+      "actor": "Md. Shahin Alam",
+      "actorType": "partner",
+      "at": "2026-07-23T14:00:00.000Z"
+    },
+    {
+      "id": "AL-2",
+      "docId": "DOC-REP-2",
+      "docName": "Salmon Buyer Handbook.pdf",
+      "actor": "Ayesha Rahman",
+      "actorType": "client",
+      "at": "2026-07-22T12:00:00.000Z"
+    },
+    {
+      "id": "AL-3",
+      "docId": "DOC-REP-1",
+      "docName": "Bellissimo — Price List Q3 2026.pdf",
+      "actor": "Nasrin Ahmed",
+      "actorType": "partner",
+      "at": "2026-07-24T13:00:00.000Z"
+    }
+  ],
+  "auditLog": [],
+  "invoices": [],
+  "docAccessLog": [],
+  "constructionUpdates": {
+    "PRJ-BEL": [
+      {
+        "id": "CU-BEL-1",
+        "date": "2026-06-20T00:00:00.000Z",
+        "stage": "10th floor",
+        "caption": "10th floor slab casting completed — structure progressing on schedule."
+      },
+      {
+        "id": "CU-BEL-2",
+        "date": "2026-07-10T00:00:00.000Z",
+        "stage": "11th floor",
+        "caption": "11th floor columns poured; brickwork underway on lower floors."
+      }
+    ],
+    "PRJ-FLO": [
+      {
+        "id": "CU-FLO-1",
+        "date": "2026-07-05T00:00:00.000Z",
+        "stage": "8th floor",
+        "caption": "8th floor concrete work in progress."
+      }
+    ],
+    "PRJ-ZHL": [
+      {
+        "id": "CU-ZHL-1",
+        "date": "2025-12-01T00:00:00.000Z",
+        "stage": "Handover",
+        "caption": "Project handed over — residents moved in."
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "id": "TSK-2024-601",
+      "title": "Call prospect Karim Uddin",
+      "description": "Confirm Thursday site visit at Bellissimo.",
+      "assigneePartnerId": "SDP-CUM-00417",
+      "assigneePartnerName": "Md. Shahin Alam",
+      "assignedBy": "Farhana Kabir",
+      "assignedByRole": "Manager",
+      "assignerType": "staff",
+      "territory": "Cumilla",
+      "dueDate": "2026-07-24T18:00:00.000Z",
+      "evidenceRequired": false,
+      "status": "assigned",
+      "createdAt": "2026-07-24T09:00:00.000Z",
+      "completedAt": null,
+      "completionNote": null,
+      "evidenceFile": null
+    },
+    {
+      "id": "TSK-2024-602",
+      "title": "Share Florentine price list with lead",
+      "description": "Send the Q3 price list PDF to the Florentine enquiry.",
+      "assigneePartnerId": "SDP-CUM-00417",
+      "assigneePartnerName": "Md. Shahin Alam",
+      "assignedBy": "Farhana Kabir",
+      "assignedByRole": "Manager",
+      "assignerType": "staff",
+      "territory": "Cumilla",
+      "dueDate": "2026-07-25T18:00:00.000Z",
+      "evidenceRequired": false,
+      "status": "assigned",
+      "createdAt": "2026-07-24T10:00:00.000Z",
+      "completedAt": null,
+      "completionNote": null,
+      "evidenceFile": null
+    },
+    {
+      "id": "TSK-2024-603",
+      "title": "Collect NID copy from buyer",
+      "description": "Overdue — collect NID for the pending booking.",
+      "assigneePartnerId": "SDP-CUM-00417",
+      "assigneePartnerName": "Md. Shahin Alam",
+      "assignedBy": "Farhana Kabir",
+      "assignedByRole": "Manager",
+      "assignerType": "staff",
+      "territory": "Cumilla",
+      "dueDate": "2026-07-22T18:00:00.000Z",
+      "evidenceRequired": true,
+      "status": "assigned",
+      "createdAt": "2026-07-21T09:00:00.000Z",
+      "completedAt": null,
+      "completionNote": null,
+      "evidenceFile": null
+    },
+    {
+      "id": "TSK-2024-604",
+      "title": "Follow-up call — Mizanur",
+      "description": "Second follow-up.",
+      "assigneePartnerId": "SDP-CUM-00417",
+      "assigneePartnerName": "Md. Shahin Alam",
+      "assignedBy": "Farhana Kabir",
+      "assignedByRole": "Manager",
+      "assignerType": "staff",
+      "territory": "Cumilla",
+      "dueDate": "2026-07-18T18:00:00.000Z",
+      "evidenceRequired": false,
+      "status": "complete",
+      "createdAt": "2026-07-16T10:00:00.000Z",
+      "completedAt": "2026-07-18T10:00:00.000Z",
+      "completionNote": "Called; interested, will visit.",
+      "evidenceFile": null
+    },
+    {
+      "id": "TSK-2024-605",
+      "title": "Site visit coordination",
+      "description": "Arrange transport for site visit.",
+      "assigneePartnerId": "SDP-CUM-00417",
+      "assigneePartnerName": "Md. Shahin Alam",
+      "assignedBy": "Farhana Kabir",
+      "assignedByRole": "Manager",
+      "assignerType": "staff",
+      "territory": "Cumilla",
+      "dueDate": "2026-07-16T18:00:00.000Z",
+      "evidenceRequired": true,
+      "status": "complete",
+      "createdAt": "2026-07-14T10:00:00.000Z",
+      "completedAt": "2026-07-16T10:00:00.000Z",
+      "completionNote": "Visit done Saturday.",
+      "evidenceFile": "sitevisit-photo.jpg"
+    },
+    {
+      "id": "TSK-2024-606",
+      "title": "Documentation collection",
+      "description": "Collect booking documents.",
+      "assigneePartnerId": "SDP-CUM-00417",
+      "assigneePartnerName": "Md. Shahin Alam",
+      "assignedBy": "Farhana Kabir",
+      "assignedByRole": "Manager",
+      "assignerType": "staff",
+      "territory": "Cumilla",
+      "dueDate": "2026-07-14T18:00:00.000Z",
+      "evidenceRequired": false,
+      "status": "complete",
+      "createdAt": "2026-07-12T10:00:00.000Z",
+      "completedAt": "2026-07-14T10:00:00.000Z",
+      "completionNote": "All docs collected.",
+      "evidenceFile": null
+    },
+    {
+      "id": "TSK-2024-607",
+      "title": "Update prospect status",
+      "description": "Log latest prospect status.",
+      "assigneePartnerId": "SDP-CUM-00417",
+      "assigneePartnerName": "Md. Shahin Alam",
+      "assignedBy": "Farhana Kabir",
+      "assignedByRole": "Manager",
+      "assignerType": "staff",
+      "territory": "Cumilla",
+      "dueDate": "2026-07-12T18:00:00.000Z",
+      "evidenceRequired": false,
+      "status": "complete",
+      "createdAt": "2026-07-10T10:00:00.000Z",
+      "completedAt": "2026-07-12T10:00:00.000Z",
+      "completionNote": "Updated.",
+      "evidenceFile": null
+    },
+    {
+      "id": "TSK-2024-608",
+      "title": "Weekly check-in",
+      "description": "Weekly team check-in.",
+      "assigneePartnerId": "SDP-CUM-00417",
+      "assigneePartnerName": "Md. Shahin Alam",
+      "assignedBy": "Farhana Kabir",
+      "assignedByRole": "Manager",
+      "assignerType": "staff",
+      "territory": "Cumilla",
+      "dueDate": "2026-07-10T18:00:00.000Z",
+      "evidenceRequired": false,
+      "status": "complete",
+      "createdAt": "2026-07-08T10:00:00.000Z",
+      "completedAt": "2026-07-10T10:00:00.000Z",
+      "completionNote": "Attended.",
+      "evidenceFile": null
+    },
+    {
+      "id": "TSK-2024-609",
+      "title": "Confirm Florentine allotment",
+      "description": "Confirm allotment paperwork.",
+      "assigneePartnerId": "SDP-DHK-00210",
+      "assigneePartnerName": "Nasrin Ahmed",
+      "assignedBy": "Farhana Kabir",
+      "assignedByRole": "Manager",
+      "assignerType": "staff",
+      "territory": "Dhaka",
+      "dueDate": "2026-07-25T18:00:00.000Z",
+      "evidenceRequired": false,
+      "status": "assigned",
+      "createdAt": "2026-07-24T11:00:00.000Z",
+      "completedAt": null,
+      "completionNote": null,
+      "evidenceFile": null
+    },
+    {
+      "id": "TSK-2024-610",
+      "title": "Team performance review prep",
+      "description": "Prepare monthly numbers for review.",
+      "assigneePartnerId": "SDP-CUM-00188",
+      "assigneePartnerName": "Karim Rahman",
+      "assignedBy": "Farhana Kabir",
+      "assignedByRole": "Manager",
+      "assignerType": "staff",
+      "territory": "Cumilla",
+      "dueDate": "2026-07-26T18:00:00.000Z",
+      "evidenceRequired": false,
+      "status": "assigned",
+      "createdAt": "2026-07-24T12:00:00.000Z",
+      "completedAt": null,
+      "completionNote": null,
+      "evidenceFile": null
+    }
+  ],
+  "targets": [
+    {
+      "id": "TGT-2024-01",
+      "scope": "partner",
+      "partnerId": "SDP-CUM-00417",
+      "partnerName": "Md. Shahin Alam",
+      "territory": "Cumilla",
+      "metric": "converted_leads",
+      "period": "2026-07",
+      "targetValue": 5,
+      "createdAt": "2026-07-04T10:00:00.000Z",
+      "updatedAt": "2026-07-04T10:00:00.000Z",
+      "archivedAchievement": null
+    },
+    {
+      "id": "TGT-2024-02",
+      "scope": "team",
+      "teamLeadId": "SDP-CUM-00188",
+      "teamName": "Cumilla team",
+      "territory": "Cumilla",
+      "metric": "converted_leads",
+      "period": "2026-07",
+      "targetValue": 15,
+      "createdAt": "2026-07-04T10:00:00.000Z",
+      "updatedAt": "2026-07-04T10:00:00.000Z",
+      "archivedAchievement": null
+    },
+    {
+      "id": "TGT-2024-00",
+      "scope": "partner",
+      "partnerId": "SDP-CUM-00417",
+      "partnerName": "Md. Shahin Alam",
+      "territory": "Cumilla",
+      "metric": "converted_leads",
+      "period": "2026-06",
+      "targetValue": 4,
+      "createdAt": "2026-06-04T10:00:00.000Z",
+      "updatedAt": "2026-06-04T10:00:00.000Z",
+      "archivedAchievement": 4
+    },
+    {
+      "id": "TGT-2024-00b",
+      "scope": "team",
+      "teamLeadId": "SDP-CUM-00188",
+      "teamName": "Cumilla team",
+      "territory": "Cumilla",
+      "metric": "converted_leads",
+      "period": "2026-06",
+      "targetValue": 12,
+      "createdAt": "2026-06-04T10:00:00.000Z",
+      "updatedAt": "2026-06-04T10:00:00.000Z",
+      "archivedAchievement": 10
+    }
+  ],
+  "taskTemplates": [
+    {
+      "id": "TPL-1",
+      "title": "Follow-up call",
+      "description": "Call the prospect within 48 hours and log the outcome.",
+      "evidenceRequired": false
+    },
+    {
+      "id": "TPL-2",
+      "title": "Site visit coordination",
+      "description": "Arrange and confirm a site visit for the prospect.",
+      "evidenceRequired": true
+    },
+    {
+      "id": "TPL-3",
+      "title": "Documentation collection",
+      "description": "Collect the required booking documents from the buyer.",
+      "evidenceRequired": true
+    }
+  ],
+  "seq": {
+    "booking": 1872,
+    "webhook": 5001,
+    "event": 1,
+    "ledger": 9000,
+    "inst": 8000,
+    "partner": 417,
+    "app": 32,
+    "lead": 502,
+    "commission": 700,
+    "settlement": 90,
+    "enquiry": 10,
+    "meeting": 41,
+    "ticket": 74,
+    "doc": 1,
+    "wire": 44,
+    "consult": 18,
+    "invoice": 100,
+    "repo": 3,
+    "access": 3,
+    "task": 610,
+    "target": 2
+  }
+}

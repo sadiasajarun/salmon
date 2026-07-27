@@ -5,6 +5,7 @@
 <link rel="stylesheet" href="../_shared.css"/>
 <script src="../assets/js/mock-data.js"></script>
 <script src="../assets/js/currency.js"></script>
+<script src="../assets/js/salmon-categories.js"></script>
 <script src="../assets/js/filters.js"></script>
 <style>
   .langtoggle{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--surface)}
@@ -49,6 +50,7 @@
 
     <div class="grouptitle" id="g-category">Property category</div>
     <div id="row-cats"></div>
+    <p class="empty-note" id="field-note" style="display:none;margin:2px var(--gutter) 8px"></p>
 
     <div class="grouptitle" id="g-bed">Bedrooms</div>
     <div class="chiprow" id="row-beds"></div>
@@ -83,10 +85,34 @@ var D=window.SALMON, C=window.Currency, F=window.Filters, lang='en';
 var f=F.load();
 function s(k){ return D.strings[lang][k]||k; }
 var STATUS=['ongoing','completed','upcoming'];
-var BEDS=['2','3','4','4+'];
 
 function chip(label,on,onclick){ var b=document.createElement('button'); b.className='fbtn'+(on?' on':''); b.type='button'; b.textContent=label; b.setAttribute('aria-pressed',on); b.onclick=onclick; return b; }
 function toggleArr(arr,v){ var i=arr.indexOf(v); if(i>-1)arr.splice(i,1); else arr.push(v); }
+// Req 6.5.3 — the config-filter GROUPS shown depend on the selected category's
+// declared fields. Land / plot share hides Bedrooms and surfaces Plot size;
+// an apartment shows Bedrooms. No category selected → union (bedrooms shown).
+function grp(id){ return document.getElementById(id); }
+function showGroup(titleId, rowId, on){
+  var t=grp(titleId); if(t) t.style.display=on?'':'none';
+  if(rowId){ var r=grp(rowId); if(r) r.style.display=on?'':'none'; }
+}
+function syncFields(){
+  var beds=F.fieldApplies(f.cats,'bedrooms');
+  var area=F.fieldApplies(f.cats,'area');
+  var plot=F.fieldApplies(f.cats,'plotSize');
+  var share=F.fieldApplies(f.cats,'shareFraction');
+  showGroup('g-bed','row-beds', beds);
+  showGroup('g-area', null, area || plot);
+  var areaG=grp('g-area'); if(areaG) areaG.textContent = plot && !area ? 'Plot size (katha)' : 'Area size (sqft)';
+  var rngA=grp('g-area'); if(rngA && rngA.nextElementSibling) rngA.nextElementSibling.style.display=(area||plot)?'':'none';
+  // A schema note so the seller/buyer sees WHY the fields changed.
+  var note=grp('field-note');
+  if(note){
+    if(share){ note.style.display=''; note.textContent='Share-based category — filter by share fraction and price. Bedrooms don’t apply.'; }
+    else if(plot && !beds){ note.style.display=''; note.textContent='Plot / land category — filter by plot size and price. Bedrooms don’t apply.'; }
+    else { note.style.display='none'; }
+  }
+}
 
 function build(){
   // status
@@ -95,14 +121,17 @@ function build(){
   // areas
   var ra=document.getElementById('row-areas'); ra.innerHTML='';
   Object.keys(D.areas).forEach(function(k){ ra.appendChild(chip(D.areas[k][lang], f.areas.indexOf(k)>-1, function(){ toggleArr(f.areas,k); refresh(); })); });
-  // categories
+  // categories — driven by the configurable schema (6.5.3), not a hardcoded list
   var rc=document.getElementById('row-cats'); rc.innerHTML='';
-  D.categories.forEach(function(c){ var on=f.cats.indexOf(c.key)>-1; var el=document.createElement('div'); el.className='checkline'+(on?' on':''); el.tabIndex=0;
-    el.innerHTML='<span class="cb">'+(on?'✓':'')+'</span>'+c[lang]; el.onclick=function(){ toggleArr(f.cats,c.key); refresh(); };
-    el.onkeydown=function(e){ if(e.key==='Enter'||e.key===' '){e.preventDefault(); toggleArr(f.cats,c.key); refresh();} }; rc.appendChild(el); });
-  // beds
+  window.SalmonCategories.all().forEach(function(c){ var on=f.cats.indexOf(c.id)>-1; var el=document.createElement('div'); el.className='checkline'+(on?' on':''); el.tabIndex=0;
+    el.innerHTML='<span class="cb">'+(on?'✓':'')+'</span>'+(lang==='bn'&&c.labelBn?c.labelBn:c.label); el.onclick=function(){ toggleArr(f.cats,c.id); refresh(); };
+    el.onkeydown=function(e){ if(e.key==='Enter'||e.key===' '){e.preventDefault(); toggleArr(f.cats,c.id); refresh();} }; rc.appendChild(el); });
+  // beds — chips come from the schema's bedrooms field choices
+  var bedField=window.SalmonCategories.FIELDS.bedrooms;
+  var BEDS=(bedField.filter&&bedField.filter.choices)||['2','3','4','4+'];
   var rb=document.getElementById('row-beds'); rb.innerHTML='';
   BEDS.forEach(function(v){ rb.appendChild(chip(v, f.beds.indexOf(v)>-1, function(){ toggleArr(f.beds,v); refresh(); })); });
+  syncFields();
   // sliders
   document.getElementById('sqft-min').value=f.sqftMin!=null?f.sqftMin:600;
   document.getElementById('sqft-max').value=f.sqftMax!=null?f.sqftMax:2300;

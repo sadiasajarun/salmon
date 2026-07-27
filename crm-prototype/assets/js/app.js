@@ -138,7 +138,7 @@
       main.innerHTML = deniedPanel(res.nav.label, res.nav.perm); wireDenied(main); return;
     }
     // built modules — hand off to their screen files (carry the selected role across)
-    var MODULE_ENTRY = { people: 'screens/B02-approval-queue.html', catalogue: 'screens/E01-projects-list.html', pipeline: 'screens/F01-leads-list.html', finance: 'screens/I01-webhook-queue.html', documents: 'screens/N01-document-repository.html', communications: 'screens/O01-ticket-inbox.html', audit: 'screens/S01-audit-log.html', users: 'screens/T01-staff-users.html', settings: 'screens/U01-config-home.html' };
+    var MODULE_ENTRY = { people: 'screens/B02-approval-queue.html', catalogue: 'screens/E01-projects-list.html', pipeline: 'screens/F01-leads-list.html', finance: 'screens/I01-webhook-queue.html', documents: 'screens/N01-document-repository.html', communications: 'screens/O01-ticket-inbox.html', reporting: 'screens/Q01-reports-hub.html', audit: 'screens/S01-audit-log.html', users: 'screens/T01-staff-users.html', settings: 'screens/U01-config-home.html' };
     if (MODULE_ENTRY[res.id]) {
       try { localStorage.setItem('crm_role', App.role); } catch (e) {}
       location.href = MODULE_ENTRY[res.id];
