@@ -1,0 +1,12 @@
+# Render Blueprint — runs the Salmon connected live demo (Node/Express).
+# One-click: https://render.com/deploy?repo=https://github.com/sadiasajarun/salmon
+services:
+  - type: web
+    name: salmon-live-demo
+    runtime: node
+    rootDir: demo
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    autoDeploy: true
+    # Render injects PORT automatically; server.js uses process.env.PORT.
